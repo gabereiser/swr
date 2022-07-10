@@ -1,3 +1,20 @@
+/*  Space Wars Rebellion Mud
+ *  Copyright (C) 2022 @{See Authors}
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
 package swr
 
 import (
@@ -12,6 +29,24 @@ type MudClient struct {
 	Id     string
 	Reader *bufio.Reader
 	Writer *bufio.Writer
+}
+
+func (c *MudClient) Send(str string) {
+	_, err := c.Writer.Write([]byte(str))
+	ErrorCheck(err)
+	err = c.Writer.Flush()
+	ErrorCheck(err)
+}
+
+func (c *MudClient) Read() string {
+	s, _, err := c.Reader.ReadLine()
+	ErrorCheck(err)
+	return string(s)
+}
+
+type Client interface {
+	Send(str string)
+	Read() string
 }
 
 func ServerStart(addr string) {
@@ -35,12 +70,15 @@ func ServerStart(addr string) {
 }
 
 func acceptClient(con *net.TCPConn) {
-	db := DB()
+
 	client := new(MudClient)
 	client.Id = hex.EncodeToString([]byte(con.RemoteAddr().String()))
 	client.Reader = bufio.NewReader(con)
 	client.Writer = bufio.NewWriter(con)
 
+	auth_do_welcome(client)
+
+	db := DB()
 	db.AddClient(client)
 	for {
 		_, err := client.Reader.ReadString('\n')
