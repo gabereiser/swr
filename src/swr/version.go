@@ -17,4 +17,4 @@
  */
 package swr
 
-var version string = "0.0.1-3cfe022"
+var version string = "0.0.1-57e85fc"

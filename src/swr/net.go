@@ -25,6 +25,8 @@ import (
 	"time"
 )
 
+var ServerRunning bool = false
+
 type MudClient struct {
 	Id     string
 	Reader *bufio.Reader
@@ -55,7 +57,11 @@ func ServerStart(addr string) {
 	ErrorCheck(err)
 	defer l.Close()
 	log.Printf("Listening for connections on %s\n", addr)
+	ServerRunning = true
 	for {
+		if !ServerRunning {
+			break
+		}
 		c, err := l.AcceptTCP()
 		if err != nil {
 			log.Printf("Error accepting a connection: %v", err)
@@ -67,6 +73,7 @@ func ServerStart(addr string) {
 		}
 
 	}
+	ServerRunning = false
 }
 
 func acceptClient(con *net.TCPConn) {
@@ -81,6 +88,9 @@ func acceptClient(con *net.TCPConn) {
 	db := DB()
 	db.AddClient(client)
 	for {
+		if !ServerRunning {
+			break
+		}
 		_, err := client.Reader.ReadString('\n')
 		if err != nil {
 			log.Printf("Error reading message from %s %v", client.Id, err)
