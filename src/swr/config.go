@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"runtime"
 )
 
 type Configuration struct {
@@ -32,7 +33,11 @@ var _config *Configuration
 
 func Config() *Configuration {
 	if _config == nil {
-		fp, err := ioutil.ReadFile("./data/sys/config.json")
+		path := "data/sys/config.json"
+		if runtime.GOOS == "windows" {
+			path = "data\\sys\\config.json"
+		}
+		fp, err := ioutil.ReadFile(path)
 		ErrorCheck(err)
 		err = json.Unmarshal(fp, &_config)
 		ErrorCheck(err)

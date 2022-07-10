@@ -17,4 +17,4 @@
  */
 package main
 
-var version string = "0.0.1-3ae6b40"
+var version string = "0.0.1-3cfe022"

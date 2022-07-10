@@ -1,3 +1,3 @@
 package swr
 
-type CharData map[string]string
+type CharData map[string]interface{}

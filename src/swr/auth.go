@@ -24,16 +24,21 @@ import (
 )
 
 func auth_do_welcome(client Client) {
-	welcome, err := ioutil.ReadFile("./data/sys/welcome")
+	welcome, err := ioutil.ReadFile("data/sys/welcome")
 	ErrorCheck(err)
 	client.Send(string(welcome))
 	auth_do_login(client)
 }
 
 func auth_do_login(client Client) {
+	client.Send("\r\n>>Holonet Login:")
 	username := client.Read()
 	sanitized := strings.ToLower(username)
-	path := fmt.Sprintf("./data/accounts/%s/%s", sanitized[0:1], sanitized)
+	if strings.Contains(sanitized, " ") {
+		client.Send("\r\nSpaces aren't allowed.\r\n")
+		auth_do_login(client)
+	}
+	path := fmt.Sprintf("data/accounts/%s/%s", sanitized[0:1], sanitized)
 	if FileExists(path) {
 		char_data := DB().ReadCharData(path)
 		auth_do_password(client, char_data)
@@ -43,7 +48,7 @@ func auth_do_login(client Client) {
 		if are_new[0:1] == "y" {
 			auth_do_new_player(client, new(CharData))
 		} else {
-			client.Send("\r\n>>Holonet Login:")
+			auth_do_login(client)
 		}
 	}
 }

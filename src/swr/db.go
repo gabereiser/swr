@@ -18,8 +18,11 @@
 package swr
 
 import (
+	"io/ioutil"
 	"os"
 	"sync"
+
+	"gopkg.in/yaml.v3"
 )
 
 func FileExists(filename string) bool {
@@ -86,14 +89,55 @@ func (d *GameDatabase) RemoveClient(client *MudClient) {
 
 // The Mother of all load functions
 func (d *GameDatabase) Load() {
+	d.Lock()
+	defer d.Unlock()
+
+	// Load Areas
+	d.LoadAreas()
+
+	// Load Items
+	d.LoadItems()
+
+	// Load Mobs
+	d.LoadMobs()
+
+	// Load Progs
+	d.LoadMudProgs()
+}
+
+func (d *GameDatabase) LoadAreas() {
+
+}
+
+func (d *GameDatabase) LoadItems() {
+
+}
+
+func (d *GameDatabase) LoadMobs() {
+
+}
+
+func (d *GameDatabase) LoadMudProgs() {
 
 }
 
 // The Mother of all save functions
 func (d *GameDatabase) Save() {
-
+	d.Lock()
+	defer d.Unlock()
 }
 
 func (d *GameDatabase) ReadCharData(filename string) *CharData {
-	return nil
+	fp, err := ioutil.ReadFile(filename)
+	ErrorCheck(err)
+	char_data := make(CharData)
+	yaml.Unmarshal(fp, &char_data)
+	return &char_data
+}
+
+func (d *GameDatabase) SaveCharData(char_data *CharData, filename string) {
+	buf, err := yaml.Marshal(char_data)
+	ErrorCheck(err)
+	err = ioutil.WriteFile(filename, buf, 0755)
+	ErrorCheck(err)
 }

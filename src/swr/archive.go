@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -39,16 +40,19 @@ func DoBackup(t time.Time) {
 	db.Lock()
 	defer db.Unlock()
 
-	stdout, err := exec.Command("tar", "-cJf", fmt.Sprintf("./backup/archive-%s.tar.xz", t.Format(time.RFC3339Nano)), "data/*").Output()
+	if runtime.GOOS == "windows" {
+		_, err := exec.Command("tar", "-cJf", fmt.Sprintf("backup\\archive-%s.tar.xz", t.Format(time.RFC3339Nano)), "data\\*").Output()
+		ErrorCheck(err)
+	} else {
+		_, err := exec.Command("tar", "-cJf", fmt.Sprintf("./backup/archive-%s.tar.xz", t.Format(time.RFC3339Nano)), "data/*").Output()
+		ErrorCheck(err)
+	}
 
-	ErrorCheck(err)
-
-	fmt.Printf("%s\n", string(stdout))
 	log.Printf("***** BACKUP COMPLETE *****\r\n")
 }
 
 func DoBackupCleanup(t time.Time) {
-	archives, err := ioutil.ReadDir("./backup")
+	archives, err := ioutil.ReadDir("backup")
 	ErrorCheck(err)
 	for _, archive := range archives {
 		p := archive.Name()
@@ -58,8 +62,14 @@ func DoBackupCleanup(t time.Time) {
 		ErrorCheck(err)
 		cut_time := t.Add(-72 * time.Hour) // 3 days worth of backups are stored.
 		if ar_time.Before(cut_time) {
-			err := os.Remove(fmt.Sprintf("./backup/%s", archive.Name()))
-			ErrorCheck(err)
+			if runtime.GOOS == "windows" {
+				err := os.Remove(fmt.Sprintf("backup\\%s", archive.Name()))
+				ErrorCheck(err)
+			} else {
+				err := os.Remove(fmt.Sprintf("backup/%s", archive.Name()))
+				ErrorCheck(err)
+			}
+
 		}
 	}
 }
