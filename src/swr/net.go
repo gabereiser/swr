@@ -18,37 +18,77 @@
 package swr
 
 import (
-	"bufio"
 	"encoding/hex"
+	"fmt"
 	"log"
 	"net"
-	"time"
+	"strings"
+)
+
+const (
+	NET_IAC  = byte(255)
+	NET_WILL = byte(251)
+	NET_WONT = byte(252)
+	NET_DO   = byte(253)
+	NET_DONT = byte(254)
+	NET_ECHO = byte(1)
 )
 
 var ServerRunning bool = false
 
 type MudClient struct {
 	Id     string
-	Reader *bufio.Reader
-	Writer *bufio.Writer
+	Con    *net.TCPConn
+	Closed bool
 }
 
 func (c *MudClient) Send(str string) {
-	_, err := c.Writer.Write([]byte(str))
+	str = Color().Colorize(str)
+	_, err := c.Con.Write([]byte(str))
 	ErrorCheck(err)
-	err = c.Writer.Flush()
-	ErrorCheck(err)
+}
+
+func (c *MudClient) Sendf(format string, any ...interface{}) {
+	c.Send(fmt.Sprintf(format, any...))
 }
 
 func (c *MudClient) Read() string {
-	s, _, err := c.Reader.ReadLine()
-	ErrorCheck(err)
-	return string(s)
+	b := make([]byte, 1)
+	buf := ""
+
+	for {
+		c.Con.Read(b)
+		buf += string(b)
+		if strings.HasSuffix(buf, "\n") {
+			buf = strings.TrimSuffix(buf, "\r\n")
+			buf = strings.TrimSuffix(buf, "\n")
+			return buf
+		}
+	}
+}
+
+func (c *MudClient) Close() {
+	c.Closed = true
+}
+
+func (c *MudClient) Echo(enabled bool) {
+	if enabled {
+		b := []byte{NET_IAC, NET_WONT, NET_ECHO}
+		c.Con.Write(b)
+		c.Con.Read(b)
+	} else {
+		b := []byte{NET_IAC, NET_WILL, NET_ECHO}
+		c.Con.Write(b)
+		c.Con.Read(b)
+	}
 }
 
 type Client interface {
+	Echo(enabled bool)
 	Send(str string)
+	Sendf(format string, any ...interface{})
 	Read() string
+	Close()
 }
 
 func ServerStart(addr string) {
@@ -78,27 +118,31 @@ func ServerStart(addr string) {
 
 func acceptClient(con *net.TCPConn) {
 
+	db := DB()
 	client := new(MudClient)
 	client.Id = hex.EncodeToString([]byte(con.RemoteAddr().String()))
-	client.Reader = bufio.NewReader(con)
-	client.Writer = bufio.NewWriter(con)
-
+	client.Con = con
+	client.Closed = false
 	auth_do_welcome(client)
-
-	db := DB()
-	db.AddClient(client)
-	for {
-		if !ServerRunning {
-			break
-		}
-		_, err := client.Reader.ReadString('\n')
-		if err != nil {
-			log.Printf("Error reading message from %s %v", client.Id, err)
-			break
-		}
-
-		time.Sleep(time.Duration(1) * time.Millisecond)
+	if !client.Closed {
+		db.AddClient(client)
 	}
+	entity := db.GetEntityForClient(client)
+	if entity != nil {
+		for {
+			if !ServerRunning {
+				break
+			}
+			if client.Closed {
+				break
+			}
+			input := client.Read()
+			log.Printf("%s: %s\n", client.Id, input)
+			do_command(entity, input)
+
+		}
+	}
+
 	db.RemoveClient(client)
 	con.Close()
 }

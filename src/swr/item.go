@@ -15,31 +15,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
-package main
+package swr
 
-import (
-	"fmt"
-	"time"
+type ItemData map[string]interface{}
 
-	swr "github.com/gabereiser/swr"
-)
-
-func init() {
-	fmt.Printf("%d %d %d %d\r\n", int('a')-97, int('A')-65, int('z')-97, int('Z')-65)
-	if version != swr.GetVersion() {
-		panic(fmt.Sprintf("Version Mismatch! %s != %s", version, swr.GetVersion()))
-	}
-	fmt.Println(`SWR  Copyright (C) 2022
-This program comes with ABSOLUTELY NO WARRANTY.
-This is free software, and you are welcome to redistribute it
-under certain conditions; see LICENSE for details.
-
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-`)
-
-	time.Sleep(1 * time.Second)
-	swr.Init()
-}
-
-func main() {
-	swr.Main()
-}
+type Item interface{}

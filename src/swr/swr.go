@@ -19,13 +19,20 @@ package swr
 
 import (
 	"flag"
+	"fmt"
 	"log"
+	"os"
 )
 
 var editMode = flag.Bool("editmode", false, "Used to run the server in editor mode for offline world building.")
 
 func Init() {
-
+	// Ensure that the player directories exists
+	for _, p := range "abcdefghijklmnopqrstuvwxyz" {
+		_ = os.MkdirAll(fmt.Sprintf("data/accounts/%s", string(p)), 0755)
+	}
+	// Start the scheduler
+	Scheduler()
 }
 
 func Main() {
@@ -35,9 +42,13 @@ func Main() {
 	log.Printf("Starting version %s\n", version)
 
 	DB().Load()
+	CommandsLoad()
+	LanguageLoad()
+
 	if *editMode {
-		Editor()
+		RunEditor()
 	} else {
+		StartBackup()
 		ServerStart(Config().Addr)
 	}
 
@@ -48,6 +59,8 @@ func GetVersion() string {
 	return version
 }
 
-func Editor() {
-
+func RunEditor() {
+	log.Printf("Starting editor\n")
+	editor := NewEditor()
+	editor.Run()
 }

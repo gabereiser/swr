@@ -27,6 +27,7 @@ import (
 type Configuration struct {
 	Name string
 	Addr string
+	Salt string
 }
 
 var _config *Configuration

@@ -1,0 +1,139 @@
+---
+#Basic Commands
+- 
+  name: who
+  keywords: [ "who" ]
+  level: 1
+  func: do_who
+- 
+  name: say
+  keywords: [ "'", "say"]
+  level: 1
+  func: do_say
+- 
+  name: look
+  keywords: [ "l", "look" ]
+  level: 1
+  func: do_look
+
+# Wiz Commands
+-
+  name: acreate
+  keywords: [ "acreate" ]
+  level: 100
+  func: do_area_create
+-
+  name: aset
+  keywords: [ "aset" ]
+  level: 100
+  func: do_area_set
+-
+  name: aremove
+  keywords: [ "aremove" ]
+  level: 100
+  func: do_area_remove
+-
+  name: areset
+  keywords: [ "areset" ]
+  level: 100
+  func: do_area_reset
+-
+  name: rcreate
+  keywords: [ "rcreate" ]
+  level: 100
+  func: do_room_create
+-
+  name: rset
+  keywords: [ "rset" ]
+  level: 100
+  func: do_room_set
+-
+  name: redit
+  keywords: [ "redit" ]
+  level: 100
+  func: do_room_edit
+-
+  name: rfind
+  keywords: [ "rfind" ]
+  level: 100
+  func: do_room_find
+-
+  name: rreset
+  keywords: [ "rreset" ]
+  level: 100
+  func: do_room_reset
+-
+  name: rremove
+  keywords: [ "rremove" ]
+  level: 100
+  func: do_room_remove
+-
+  name: ocreate
+  keywords: [ "ocreate" ]
+  level: 100
+  func: do_item_create
+-
+  name: oset
+  keywords: [ "oset" ]
+  level: 100
+  func: do_item_set
+-
+  name: oedit
+  keywords: [ "oedit" ]
+  level: 100
+  func: do_item_edit
+-
+  name: ofind
+  keywords: [ "ofind" ]
+  level: 100
+  func: do_item_find
+-
+  name: oreset
+  keywords: [ "oreset" ]
+  level: 100
+  func: do_item_reset
+-
+  name: oremove
+  keywords: [ "oremove" ]
+  level: 100
+  func: do_item_remove
+-
+  name: mcreate
+  keywords: [ "mcreate" ]
+  level: 100
+  func: do_mob_create
+-
+  name: mset
+  keywords: [ "mset" ]
+  level: 100
+  func: do_mob_set
+-
+  name: mstat
+  keywords: [ "mstat" ]
+  level: 100
+  func: do_mob_stat
+-
+  name: medit
+  keywords: [ "medit" ]
+  level: 100
+  func: do_mob_edit
+-
+  name: mfind
+  keywords: [ "mfind" ]
+  level: 100
+  func: do_mob_find
+-
+  name: mreset
+  keywords: [ "mreset" ]
+  level: 100
+  func: do_mob_reset
+-
+  name: mremove
+  keywords: [ "mremove" ]
+  level: 100
+  func: do_mob_remove
+-
+  name: mstat
+  keywords: [ "mstat" ]
+  level: 100
+  func: do_mob_stat

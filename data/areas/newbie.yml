@@ -1,0 +1,63 @@
+---
+name: newbie
+desc: Newbie Area
+author: Admin
+levels: [1, 10]
+reset: 3600
+reset_msg: You hear a loud thud as the spaceship lurches slightly.
+rooms: 
+  100:
+    name: A jail cell
+    desc: |
+      You are standing in an imperial jail cell with no recollection
+      of how you got there. A simple white plastasteel room with a
+      durasteel door is all you can see. Through the small door 
+      window you can see a guard run by. Just then, the door clicks.
+    flags: [ safe ]
+    exits:
+      east: 101
+    exflags:
+      east:
+        locked: True
+        key: 100
+    roomProgs: {}
+  101:
+    name: Outside a jail cell
+    desc: |
+      You are standing outside of a jail cell in an imperial jail.
+      Alarms are going off around you. The room keeps flashing 
+      }Rred&d and }Wwhite&d. You feel a slight thud
+      coming from outside the ship.
+
+mobs:
+  100:
+    name: An imperial guard
+    desc: An imperial guard stands here. He doesn't look very attentive.
+    keywords: [ guard, imperial, guy ]
+    gender: Male
+    race: Human
+    stats: [10, 10, 10, 10, 10, 10]
+    skills:
+      kick: 1
+    equipment:
+      - head: 1
+      - torso: 2
+      - legs: 3
+      - feet: 4
+      - hands: 101
+    inventory: []
+    gold: 5
+    level: 1
+    xp: 50
+    hp: [10, 10]
+    mp: [0,0]
+    mv: [10, 10]
+    languages:
+      basic: 100
+    speaking: basic
+items:
+  100:
+    name: A keycard
+    desc: A small blue imperial keycard with the name of an officer D.Straus
+    type: key
+    weight: 0.1kg

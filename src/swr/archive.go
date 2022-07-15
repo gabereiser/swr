@@ -37,17 +37,22 @@ var _archiver *ArchiveService
 func Archiver() *ArchiveService {
 	if _archiver == nil {
 		_archiver = new(ArchiveService)
-		_archiver.T = time.NewTicker(time.Duration(1) * time.Hour)
+		_archiver.T = time.NewTicker(1 * time.Hour)
 	}
 	return _archiver
 }
-func BackupStart() {
+func StartBackup() {
 	ar := Archiver()
-	for {
-		t := <-ar.T.C
-		DoBackup(t)
-		DoBackupCleanup(t)
-	}
+	go func() {
+		for {
+			t := <-ar.T.C
+			DoBackup(t)
+			DoBackupCleanup(t)
+		}
+	}()
+	log.Printf("Backup service started.\n")
+	DoBackupCleanup(time.Now())
+	DoBackup(time.Now())
 }
 
 func DoBackup(t time.Time) {
@@ -58,10 +63,10 @@ func DoBackup(t time.Time) {
 	defer db.Unlock()
 
 	if runtime.GOOS == "windows" {
-		_, err := exec.Command("tar", "-cJf", fmt.Sprintf("backup\\archive-%s.tar.xz", t.Format(time.RFC3339Nano)), "data\\*").Output()
+		_, err := exec.Command("tar", "-cJf", fmt.Sprintf("backup\\%s.tar.xz", t.Format("2006_01_02_15_04_05")), "data").Output()
 		ErrorCheck(err)
 	} else {
-		_, err := exec.Command("tar", "-cJf", fmt.Sprintf("./backup/archive-%s.tar.xz", t.Format(time.RFC3339Nano)), "data/*").Output()
+		_, err := exec.Command("tar", "-cJf", fmt.Sprintf("backup/%s.tar.xz", t.Format("2006_01_02_15_04_05")), "data").Output()
 		ErrorCheck(err)
 	}
 
@@ -72,21 +77,23 @@ func DoBackupCleanup(t time.Time) {
 	archives, err := ioutil.ReadDir("backup")
 	ErrorCheck(err)
 	for _, archive := range archives {
-		p := archive.Name()
-		p = strings.ReplaceAll(p, ".tar.xz", "")
-		p = strings.ReplaceAll(p, "archive-", "")
-		ar_time, err := time.Parse(time.RFC3339Nano, p)
-		ErrorCheck(err)
-		cut_time := t.Add(-72 * time.Hour) // 3 days worth of backups are stored.
-		if ar_time.Before(cut_time) {
-			if runtime.GOOS == "windows" {
-				err := os.Remove(fmt.Sprintf("backup\\%s", archive.Name()))
-				ErrorCheck(err)
-			} else {
-				err := os.Remove(fmt.Sprintf("backup/%s", archive.Name()))
-				ErrorCheck(err)
-			}
+		if strings.HasSuffix(archive.Name(), ".tar.xz") {
+			p := archive.Name()
+			p = strings.ReplaceAll(p, ".tar.xz", "")
+			ar_time, err := time.Parse("2006_01_02_15_04_05", p)
+			ErrorCheck(err)
+			cut_time := t.Add(-72 * time.Hour) // 3 days worth of backups are stored.
+			if ar_time.Before(cut_time) {
+				if runtime.GOOS == "windows" {
+					err := os.Remove(fmt.Sprintf("backup\\%s", archive.Name()))
+					ErrorCheck(err)
+				} else {
+					err := os.Remove(fmt.Sprintf("backup/%s", archive.Name()))
+					ErrorCheck(err)
+				}
 
+			}
 		}
+
 	}
 }

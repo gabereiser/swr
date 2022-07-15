@@ -18,34 +18,43 @@
 package swr
 
 import (
+	"errors"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
+	"strings"
 	"sync"
 
 	"gopkg.in/yaml.v3"
 )
 
 func FileExists(filename string) bool {
-	info, err := os.Stat(filename)
-	if os.IsNotExist(err) {
+	file, err := os.OpenFile(filename, os.O_RDONLY, 0755)
+	if errors.Is(err, os.ErrNotExist) {
+		log.Printf("%s does not exist!", filename)
 		return false
 	}
-	return !info.IsDir()
+	defer file.Close()
+	return true
 }
 
 var _db *GameDatabase
 
 type GameDatabase struct {
-	m       *sync.Mutex
-	clients []*MudClient
+	m        *sync.Mutex
+	clients  []*MudClient
+	entities []Entity
+	areas    []AreaData
 }
 
 func DB() *GameDatabase {
 	if _db == nil {
-		_db = &GameDatabase{
-			m:       &sync.Mutex{},
-			clients: make([]*MudClient, 0, 64),
-		}
+		_db = new(GameDatabase)
+		_db.m = &sync.Mutex{}
+		_db.clients = make([]*MudClient, 0, 64)
+		_db.entities = make([]Entity, 0)
+		_db.areas = make([]AreaData, 0)
 	}
 	return _db
 }
@@ -106,7 +115,25 @@ func (d *GameDatabase) Load() {
 }
 
 func (d *GameDatabase) LoadAreas() {
+	flist, err := ioutil.ReadDir("data/areas")
+	ErrorCheck(err)
+	for _, area_file := range flist {
+		fpath := fmt.Sprintf("data/areas/%s", area_file.Name())
+		fp, err := ioutil.ReadFile(fpath)
+		ErrorCheck(err)
+		area := new(AreaData)
+		err = yaml.Unmarshal(fp, area)
+		ErrorCheck(err)
+		rooms := make(map[uint]RoomData)
+		for vnum, r := range area.Rooms {
+			r.Id = uint(vnum)
+			rooms[vnum] = r
+		}
+		area.Rooms = rooms
+		fmt.Printf("%+v", area.Rooms)
+		d.areas = append(d.areas, *area)
 
+	}
 }
 
 func (d *GameDatabase) LoadItems() {
@@ -127,12 +154,28 @@ func (d *GameDatabase) Save() {
 	defer d.Unlock()
 }
 
+func (d *GameDatabase) ReadPlayerData(filename string) *PlayerProfile {
+	fp, err := ioutil.ReadFile(filename)
+	ErrorCheck(err)
+	p_data := new(PlayerProfile)
+	yaml.Unmarshal(fp, p_data)
+	return p_data
+}
+
+func (d *GameDatabase) SavePlayerData(player *PlayerProfile) {
+	name := strings.ToLower(player.Name())
+	filename := fmt.Sprintf("data/accounts/%s/%s.yml", name[0:1], name)
+	buf, err := yaml.Marshal(player)
+	ErrorCheck(err)
+	err = ioutil.WriteFile(filename, buf, 0755)
+	ErrorCheck(err)
+}
 func (d *GameDatabase) ReadCharData(filename string) *CharData {
 	fp, err := ioutil.ReadFile(filename)
 	ErrorCheck(err)
-	char_data := make(CharData)
-	yaml.Unmarshal(fp, &char_data)
-	return &char_data
+	char_data := new(CharData)
+	yaml.Unmarshal(fp, char_data)
+	return char_data
 }
 
 func (d *GameDatabase) SaveCharData(char_data *CharData, filename string) {
@@ -140,4 +183,48 @@ func (d *GameDatabase) SaveCharData(char_data *CharData, filename string) {
 	ErrorCheck(err)
 	err = ioutil.WriteFile(filename, buf, 0755)
 	ErrorCheck(err)
+}
+
+func (d *GameDatabase) AddEntity(entity Entity) {
+	d.Lock()
+	defer d.Unlock()
+	d.entities = append(d.entities, entity)
+}
+
+func (d *GameDatabase) GetEntitiesInRoom(roomId uint) []Entity {
+	d.Lock()
+	defer d.Unlock()
+	ret := make([]Entity, 0)
+	for _, entity := range d.entities {
+		if entity.RoomId() == roomId {
+			ret = append(ret, entity)
+		}
+	}
+	return ret
+}
+
+func (d *GameDatabase) GetRoom(roomId uint) *RoomData {
+	for _, a := range d.areas {
+		for vnum, r := range a.Rooms {
+			if uint(vnum) == roomId {
+				log.Printf("Found room %s (%d)", r.Name, r.Id)
+				return &r
+			}
+		}
+	}
+
+	panic(fmt.Sprintf("RoomId %d not found!", roomId))
+
+}
+
+func (d *GameDatabase) GetEntityForClient(client Client) Entity {
+	for _, e := range d.entities {
+		if e.IsPlayer() {
+			player := e.(*PlayerProfile)
+			if player.Client == client {
+				return player
+			}
+		}
+	}
+	return nil
 }
