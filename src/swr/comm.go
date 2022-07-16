@@ -32,6 +32,7 @@ var CommandFuncs = map[string]func(Entity, ...string){
 	"do_who":   do_who,
 	"do_save":  do_save,
 	"do_score": do_score,
+	"do_help":  do_help,
 }
 var GMCommandFuncs = map[string]func(Entity, ...string){
 	"do_area_create": do_area_create,
@@ -104,8 +105,8 @@ func command_fuzzy_match(command string) []Command {
 	return ret
 }
 func do_command(entity Entity, input string) {
-	commands := command_fuzzy_match(input)
 	args := strings.Split(input, " ")
+	commands := command_fuzzy_match(args[0])
 	if len(commands) > 0 {
 		if strings.HasPrefix(args[0], "'") {
 			args[0] = strings.TrimPrefix(args[0], "'")

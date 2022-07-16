@@ -45,6 +45,7 @@ type Entity interface {
 	MaxHp() uint16
 	CurrentMv() uint16
 	MaxMv() uint16
+	IsFighting() bool
 }
 
 type CharData struct {
@@ -71,6 +72,7 @@ type CharData struct {
 	State     string          `yaml:"state,omitempty"`
 	Brain     string          `yaml:"brain,omitempty"`
 	AI        Brain           `yaml:"-"`
+	Attacker  *Entity         `yaml:"-"`
 }
 
 func (*CharData) IsPlayer() bool {
@@ -120,6 +122,10 @@ func (c *CharData) CurrentWeight() int {
 
 func (c *CharData) CurrentInventoryCount() int {
 	return len(c.Inventory)
+}
+
+func (c *CharData) IsFighting() bool {
+	return c.Attacker != nil
 }
 
 type PlayerProfile struct {
@@ -177,10 +183,26 @@ func (p *PlayerProfile) Prompt() {
 		p.NeedPrompt = false
 	}
 }
+func (p *PlayerProfile) IsFighting() bool {
+	return p.Char.Attacker != nil
+}
 
 func player_prompt(player *PlayerProfile) string {
 	prompt := "\r\n"
 	prompt += fmt.Sprintf("&Y[&GHp:&W%d&Y/&G%d&Y]&d ", player.CurrentHp(), player.MaxHp())
 	prompt += fmt.Sprintf("&Y[&GMv:&W%d&Y/&G%d&Y]&d ", player.CurrentMv(), player.MaxMv())
+	if player.IsFighting() {
+		attacker := (*player.Char.Attacker)
+		hp := attacker.MaxHp()
+		chp := attacker.CurrentHp()
+		third := hp / 3
+		if chp < third {
+			prompt += fmt.Sprintf("&w[&R%s&w]&d\n", MakeProgressBar(int(chp), int(hp), 15))
+		} else if chp < third*2 {
+			prompt += fmt.Sprintf("&w[&Y%s&w]&d\n", MakeProgressBar(int(chp), int(hp), 15))
+		} else {
+			prompt += fmt.Sprintf("&w[&G%s&w]&d\n", MakeProgressBar(int(chp), int(hp), 15))
+		}
+	}
 	return prompt
 }

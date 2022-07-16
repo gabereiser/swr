@@ -19,6 +19,7 @@ package swr
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"strings"
 )
@@ -85,6 +86,22 @@ const (
 	EMOJI_NEUTRAL      = "😐"
 )
 
+/*
+┌─┬┐  ╔═╦╗  ╓─╥╖  ╒═╤╕
+│ ││  ║ ║║  ║ ║║  │ ││
+├─┼┤  ╠═╬╣  ╟─╫╢  ╞═╪╡
+└─┴┘  ╚═╩╝  ╙─╨╜  ╘═╧╛
+┌───────────────────┐
+│  ╔═══╗ Some Text  │▒
+│  ╚═╦═╝ in the box │▒
+╞═╤══╩══╤═══════════╡▒
+│ ├──┬──┤           │▒
+│ └──┴──┘           │▒
+└───────────────────┘▒
+ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+
+ ░ ▒ ▓ █
+*/
 const (
 	ANSI_DBOX_TOP_LEFT     = "╔"
 	ANSI_DBOX_HORIZONTAL   = "═"
@@ -404,4 +421,31 @@ func MakeTitle(title string, style int, alignment int) string {
 	ret := fmt.Sprintf("%s%s%s %s%s %s%s%s&d\r\n", title_color, t[0:offset], cap_left, text_color, title, title_color, cap_right, t[(offset+title_length):])
 
 	return Color().Colorize(ret)
+}
+
+func MakeProgressBar(value int, max int, size int) string {
+	percent := float64(value) / float64(max)
+	size_percent := float64(size) * percent
+	cap := int(math.Floor(size_percent))
+	remainder := 0
+	if value > 0 {
+		remainder = max % value
+	}
+
+	ret := ""
+	for i := 0; i < size; i++ {
+		if i < cap {
+			ret += "█"
+		} else if i == cap {
+			if remainder%2 == 1 {
+				ret += "▒"
+			} else {
+				ret += "░"
+			}
+		} else {
+			ret += "▪"
+		}
+	}
+	ret += ""
+	return ret
 }

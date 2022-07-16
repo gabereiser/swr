@@ -1,0 +1,21 @@
+---
+name: Communication
+keywords: ["communication", "say", "coms", "talk", "chat", "shout", "ooc", "shipsay", "clansay", "yell", "emote"]
+level: 1
+desc: |
+  &wSWR features several modes of communicating. The most common (and most used) is the &Gsay&w
+  command. Other forms are &Gcom&w, &Gooc&w, and &Gclansay&w. Below is a list of communication
+  commands and their function. Several shortcuts are added to make communication easier.
+
+  &Gsay&w       - Says something to the current room (' shortcut) [example: 'Hello. / say Hello.]
+  &Gshout&w     - Says something to the current room and adjacent rooms. [example: shout I need help!]
+  &Gyell&w      - Same as shout
+  &Gclansay&w   - Says something to your clan/guild. (" shortcut) [example: "Where are we meeting? / clansay Where are we meeting?]
+  &Gshipsay&w   - Says something over your ship's intercom to all rooms on your ship. (: shortcut) [example: :We have arrived. / shipsay We have arrived.]
+  &Gooc&w       - Communicates over the Out Of Character channel. [example: ooc Anyone seen the new movie?]
+
+  &Gemote&w     - Emotes a message to the room you are in. (. shortcut) [example: .sits down / emote sits down]  *Character sits down*
+
+  Communication is vital to the game. It allows you to roleplay your character, talk to NPC's, talk to other characters, and
+  get quests. It progresses the story line, gives information, and is the backbone of the game. Be social. This game requires
+  &Yteamwork.&d

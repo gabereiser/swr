@@ -41,11 +41,19 @@ func FileExists(filename string) bool {
 
 var _db *GameDatabase
 
+type HelpData struct {
+	Name     string   `yaml:"name"`
+	Keywords []string `yaml:"keywords,flow"`
+	Desc     string   `yaml:"desc"`
+	Level    uint     `yaml:"level"`
+}
+
 type GameDatabase struct {
 	m        *sync.Mutex
 	clients  []*MudClient
 	entities []Entity
 	areas    []AreaData
+	helps    []HelpData
 }
 
 func DB() *GameDatabase {
@@ -101,6 +109,9 @@ func (d *GameDatabase) Load() {
 	d.Lock()
 	defer d.Unlock()
 
+	// Load Help files
+	d.LoadHelps()
+
 	// Load Areas
 	d.LoadAreas()
 
@@ -112,6 +123,21 @@ func (d *GameDatabase) Load() {
 
 	// Load Progs
 	d.LoadMudProgs()
+}
+
+func (d *GameDatabase) LoadHelps() {
+	flist, err := ioutil.ReadDir("docs")
+	ErrorCheck(err)
+	for _, help_file := range flist {
+		fpath := fmt.Sprintf("docs/%s", help_file.Name())
+		fp, err := ioutil.ReadFile(fpath)
+		ErrorCheck(err)
+		help := new(HelpData)
+		err = yaml.Unmarshal(fp, help)
+		ErrorCheck(err)
+		d.helps = append(d.helps, *help)
+	}
+	log.Printf("%d help files loaded.\n", len(flist))
 }
 
 func (d *GameDatabase) LoadAreas() {
@@ -133,6 +159,7 @@ func (d *GameDatabase) LoadAreas() {
 		d.areas = append(d.areas, *area)
 
 	}
+	log.Printf("%d areas loaded.\n", len(flist))
 }
 
 func (d *GameDatabase) LoadItems() {
@@ -226,4 +253,25 @@ func (d *GameDatabase) GetEntityForClient(client Client) Entity {
 		}
 	}
 	return nil
+}
+
+func (d *GameDatabase) GetHelp(help string) []HelpData {
+	ret := []HelpData{}
+	for _, h := range d.helps {
+		for _, keyword := range h.Keywords {
+			if len(keyword) < len(help) {
+				continue
+			}
+			match := true
+			for i, r := range help {
+				if keyword[i] != byte(r) {
+					match = false
+				}
+			}
+			if match {
+				ret = append(ret, h)
+			}
+		}
+	}
+	return ret
 }

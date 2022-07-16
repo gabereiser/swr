@@ -30,6 +30,11 @@
   keywords: [ "score" ]
   level: 1
   func: do_score
+- 
+  name: help
+  keywords: [ "help" ]
+  level: 1
+  func: do_help
 
 # Wiz Commands
 -

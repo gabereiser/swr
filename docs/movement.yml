@@ -1,0 +1,24 @@
+---
+name: Movement
+keywords: ["move", "movement", "directions"]
+level: 1
+desc: |
+  Movement (Directions)
+  -----------------------------------------
+  Directions in SWR are somewhat ambiguous. For the most part you can
+  expect directions like &Geast&w and &Gsouth&w but also directions
+  like &Yin&w and &Yout&w.  Sometimes, in the case of boarding a ship,
+  the direction or entrance isn't known.
+
+  Movement (Mv)
+  -----------------------------------------
+  Movement itself is a cost. When you go &Gwest&w into that shop or
+  &Gdown&w into that cargo hold, you'll use up what's called an &YMv&w
+  point. &YMv&w points automatically generate every server tick and
+  you can replenish them with &Gfood&w, &Gdrink&w, or &Cdrugs&w.
+
+  Movement (Doors)
+  -----------------------------------------
+  Some exits are closed. These doors can be locked (an item opens them),
+  security gates (only a certain faction can pass), sealed doors (only a
+  scripted event opens them), or keypad doors (you must know the keycode).
