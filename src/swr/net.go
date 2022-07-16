@@ -138,7 +138,9 @@ func acceptClient(con *net.TCPConn) {
 			}
 			input := client.Read()
 			log.Printf("%s: %s\n", client.Id, input)
-			do_command(entity, input)
+			if len(input) > 0 {
+				do_command(entity, input)
+			}
 
 		}
 	}

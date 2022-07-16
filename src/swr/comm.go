@@ -25,12 +25,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var CommandFuncs = map[string]func(Entity, ...interface{}){
-	"do_say":  do_say,
-	"do_look": do_look,
-	"do_who":  do_who,
+var CommandFuncs = map[string]func(Entity, ...string){
+	"do_quit":  do_quit,
+	"do_say":   do_say,
+	"do_look":  do_look,
+	"do_who":   do_who,
+	"do_save":  do_save,
+	"do_score": do_score,
 }
-var GMCommandFuncs = map[string]func(Entity, ...interface{}){
+var GMCommandFuncs = map[string]func(Entity, ...string){
 	"do_area_create": do_area_create,
 	"do_area_set":    do_area_set,
 	"do_area_remove": do_area_remove,
@@ -71,7 +74,7 @@ func CommandsLoad() {
 	ErrorCheck(err)
 	log.Printf("Commands successfully loaded.")
 }
-func command_map_to_func(name string) func(Entity, ...interface{}) {
+func command_map_to_func(name string) func(Entity, ...string) {
 	if k, ok := CommandFuncs[name]; ok {
 		return k
 	}
@@ -84,7 +87,16 @@ func command_fuzzy_match(command string) []Command {
 	ret := []Command{}
 	for _, com := range Commands {
 		for _, keyword := range com.Keywords {
-			if strings.HasPrefix(strings.ToLower(command), strings.ToLower(keyword)) {
+			if len(keyword) < len(command) {
+				continue
+			}
+			match := true
+			for i, r := range command {
+				if keyword[i] != byte(r) {
+					match = false
+				}
+			}
+			if match {
 				ret = append(ret, *com)
 			}
 		}
@@ -95,12 +107,15 @@ func do_command(entity Entity, input string) {
 	commands := command_fuzzy_match(input)
 	args := strings.Split(input, " ")
 	if len(commands) > 0 {
-		args[0] = strings.TrimPrefix(args[0], "'")
-		args[0] = strings.TrimPrefix(args[0], "\"")
-		args[0] = strings.TrimPrefix(args[0], ".")
-		args[0] = strings.TrimPrefix(args[0], ":")
-		args[0] = strings.TrimPrefix(args[0], "!")
-		command_map_to_func(commands[0].Func)(entity, args)
+		if strings.HasPrefix(args[0], "'") {
+			args[0] = strings.TrimPrefix(args[0], "'")
+			do_say(entity, args...)
+			entity.Prompt()
+			return
+		}
+		a := args[1:]
+		command_map_to_func(commands[0].Func)(entity, a...)
+		entity.Prompt()
 	} else {
 		if entity.IsPlayer() {
 			entity.Send("\r\nHuh?\r\n")

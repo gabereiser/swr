@@ -130,7 +130,6 @@ func (d *GameDatabase) LoadAreas() {
 			rooms[vnum] = r
 		}
 		area.Rooms = rooms
-		fmt.Printf("%+v", area.Rooms)
 		d.areas = append(d.areas, *area)
 
 	}

@@ -68,6 +68,7 @@ Login:
 			DB().SavePlayerData(player)
 			DB().AddEntity(player)
 			do_look(player)
+			player.Prompt()
 		}
 	} else {
 		client.Send(fmt.Sprintf("\r\n&RHrm, it seems there isn't a record of &Y%s&R in the galactic databank.\r\n\r\n&RAre you new? &G[&Wy&G/&Wn&G]&d ", username))
@@ -180,7 +181,8 @@ Gender:
 	player.Char.Stats = []uint16{10, 10, 10, 10, 10, 10}
 	player.Char.Skills = map[string]int{"kick": 1, "beg": 1, "search": 1}
 	player.Char.Hp = []uint16{10, 10}
-	player.Char.Mp = []uint16{10, 10}
+	player.Char.Mp = []uint16{0, 0}
+	player.Char.Mv = []uint16{10, 10}
 	player.Char.Equipment = make(map[string]Item)
 	player.Char.Inventory = make([]Item, 0)
 	player.Char.Keywords = []string{name, race}
@@ -208,7 +210,9 @@ Gender:
 	DB().AddEntity(player)
 	client.Send(Color().ClearScreen())
 	client.Send("\r\nEntering game world...\r\n")
+	time.Sleep(1 * time.Second)
 	do_look(player)
+	player.Prompt()
 
 }
 

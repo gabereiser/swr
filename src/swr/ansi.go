@@ -18,7 +18,9 @@
 package swr
 
 import (
+	"fmt"
 	"regexp"
+	"strings"
 )
 
 const (
@@ -81,6 +83,21 @@ const (
 	EMOJI_HAPPY        = "🙂"
 	EMOJI_ANGRY        = "😡"
 	EMOJI_NEUTRAL      = "😐"
+)
+
+const (
+	ANSI_DBOX_TOP_LEFT     = "╔"
+	ANSI_DBOX_HORIZONTAL   = "═"
+	ANSI_DBOX_TOP_RIGHT    = "╗"
+	ANSI_DBOX_VERTICAL     = "║"
+	ANSI_DBOX_BOTTOM_LEFT  = "╚"
+	ANSI_DBOX_BOTTOM_RIGHT = "╝"
+	ANSI_BOX_TOP_LEFT      = "┌"
+	ANSI_BOX_HORIZONTAL    = "─"
+	ANSI_BOX_TOP_RIGHT     = "┐"
+	ANSI_BOX_VERTICAL      = "│"
+	ANSI_BOX_BOTTOM_LEFT   = "└"
+	ANSI_BOX_BOTTOM_RIGHT  = "┘"
 )
 
 /* The following are the tags used for adding color in your text.
@@ -190,6 +207,8 @@ func (c *Colorize) Colorize(input string) string {
 			return ANSI_ESC + "0;" + ANSI_FG_BLUE + "m"
 		case "&p":
 			return ANSI_ESC + "0;" + ANSI_FG_MAGENTA + "m"
+		case "&c":
+			return ANSI_ESC + "0;" + ANSI_FG_CYAN + "m"
 		case "&w":
 			return ANSI_ESC + "0;" + ANSI_FG_WHITE + "m"
 		case "&X":
@@ -204,6 +223,8 @@ func (c *Colorize) Colorize(input string) string {
 			return ANSI_BOLD + ANSI_FG_BLUE + "m"
 		case "&P":
 			return ANSI_BOLD + ANSI_FG_MAGENTA + "m"
+		case "&C":
+			return ANSI_BOLD + ANSI_FG_CYAN + "m"
 		case "&W":
 			return ANSI_BOLD + ANSI_FG_WHITE + "m"
 		case "^x":
@@ -218,6 +239,8 @@ func (c *Colorize) Colorize(input string) string {
 			return ANSI_ESC + ANSI_BG_BLUE + "m"
 		case "^p":
 			return ANSI_ESC + ANSI_BG_MAGENTA + "m"
+		case "^c":
+			return ANSI_ESC + ANSI_BG_CYAN + "m"
 		case "^w":
 			return ANSI_ESC + ANSI_BG_WHITE + "m"
 		case "^X":
@@ -232,6 +255,8 @@ func (c *Colorize) Colorize(input string) string {
 			return ANSI_BOLD + ANSI_BG_BLUE + "m"
 		case "^P":
 			return ANSI_BOLD + ANSI_BG_MAGENTA + "m"
+		case "^C":
+			return ANSI_BOLD + ANSI_BG_CYAN + "m"
 		case "^W":
 			return ANSI_BOLD + ANSI_BG_WHITE + "m"
 		case "}x":
@@ -246,6 +271,8 @@ func (c *Colorize) Colorize(input string) string {
 			return ANSI_BLINK + ANSI_ESC + ANSI_FG_BLUE + "m"
 		case "}p":
 			return ANSI_BLINK + ANSI_ESC + ANSI_FG_MAGENTA + "m"
+		case "}c":
+			return ANSI_BLINK + ANSI_ESC + ANSI_FG_CYAN + "m"
 		case "}w":
 			return ANSI_BLINK + ANSI_ESC + ANSI_FG_WHITE + "m"
 		case "}X":
@@ -260,6 +287,8 @@ func (c *Colorize) Colorize(input string) string {
 			return ANSI_BLINK + ANSI_BOLD + ANSI_FG_BLUE + "m"
 		case "}P":
 			return ANSI_BLINK + ANSI_BOLD + ANSI_FG_MAGENTA + "m"
+		case "}C":
+			return ANSI_BLINK + ANSI_BOLD + ANSI_FG_CYAN + "m"
 		case "}W":
 			return ANSI_BLINK + ANSI_BOLD + ANSI_FG_WHITE + "m"
 		case "&&":
@@ -290,4 +319,89 @@ func (c *Colorize) Colorize(input string) string {
 
 	input = r.ReplaceAllStringFunc(input, color_func)
 	return input
+}
+
+const (
+	ANSI_TITLE_ALIGNMENT_LEFT = iota
+	ANSI_TITLE_ALIGNMENT_CENTER
+	ANSI_TITLE_ALIGNMENT_RIGHT
+)
+
+const (
+	ANSI_TITLE_STYLE_NORMAL = iota
+	ANSI_TITLE_STYLE_BLOCK
+	ANSI_TITLE_STYLE_ELEGANT
+	ANSI_TITLE_STYLE_HACKED
+	ANSI_TITLE_STYLE_IMPERIAL
+	ANSI_TITLE_STYLE_REBEL
+	ANSI_TITLE_STYLE_SENATE
+)
+
+// Takes a string and makes a Title based on style [ANSI_TITLE_STYLE_] and alignment [ANSI_TITLE_ALIGNMENT_]
+func MakeTitle(title string, style int, alignment int) string {
+	t := ""
+	cap_left := ""
+	cap_right := ""
+	switch style {
+	case ANSI_TITLE_STYLE_NORMAL:
+		t = strings.Repeat("-=", 38) + "-"
+		cap_left = "("
+		cap_right = ")"
+	case ANSI_TITLE_STYLE_BLOCK:
+		t = strings.Repeat("==", 38) + "="
+		cap_left = "["
+		cap_right = "]"
+	case ANSI_TITLE_STYLE_ELEGANT:
+		t = strings.Repeat("-~", 38) + "-"
+		cap_left = "{"
+		cap_right = "}}"
+	case ANSI_TITLE_STYLE_HACKED:
+		t = strings.Repeat("-/\\#", 19) + "-"
+		cap_left = "<"
+		cap_right = ">"
+	case ANSI_TITLE_STYLE_IMPERIAL:
+		t = strings.Repeat("::", 39)
+		cap_left = ":"
+		cap_right = ":"
+	case ANSI_TITLE_STYLE_REBEL:
+		t = strings.Repeat("::", 39)
+		cap_left = ":"
+		cap_right = ":"
+	case ANSI_TITLE_STYLE_SENATE:
+		t = strings.Repeat("-=", 38) + "-"
+		cap_left = "["
+		cap_right = "]"
+	default:
+		t = strings.Repeat("-=", 38) + "-"
+		cap_left = "("
+		cap_right = ")"
+	}
+	offset := 0
+	title_length := len(title)
+
+	switch alignment {
+	case ANSI_TITLE_ALIGNMENT_CENTER:
+		offset = (len(t) / 2) - (title_length / 2)
+	case ANSI_TITLE_ALIGNMENT_RIGHT:
+		offset = (len(t) - (title_length + 1))
+	default:
+		offset = 1
+	}
+	text_color := "&W"
+	title_color := "&g"
+	if ANSI_TITLE_STYLE_IMPERIAL == style {
+		title_color = "&B"
+	}
+	if ANSI_TITLE_STYLE_REBEL == style {
+		title_color = "&R"
+	}
+	if ANSI_TITLE_STYLE_HACKED == style {
+		title_color = "&P"
+	}
+	if ANSI_TITLE_STYLE_SENATE == style {
+		title_color = "&C"
+	}
+	ret := fmt.Sprintf("%s%s%s %s%s %s%s%s&d\r\n", title_color, t[0:offset], cap_left, text_color, title, title_color, cap_right, t[(offset+title_length):])
+
+	return Color().Colorize(ret)
 }

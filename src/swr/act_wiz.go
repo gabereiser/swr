@@ -17,86 +17,86 @@
  */
 package swr
 
-func do_area_create(entity Entity, args ...interface{}) {
+func do_area_create(entity Entity, args ...string) {
 
 }
 
-func do_area_set(entity Entity, args ...interface{}) {
+func do_area_set(entity Entity, args ...string) {
 
 }
 
-func do_area_remove(entity Entity, args ...interface{}) {
+func do_area_remove(entity Entity, args ...string) {
 
 }
 
-func do_area_reset(entity Entity, args ...interface{}) {
+func do_area_reset(entity Entity, args ...string) {
 
 }
 
-func do_room_create(entity Entity, args ...interface{}) {
+func do_room_create(entity Entity, args ...string) {
 
 }
 
-func do_room_set(entity Entity, args ...interface{}) {
+func do_room_set(entity Entity, args ...string) {
 
 }
 
-func do_room_edit(entity Entity, args ...interface{}) {
+func do_room_edit(entity Entity, args ...string) {
 
 }
 
-func do_room_reset(entity Entity, args ...interface{}) {
+func do_room_reset(entity Entity, args ...string) {
 
 }
 
-func do_room_remove(entity Entity, args ...interface{}) {
+func do_room_remove(entity Entity, args ...string) {
 
 }
 
-func do_item_create(entity Entity, args ...interface{}) {
+func do_item_create(entity Entity, args ...string) {
 
 }
 
-func do_item_set(entity Entity, args ...interface{}) {
+func do_item_set(entity Entity, args ...string) {
 
 }
 
-func do_item_remove(entity Entity, args ...interface{}) {
+func do_item_remove(entity Entity, args ...string) {
 
 }
 
-func do_item_stat(entity Entity, args ...interface{}) {
+func do_item_stat(entity Entity, args ...string) {
 
 }
 
-func do_item_find(entity Entity, args ...interface{}) {
+func do_item_find(entity Entity, args ...string) {
 
 }
 
-func do_room_find(entity Entity, args ...interface{}) {
+func do_room_find(entity Entity, args ...string) {
 
 }
 
-func do_mob_create(entity Entity, args ...interface{}) {
+func do_mob_create(entity Entity, args ...string) {
 
 }
 
-func do_mob_set(entity Entity, args ...interface{}) {
+func do_mob_set(entity Entity, args ...string) {
 
 }
 
-func do_mob_remove(entity Entity, args ...interface{}) {
+func do_mob_remove(entity Entity, args ...string) {
 
 }
 
-func do_mob_reset(entity Entity, args ...interface{}) {
+func do_mob_reset(entity Entity, args ...string) {
 
 }
 
-func do_mob_stat(entity Entity, args ...interface{}) {
+func do_mob_stat(entity Entity, args ...string) {
 
 }
 
-func do_mob_find(entity Entity, args ...interface{}) {
+func do_mob_find(entity Entity, args ...string) {
 
 }

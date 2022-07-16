@@ -19,4 +19,6 @@ package swr
 
 type ItemData map[string]interface{}
 
-type Item interface{}
+type Item interface {
+	GetWeight() int
+}

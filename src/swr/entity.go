@@ -17,7 +17,10 @@
  */
 package swr
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 var race_list = []string{
 	"Human", "Wookiee", "Twi'lek", "Rodian", "Hutt", "Mon Calamari", "Noghri",
@@ -37,6 +40,11 @@ type Entity interface {
 	IsPlayer() bool
 	Send(str string, any ...interface{})
 	Event(evt string)
+	Prompt()
+	CurrentHp() uint16
+	MaxHp() uint16
+	CurrentMv() uint16
+	MaxMv() uint16
 }
 
 type CharData struct {
@@ -69,6 +77,9 @@ func (*CharData) IsPlayer() bool {
 	return false
 }
 
+func (*CharData) Prompt() {
+}
+
 func (*CharData) Send(m string, args ...interface{}) {
 }
 
@@ -83,14 +94,43 @@ func (c *CharData) Name() string {
 func (c *CharData) Event(evt string) {
 }
 
+func (c *CharData) CurrentHp() uint16 {
+	return c.Hp[0]
+}
+
+func (c *CharData) MaxHp() uint16 {
+	return c.Hp[1]
+}
+
+func (c *CharData) CurrentMv() uint16 {
+	return c.Mv[0]
+}
+
+func (c *CharData) MaxMv() uint16 {
+	return c.Mv[1]
+}
+
+func (c *CharData) CurrentWeight() int {
+	weight := 75
+	for _, item := range c.Inventory {
+		weight += item.GetWeight()
+	}
+	return weight
+}
+
+func (c *CharData) CurrentInventoryCount() int {
+	return len(c.Inventory)
+}
+
 type PlayerProfile struct {
-	Char     CharData  `yaml:"char,inline"`
-	Email    string    `yaml:"email,omitempty"`
-	Password string    `yaml:"password,omitempty"`
-	Priv     int       `yaml:"priv,omitempty"`
-	LastSeen time.Time `yaml:"last_seen,omitempty"`
-	Banned   bool      `yaml:"banned,omitempty"`
-	Client   Client    `yaml:"-"`
+	Char       CharData  `yaml:"char,inline"`
+	Email      string    `yaml:"email,omitempty"`
+	Password   string    `yaml:"password,omitempty"`
+	Priv       int       `yaml:"priv,omitempty"`
+	LastSeen   time.Time `yaml:"last_seen,omitempty"`
+	Banned     bool      `yaml:"banned,omitempty"`
+	Client     Client    `yaml:"-"`
+	NeedPrompt bool      `yaml:"-"`
 }
 
 func (*PlayerProfile) IsPlayer() bool {
@@ -99,7 +139,8 @@ func (*PlayerProfile) IsPlayer() bool {
 
 func (p *PlayerProfile) Send(m string, any ...interface{}) {
 	if p.Client != nil {
-		p.Client.Sendf(m, any)
+		p.Client.Sendf(m, any...)
+		p.NeedPrompt = true
 	}
 }
 
@@ -112,4 +153,34 @@ func (p *PlayerProfile) Name() string {
 }
 
 func (p *PlayerProfile) Event(evt string) {
+}
+
+func (p *PlayerProfile) CurrentHp() uint16 {
+	return p.Char.Hp[0]
+}
+
+func (p *PlayerProfile) MaxHp() uint16 {
+	return p.Char.Hp[1]
+}
+
+func (p *PlayerProfile) CurrentMv() uint16 {
+	return p.Char.Mv[0]
+}
+
+func (p *PlayerProfile) MaxMv() uint16 {
+	return p.Char.Mv[1]
+}
+func (p *PlayerProfile) Prompt() {
+	if p.NeedPrompt {
+		prompt := player_prompt(p)
+		p.Send("%s\r\n", prompt)
+		p.NeedPrompt = false
+	}
+}
+
+func player_prompt(player *PlayerProfile) string {
+	prompt := "\r\n"
+	prompt += fmt.Sprintf("&Y[&GHp:&W%d&Y/&G%d&Y]&d ", player.CurrentHp(), player.MaxHp())
+	prompt += fmt.Sprintf("&Y[&GMv:&W%d&Y/&G%d&Y]&d ", player.CurrentMv(), player.MaxMv())
+	return prompt
 }

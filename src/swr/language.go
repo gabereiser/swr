@@ -48,7 +48,7 @@ func LanguageLoad() {
 			l := new(Language)
 			yaml.Unmarshal(fp, l)
 			for _, race := range race_list {
-				if race == l.Race {
+				if strings.EqualFold(race, l.Race) {
 					Languages = append(Languages, *l)
 				}
 			}

@@ -1,5 +1,10 @@
 ---
 #Basic Commands
+-
+  name: quit
+  keywords: [ "quit" ]
+  level: 1
+  func: do_quit
 - 
   name: who
   keywords: [ "who" ]
@@ -7,14 +12,24 @@
   func: do_who
 - 
   name: say
-  keywords: [ "'", "say"]
+  keywords: [ "say"]
   level: 1
   func: do_say
 - 
   name: look
-  keywords: [ "l", "look" ]
+  keywords: [ "look" ]
   level: 1
   func: do_look
+- 
+  name: save
+  keywords: [ "save" ]
+  level: 1
+  func: do_save
+- 
+  name: score
+  keywords: [ "score" ]
+  level: 1
+  func: do_score
 
 # Wiz Commands
 -

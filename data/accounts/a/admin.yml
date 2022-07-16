@@ -1,0 +1,19 @@
+room: 100
+name: Admin
+keywords: [Admin, Hutt]
+title: Admin the Hutt
+desc: ""
+race: Hutt
+gender: m
+level: 1
+hp: [10, 10]
+mp: [10, 10]
+mv: [10, 10]
+stats: [10, 10, 10, 10, 10, 10]
+skills: {beg: 1, kick: 1, search: 1}
+languages: {basic: 100, hutt: 100}
+speaking: hutt
+brain: client
+email: admin@noreply.org
+password: 8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+last_seen: 2022-07-15T20:07:28.043028-04:00
