@@ -31,6 +31,8 @@ func do_help(entity Entity, args ...string) {
 			player.Send("\r\n&W%s&d\r\n", MakeTitle(help[0].Name, ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_CENTER))
 			player.Send("&YKeywords: &g%v&d\r\n", help[0].Keywords)
 			player.Send("&w%s&d\r\n", help[0].Desc)
+		} else {
+			player.Send("\r\n&RNo help file for keyword &Y%s\r\n", strings.Join(args, " "))
 		}
 	} else {
 		player.Send("\r\n&W%s&d\r\n", MakeTitle("Help", ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_CENTER))

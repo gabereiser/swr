@@ -1,0 +1,14 @@
+---
+name: Quit
+keywords: ["quit"]
+level: 1
+desc: |
+  QUIT
+  ------------------------------------
+  Quits the game.
+
+  Your character will be saved and your connection to the game terminated.
+  If you are in a hotel/inn/bunk/or safe room your character will be removed
+  from the game. If you are not, you'll be warned that your character will 
+  continue to exist within the world &YAFK&w for 15 minutes.
+

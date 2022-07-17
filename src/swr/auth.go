@@ -28,6 +28,9 @@ import (
 )
 
 func auth_do_welcome(client Client) {
+	client.Send(Color().ClearScreen())
+	client.Send("\r\n\r\n&CA long time ago in a galaxy far, far away...&d\r\n\r\n\r\n[press ENTER]")
+	_ = client.Read()
 	welcome, err := ioutil.ReadFile("data/sys/welcome")
 	ErrorCheck(err)
 	client.Send(string(welcome))

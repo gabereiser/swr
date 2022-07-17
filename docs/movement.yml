@@ -3,11 +3,12 @@ name: Movement
 keywords: ["move", "movement", "directions"]
 level: 1
 desc: |
+
   Movement (Directions)
   -----------------------------------------
   Directions in SWR are somewhat ambiguous. For the most part you can
   expect directions like &Geast&w and &Gsouth&w but also directions
-  like &Yin&w and &Yout&w.  Sometimes, in the case of boarding a ship,
+  like &Gin&w and &Gout&w.  Sometimes, in the case of boarding a ship,
   the direction or entrance isn't known.
 
   Movement (Mv)
@@ -22,3 +23,7 @@ desc: |
   Some exits are closed. These doors can be locked (an item opens them),
   security gates (only a certain faction can pass), sealed doors (only a
   scripted event opens them), or keypad doors (you must know the keycode).
+
+  Movement (Space)
+  -----------------------------------------
+  @See SPACE

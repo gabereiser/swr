@@ -1,0 +1,24 @@
+---
+name: Economy
+keywords: ["economy", "money", "credits", "income", "cash"]
+level: 1
+desc: |
+
+  Money / Credits
+  ------------------------------------------------
+  Income in SWR is important. How else will you afford that new speeder or purchase your
+  first spaceship. Earning income depends on your profession and play style. Here are a
+  few ways you can earn a living in the Star Wars universe.
+
+  &CCombat&w         - Some mobs drop loot. Some loot is rare and worth a lot of credits to shops.
+  &CTrade&w          - Buy low and sell high. Not all shops in the galaxy have the same prices for goods.
+  &CEngineering&w    - People need things so you make them and sell them.
+  &CTechnician&w     - Ships need parts and repair. You can make ship modules, repair ships, sell blueprints.
+  &CSalvage&w        - Space battles leave salvage on the surface of nearby planets. Some could be lucrative.
+  &CBegging&w        - Some citizens take pity on the poor.
+  &CJoin a Faction&w - Factions pay salaries based on rank.
+  &CJoin a Clan&w    - Some clans give out rewards.
+
+  No matter what your play style is, you'll find ways to earn a living. Certain skills like &Ymarket analysis&w can
+  increase payouts when trading. Skills like &Ynegotiating&w can help increase profits for goods sold to
+  vendors and shops. Skills like &Yreverse-engineering&w can help with salvage. The choice is yours.
