@@ -144,22 +144,22 @@ func (d *GameDatabase) LoadAreas() {
 	flist, err := ioutil.ReadDir("data/areas")
 	ErrorCheck(err)
 	for _, area_file := range flist {
-		fpath := fmt.Sprintf("data/areas/%s", area_file.Name())
-		fp, err := ioutil.ReadFile(fpath)
-		ErrorCheck(err)
-		area := new(AreaData)
-		err = yaml.Unmarshal(fp, area)
-		ErrorCheck(err)
-		rooms := make(map[uint]RoomData)
-		for vnum, r := range area.Rooms {
-			r.Id = uint(vnum)
-			rooms[vnum] = r
-		}
-		area.Rooms = rooms
-		d.areas = append(d.areas, *area)
-
+		d.LoadArea(area_file.Name())
 	}
 	log.Printf("%d areas loaded.\n", len(flist))
+}
+
+func (d *GameDatabase) LoadArea(name string) {
+	fpath := fmt.Sprintf("data/areas/%s", name)
+	fp, err := ioutil.ReadFile(fpath)
+	ErrorCheck(err)
+	area := new(AreaData)
+	err = yaml.Unmarshal(fp, area)
+	ErrorCheck(err)
+	for vnum, r := range area.Rooms {
+		r.Id = uint(vnum)
+	}
+	d.areas = append(d.areas, *area)
 }
 
 func (d *GameDatabase) LoadItems() {
@@ -178,6 +178,20 @@ func (d *GameDatabase) LoadMudProgs() {
 func (d *GameDatabase) Save() {
 	d.Lock()
 	defer d.Unlock()
+	d.SaveAreas()
+}
+
+func (d *GameDatabase) SaveAreas() {
+	for _, area := range d.areas {
+		d.SaveArea(&area)
+	}
+}
+
+func (d *GameDatabase) SaveArea(area *AreaData) {
+	buf, err := yaml.Marshal(area)
+	ErrorCheck(err)
+	err = ioutil.WriteFile(fmt.Sprintf("data/areas/%s.yml", area.Name), buf, 0755)
+	ErrorCheck(err)
 }
 
 func (d *GameDatabase) ReadPlayerData(filename string) *PlayerProfile {
@@ -233,7 +247,6 @@ func (d *GameDatabase) GetRoom(roomId uint) *RoomData {
 	for _, a := range d.areas {
 		for vnum, r := range a.Rooms {
 			if uint(vnum) == roomId {
-				log.Printf("Found room %s (%d)", r.Name, r.Id)
 				return &r
 			}
 		}

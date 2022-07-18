@@ -12,7 +12,7 @@
   func: do_who
 - 
   name: say
-  keywords: [ "say"]
+  keywords: [ "say" ]
   level: 1
   func: do_say
 - 

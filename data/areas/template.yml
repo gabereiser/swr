@@ -1,0 +1,227 @@
+name: template
+author: Admin
+levels: [1, 10]
+reset: 360
+resetmsg: You hear the sound of sqeaking in the distance.
+rooms:
+    1:
+        name: The void
+        desc: All you see is black as you are in a void. Nothing exists here.
+        exits: {}
+    2:
+        name: The void
+        desc: All you see is black as you are in a void. Nothing exists here.
+        exits: {}
+    3:
+        name: The void
+        desc: All you see is black as you are in a void. Nothing exists here.
+        exits: {}
+    4:
+        name: The void
+        desc: All you see is black as you are in a void. Nothing exists here.
+        exits: {}
+    5:
+        name: The void
+        desc: All you see is black as you are in a void. Nothing exists here.
+        exits: {}
+    6:
+        name: The void
+        desc: All you see is black as you are in a void. Nothing exists here.
+        exits: {}
+    7:
+        name: The void
+        desc: All you see is black as you are in a void. Nothing exists here.
+        exits: {}
+    8:
+        name: The void
+        desc: All you see is black as you are in a void. Nothing exists here.
+        exits: {}
+    9:
+        name: The void
+        desc: All you see is black as you are in a void. Nothing exists here.
+        exits: {}
+    10:
+        name: The void
+        desc: All you see is black as you are in a void. Nothing exists here.
+        exits: {}
+mobs:
+    1:
+        room: 1
+        name: A generic mob
+        keywords: [man, male, mob]
+        desc: A generic mob stands here. A blank stare in it's eyes.
+        race: Human
+        gender: Male
+        level: 1
+        hp: [10, 10]
+        mp: [0, 0]
+        mv: [10, 10]
+        stats: [10, 10, 10, 10, 10, 10]
+        skills: {kick: 1, martial arts: 1, piloting: 1}
+        languages: {basic: 100, human: 100}
+        speaking: basic
+        equipment: {feet: {}, hands: {}, head: {}, legs: {}, torso: {}, waist: {}, weapon: {}}
+        state: normal
+        brain: generic
+    2:
+        room: 2
+        name: A generic mob
+        keywords: [man, male, mob]
+        desc: A generic mob stands here. A blank stare in it's eyes.
+        race: Wookiee
+        gender: Male
+        level: 1
+        hp: [10, 10]
+        mp: [0, 0]
+        mv: [10, 10]
+        stats: [10, 10, 10, 10, 10, 10]
+        skills: {kick: 1, martial arts: 1, piloting: 1}
+        languages: {basic: 100, wookiee: 100}
+        speaking: basic
+        equipment: {feet: {}, hands: {}, head: {}, legs: {}, torso: {}, waist: {}, weapon: {}}
+        state: normal
+        brain: generic
+    3:
+        room: 3
+        name: A generic mob
+        keywords: [man, male, mob]
+        desc: A generic mob stands here. A blank stare in it's eyes.
+        race: Twi'lek
+        gender: Male
+        level: 1
+        hp: [10, 10]
+        mp: [0, 0]
+        mv: [10, 10]
+        stats: [10, 10, 10, 10, 10, 10]
+        skills: {kick: 1, martial arts: 1, piloting: 1}
+        languages: {basic: 100, twi'lek: 100}
+        speaking: basic
+        equipment: {feet: {}, hands: {}, head: {}, legs: {}, torso: {}, waist: {}, weapon: {}}
+        state: normal
+        brain: generic
+    4:
+        room: 4
+        name: A generic mob
+        keywords: [man, male, mob]
+        desc: A generic mob stands here. A blank stare in it's eyes.
+        race: Rodian
+        gender: Male
+        level: 1
+        hp: [10, 10]
+        mp: [0, 0]
+        mv: [10, 10]
+        stats: [10, 10, 10, 10, 10, 10]
+        skills: {kick: 1, martial arts: 1, piloting: 1}
+        languages: {basic: 100, rodian: 100}
+        speaking: basic
+        equipment: {feet: {}, hands: {}, head: {}, legs: {}, torso: {}, waist: {}, weapon: {}}
+        state: normal
+        brain: generic
+    5:
+        room: 5
+        name: A generic mob
+        keywords: [man, male, mob]
+        desc: A generic mob stands here. A blank stare in it's eyes.
+        race: Hutt
+        gender: Male
+        level: 1
+        hp: [10, 10]
+        mp: [0, 0]
+        mv: [10, 10]
+        stats: [10, 10, 10, 10, 10, 10]
+        skills: {kick: 1, martial arts: 1, piloting: 1}
+        languages: {basic: 100, hutt: 100}
+        speaking: basic
+        equipment: {feet: {}, hands: {}, head: {}, legs: {}, torso: {}, waist: {}, weapon: {}}
+        state: normal
+        brain: generic
+    6:
+        room: 6
+        name: A generic mob
+        keywords: [man, male, mob]
+        desc: A generic mob stands here. A blank stare in it's eyes.
+        race: Mon Calamari
+        gender: Male
+        level: 1
+        hp: [10, 10]
+        mp: [0, 0]
+        mv: [10, 10]
+        stats: [10, 10, 10, 10, 10, 10]
+        skills: {kick: 1, martial arts: 1, piloting: 1}
+        languages: {basic: 100, mon calamari: 100}
+        speaking: basic
+        equipment: {feet: {}, hands: {}, head: {}, legs: {}, torso: {}, waist: {}, weapon: {}}
+        state: normal
+        brain: generic
+    7:
+        room: 7
+        name: A generic mob
+        keywords: [man, male, mob]
+        desc: A generic mob stands here. A blank stare in it's eyes.
+        race: Noghri
+        gender: Male
+        level: 1
+        hp: [10, 10]
+        mp: [0, 0]
+        mv: [10, 10]
+        stats: [10, 10, 10, 10, 10, 10]
+        skills: {kick: 1, martial arts: 1, piloting: 1}
+        languages: {basic: 100, noghri: 100}
+        speaking: basic
+        equipment: {feet: {}, hands: {}, head: {}, legs: {}, torso: {}, waist: {}, weapon: {}}
+        state: normal
+        brain: generic
+    8:
+        room: 8
+        name: A generic mob
+        keywords: [man, male, mob]
+        desc: A generic mob stands here. A blank stare in it's eyes.
+        race: Gamorrean
+        gender: Male
+        level: 1
+        hp: [10, 10]
+        mp: [0, 0]
+        mv: [10, 10]
+        stats: [10, 10, 10, 10, 10, 10]
+        skills: {kick: 1, martial arts: 1, piloting: 1}
+        languages: {basic: 100, gamorrean: 100}
+        speaking: basic
+        equipment: {feet: {}, hands: {}, head: {}, legs: {}, torso: {}, waist: {}, weapon: {}}
+        state: normal
+        brain: generic
+    9:
+        room: 9
+        name: A generic mob
+        keywords: [man, male, mob]
+        desc: A generic mob stands here. A blank stare in it's eyes.
+        race: Jawa
+        gender: Male
+        level: 1
+        hp: [10, 10]
+        mp: [0, 0]
+        mv: [10, 10]
+        stats: [10, 10, 10, 10, 10, 10]
+        skills: {kick: 1, martial arts: 1, piloting: 1}
+        languages: {basic: 100, jawa: 100}
+        speaking: basic
+        equipment: {feet: {}, hands: {}, head: {}, legs: {}, torso: {}, waist: {}, weapon: {}}
+        state: normal
+        brain: generic
+    10:
+        room: 10
+        name: A generic mob
+        keywords: [man, male, mob]
+        desc: A generic mob stands here. A blank stare in it's eyes.
+        race: Adarian
+        gender: Male
+        level: 1
+        hp: [10, 10]
+        mp: [0, 0]
+        mv: [10, 10]
+        stats: [10, 10, 10, 10, 10, 10]
+        skills: {kick: 1, martial arts: 1, piloting: 1}
+        languages: {adarian: 100, basic: 100}
+        speaking: basic
+        equipment: {feet: {}, hands: {}, head: {}, legs: {}, torso: {}, waist: {}, weapon: {}}
+        state: normal
+        brain: generic

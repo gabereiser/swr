@@ -23,6 +23,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"time"
 )
 
 const (
@@ -35,11 +36,18 @@ const (
 )
 
 var ServerRunning bool = false
+var ServerQueue chan MudClientCommand = make(chan MudClientCommand)
+
+type MudClientCommand struct {
+	Entity  Entity
+	Command string
+}
 
 type MudClient struct {
 	Id     string
 	Con    *net.TCPConn
 	Closed bool
+	Queue  chan string
 }
 
 func (c *MudClient) Send(str string) {
@@ -98,6 +106,7 @@ func ServerStart(addr string) {
 	defer l.Close()
 	log.Printf("Listening for connections on %s\n", addr)
 	ServerRunning = true
+	go processClients()
 	for {
 		if !ServerRunning {
 			break
@@ -115,7 +124,16 @@ func ServerStart(addr string) {
 	}
 	ServerRunning = false
 }
-
+func processClients() {
+	for {
+		if !ServerRunning {
+			break
+		}
+		cmd := <-ServerQueue
+		do_command(cmd.Entity, cmd.Command)
+		time.Sleep(500 * time.Millisecond)
+	}
+}
 func acceptClient(con *net.TCPConn) {
 
 	db := DB()
@@ -123,6 +141,8 @@ func acceptClient(con *net.TCPConn) {
 	client.Id = hex.EncodeToString([]byte(con.RemoteAddr().String()))
 	client.Con = con
 	client.Closed = false
+	client.Queue = make(chan string)
+
 	auth_do_welcome(client)
 	if !client.Closed {
 		db.AddClient(client)
@@ -137,11 +157,13 @@ func acceptClient(con *net.TCPConn) {
 				break
 			}
 			input := client.Read()
-			log.Printf("%s: %s\n", client.Id, input)
 			if len(input) > 0 {
-				do_command(entity, input)
+				ServerQueue <- MudClientCommand{
+					Entity:  entity,
+					Command: input,
+				}
 			}
-
+			time.Sleep(1 * time.Second)
 		}
 	}
 

@@ -107,19 +107,22 @@ func command_fuzzy_match(command string) []Command {
 func do_command(entity Entity, input string) {
 	args := strings.Split(input, " ")
 	commands := command_fuzzy_match(args[0])
+
+	if strings.HasPrefix(args[0], "'") {
+		args[0] = strings.TrimPrefix(args[0], "'")
+		do_say(entity, args...)
+		entity.Prompt()
+		return
+	}
+
 	if len(commands) > 0 {
-		if strings.HasPrefix(args[0], "'") {
-			args[0] = strings.TrimPrefix(args[0], "'")
-			do_say(entity, args...)
-			entity.Prompt()
-			return
-		}
 		a := args[1:]
 		command_map_to_func(commands[0].Func)(entity, a...)
 		entity.Prompt()
 	} else {
 		if entity.IsPlayer() {
 			entity.Send("\r\nHuh?\r\n")
+			entity.Prompt()
 		}
 	}
 }

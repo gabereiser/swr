@@ -22,3 +22,7 @@ type ItemData map[string]interface{}
 type Item interface {
 	GetWeight() int
 }
+
+func (i ItemData) GetWeight() int {
+	return i["weight"].(int)
+}

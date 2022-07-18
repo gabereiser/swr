@@ -70,8 +70,10 @@ Login:
 			player.Client = client
 			DB().SavePlayerData(player)
 			DB().AddEntity(player)
-			do_look(player)
-			player.Prompt()
+			ServerQueue <- MudClientCommand{
+				Entity:  player,
+				Command: "look",
+			}
 		}
 	} else {
 		client.Send(fmt.Sprintf("\r\n&RHrm, it seems there isn't a record of &Y%s&R in the galactic databank.\r\n\r\n&RAre you new? &G[&Wy&G/&Wn&G]&d ", username))
@@ -213,9 +215,10 @@ Gender:
 	DB().AddEntity(player)
 	client.Send(Color().ClearScreen())
 	client.Send("\r\nEntering game world...\r\n")
-	time.Sleep(1 * time.Second)
-	do_look(player)
-	player.Prompt()
+	ServerQueue <- MudClientCommand{
+		Entity:  player,
+		Command: "look",
+	}
 
 }
 

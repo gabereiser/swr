@@ -74,18 +74,6 @@ func language_get_rune(r rune, language *Language) string {
 	} else {
 		return string(r)
 	}
-
-	/*r_index := int(r) - 65
-	if r_index < 26 && r_index >= 0 {
-		return language.Alphabet[r_index : r_index+1]
-	} else {
-		r_index = int(r) - 97
-		if r_index < 26 && r_index >= 0 {
-			return strings.ToUpper(language.Alphabet[r_index : r_index+1])
-		} else {
-			return string(r)
-		}
-	}*/
 }
 func language_spoken(speaker *CharData, listener *CharData, words string) string {
 	spoken_language := language_get_by_name(speaker.Speaking)
