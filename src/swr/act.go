@@ -65,11 +65,11 @@ func do_look(entity Entity, args ...string) {
 
 		} else {
 			for _, e := range DB().GetEntitiesInRoom(entity.RoomId()) {
-				if e.IsPlayer() && e != entity {
-					player := e.(*PlayerProfile)
-					for _, keyword := range player.Char.Keywords {
+				if e != entity {
+					ch := e.GetCharData()
+					for _, keyword := range ch.Keywords {
 						if strings.HasPrefix(strings.ToLower(keyword), strings.ToLower(args[0])) {
-							entity.Send("You look at %s\r\n%s\r\n", player.Char.Title, player.Char.Desc)
+							entity.Send("You look at %s and see...\r\n%s\r\n", ch.Title, ch.Desc)
 							return
 						}
 					}

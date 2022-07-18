@@ -18,14 +18,14 @@
 package swr
 
 type AreaData struct {
-	Name     string               `yaml:"name"`
-	Author   string               `yaml:"author,omitempty"`
-	Levels   []uint16             `yaml:"levels,flow"`
-	Reset    uint                 `yaml:"reset"`
-	ResetMsg string               `yaml:"reset_msg`
-	Rooms    map[uint]RoomData    `yaml:"rooms"`
-	Mobs     map[uint]interface{} `yaml:"mobs,omitempty"`
-	Items    map[uint]interface{} `yaml:"items,omitempty"`
+	Name     string            `yaml:"name"`
+	Author   string            `yaml:"author,omitempty"`
+	Levels   []uint16          `yaml:"levels,flow"`
+	Reset    uint              `yaml:"reset"`
+	ResetMsg string            `yaml:"reset_msg`
+	Rooms    map[uint]RoomData `yaml:"rooms"`
+	Mobs     map[uint]CharData `yaml:"mobs,omitempty"`
+	Items    map[uint]ItemData `yaml:"items,omitempty"`
 }
 
 type RoomData struct {
@@ -35,7 +35,7 @@ type RoomData struct {
 	Exits     map[string]uint        `yaml:"exits,flow"`
 	ExitFlags map[string]interface{} `yaml:"exflags,flow,omitempty"`
 	Flags     []string               `yaml:"flags,flow,omitempty"`
-	RoomProgs []string               `yaml:"room_progs,flow,omitempty"`
+	RoomProgs map[string]string      `yaml:"room_progs,flow,omitempty"`
 }
 
 func room_get_exit_status(exitFlags map[string]interface{}) string {

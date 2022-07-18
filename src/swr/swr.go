@@ -20,7 +20,9 @@ package swr
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -95,4 +97,15 @@ func Main() {
 
 func GetVersion() string {
 	return version
+}
+
+func roll_dice(d20 string) uint {
+	p := strings.Split(strings.ToLower(d20), "d")
+	num_dice, _ := strconv.Atoi(p[0])
+	sides, _ := strconv.Atoi(p[1])
+	roll := uint(0)
+	for i := 0; i < num_dice; i++ {
+		roll += (rand.Intn(sides-1) + 1)
+	}
+	return roll
 }

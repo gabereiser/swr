@@ -34,6 +34,29 @@ var race_list = []string{
 	"Monster",
 }
 
+const (
+	ENTITY_STAT_STR = iota
+	ENTITY_STAT_INT
+	ENTITY_STAT_DEX
+	ENTITY_STAT_WIS
+	ENTITY_STAT_CON
+	ENTITY_STAT_CHA
+)
+
+const (
+	ENTITY_STATE_NORMAL      = "normal"
+	ENTITY_STATE_AGGRO       = "aggro"
+	ENTITY_STATE_SEDATED     = "sedated"
+	ENTITY_STATE_UNCONSCIOUS = "unconscious"
+	ENTITY_STATE_SLEEPING    = "sleeping"
+	ENTITY_STATE_SITTING     = "sitting"
+	ENTITY_STATE_PILOTING    = "piloting"
+	ENTITY_STATE_GUNNING     = "gunning"
+	ENTITY_STATE_EDITING     = "editing"
+	ENTITY_STATE_CRAFTING    = "crafting"
+	ENTITY_STATE_DEAD        = "dead"
+)
+
 type Entity interface {
 	RoomId() uint
 	Name() string
@@ -46,6 +69,8 @@ type Entity interface {
 	CurrentMv() uint16
 	MaxMv() uint16
 	IsFighting() bool
+	SetAttacker(entity *Entity)
+	GetCharData() *CharData
 }
 
 type CharData struct {
@@ -63,7 +88,7 @@ type CharData struct {
 	Hp        []uint16        `yaml:"hp,flow"`           // Hit Points [0] Current [1] Max : len = 2
 	Mp        []uint16        `yaml:"mp,flow"`           // Magic Points [0] Current [1] Max : len = 2
 	Mv        []uint16        `yaml:"mv,flow,omitempty"` // Move Points [0] Current [1] Max : len = 2
-	Stats     []uint16        `yaml:"stats,flow"`
+	Stats     []uint16        `yaml:"stats,flow"`        // str, int, dex, wis, con, cha
 	Skills    map[string]int  `yaml:"skills,flow,omitempty"`
 	Languages map[string]int  `yaml:"languages,flow,omitempty"`
 	Speaking  string          `yaml:"speaking,omitempty"`
@@ -128,6 +153,53 @@ func (c *CharData) IsFighting() bool {
 	return c.Attacker != nil
 }
 
+func (c *CharData) SetAttacker(entity *Entity) {
+	c.Attacker = entity
+}
+
+func (c *CharData) ArmorAC() uint {
+	str := uint(c.Stats[ENTITY_STAT_STR])
+	dex := uint(c.Stats[ENTITY_STAT_DEX])
+
+	ac_armor := uint(0)
+	for _, i := range c.Equipment {
+		item := i.(ItemData)
+		ac_armor += uint(item["ac"].(int))
+	}
+	return ac_armor + (dex / 10) + (str / 10)
+}
+
+func (c *CharData) DamageRoll() uint {
+	str := uint(c.Stats[ENTITY_STAT_STR])
+	dex := uint(c.Stats[ENTITY_STAT_DEX])
+
+	dmg := uint(0)
+	if i, ok := c.Equipment["weapon"]; ok {
+		item := i.(ItemData)
+		dmg := item["dmg"].(string)
+		roll_dice(dmg)
+	}
+	return dmg + (str / 10) + (dex / 10)
+}
+
+func (c *CharData) ApplyDamage(damage uint) {
+	c.Hp[0] -= uint16(damage)
+	if c.Hp[0] < 0 {
+		c.State = "unconcious"
+		if c.Hp[0] < (2 * c.Hp[1]) {
+			c.State = "dead"
+			c.Send("\r\n&RYou have died.&d\r\n")
+			return
+		}
+		c.Send("\r\n&YYou have been knocked unconscious...&d\r\n")
+		return
+	}
+}
+
+func (c *CharData) GetCharData() *CharData {
+	return c
+}
+
 type PlayerProfile struct {
 	Char       CharData  `yaml:"char,inline"`
 	Email      string    `yaml:"email,omitempty"`
@@ -185,6 +257,13 @@ func (p *PlayerProfile) Prompt() {
 }
 func (p *PlayerProfile) IsFighting() bool {
 	return p.Char.Attacker != nil
+}
+func (p *PlayerProfile) SetAttacker(entity *Entity) {
+	p.Char.Attacker = entity
+}
+
+func (p *PlayerProfile) GetCharData() *CharData {
+	return &p.Char
 }
 
 func player_prompt(player *PlayerProfile) string {

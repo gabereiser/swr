@@ -53,6 +53,7 @@ type GameDatabase struct {
 	clients  []*MudClient
 	entities []Entity
 	areas    []AreaData
+	rooms    []RoomData
 	helps    []HelpData
 }
 
@@ -63,6 +64,7 @@ func DB() *GameDatabase {
 		_db.clients = make([]*MudClient, 0, 64)
 		_db.entities = make([]Entity, 0)
 		_db.areas = make([]AreaData, 0)
+		_db.rooms = make([]RoomData, 0)
 	}
 	return _db
 }
@@ -158,6 +160,7 @@ func (d *GameDatabase) LoadArea(name string) {
 	ErrorCheck(err)
 	for vnum, r := range area.Rooms {
 		r.Id = uint(vnum)
+		d.rooms = append(d.rooms, r)
 	}
 	d.areas = append(d.areas, *area)
 }
