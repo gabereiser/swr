@@ -281,7 +281,11 @@ func player_prompt(player *PlayerProfile) string {
 
 func processEntities() {
 	db := DB()
-	for _, e := range db.entities {
+	db.Lock()
+	defer db.Unlock()
+
+	for i := range db.entities {
+		e := db.entities[i]
 		ch := e.GetCharData()
 		switch ch.State {
 		case ENTITY_STATE_NORMAL:
@@ -289,9 +293,10 @@ func processEntities() {
 				processHealing(e)
 			}
 		case ENTITY_STATE_SITTING:
-			if roll_dice("1d10") >= 10-get_skill_value(ch, "healing") {
+			if roll_dice("1d10") >= 8-get_skill_value(ch, "healing") {
 				processHealing(e)
 				processHealing(e)
+
 			}
 		case ENTITY_STATE_SLEEPING:
 			processHealing(e)
@@ -304,10 +309,24 @@ func processEntities() {
 			}
 			if roll_dice("1d10") == 10 {
 				e.Send("\r\n&cYou feel extremely relaxed.&d\r\n")
+				e.Prompt()
 			}
-		default:
-			continue
 		}
+		if roll_dice("1d10") == 10 {
+			if ch.Mp[0] < ch.Mp[1] {
+				ch.Mp[0]++
+				if ch.Mp[0] > ch.Mp[1] {
+					ch.Mp[0] = ch.Mp[1]
+				}
+			}
+			if ch.Mv[0] < ch.Mv[1] {
+				ch.Mv[0]++
+				if ch.Mv[0] > ch.Mv[1] {
+					ch.Mv[0] = ch.Mv[1]
+				}
+			}
+		}
+
 	}
 }
 func processHealing(entity Entity) {
@@ -316,12 +335,5 @@ func processHealing(entity Entity) {
 	if ch.Hp[0] > ch.Hp[1] {
 		ch.Hp[0] = ch.Hp[1]
 	}
-	ch.Mp[0]++
-	if ch.Mp[0] > ch.Mp[1] {
-		ch.Mp[0] = ch.Mp[1]
-	}
-	ch.Mv[0]++
-	if ch.Mv[0] > ch.Mv[1] {
-		ch.Mv[0] = ch.Mv[1]
-	}
+	entity.Prompt()
 }

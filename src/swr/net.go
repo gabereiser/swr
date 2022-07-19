@@ -143,7 +143,7 @@ func processServerPump() {
 		}
 		processCombat()
 		processEntities()
-
+		time.Sleep(1 * time.Second)
 	}
 }
 func acceptClient(con *net.TCPConn) {

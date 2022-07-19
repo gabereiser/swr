@@ -41,7 +41,6 @@ func Main() {
 	CommandsLoad()
 	LanguageLoad()
 	StartBackup()
-	fmt.Printf("Rooms: %+v\n", DB().rooms)
 	ServerStart(Config().Addr)
 
 	DB().Save()

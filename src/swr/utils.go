@@ -29,7 +29,7 @@ func roll_dice(d20 string) int {
 	sides, _ := strconv.Atoi(p[1])
 	roll := 0
 	for i := 0; i < num_dice; i++ {
-		roll += rand.Intn(sides-1) + 1
+		roll += rand.Intn(sides) + 1
 	}
 	return roll
 }

@@ -39,7 +39,6 @@ func do_look(entity Entity, args ...string) {
 	if entity.IsPlayer() {
 		if len(args) == 0 { // l or look with no args
 			roomId := entity.RoomId()
-			log.Printf("Entity RoomId %d", roomId)
 			room := DB().GetRoom(roomId)
 			if room != nil {
 				entity.Send(fmt.Sprintf("\r\n%s\r\n",
@@ -136,47 +135,6 @@ func do_tune_frequency(entity Entity, args ...string) {
 	}
 }
 
-func do_score(entity Entity, args ...string) {
-	if entity.IsPlayer() {
-		player := entity.(*PlayerProfile)
-		char := player.Char
-		player.Send("\r\n&c╒════════════════( &W%16s&c )══════╕&d\r\n", char.Name)
-		player.Send("&c│ Title: &G%-25s&c         │&d▒\r\n", char.Title)
-		player.Send("&c│  Race: &G%-25s&c         │&d▒\r\n", char.Race)
-		player.Send("&c│ Level: &G%-25d&c         │&d▒\r\n", char.Level)
-		player.Send("&c├─( Stats )────────────────────────────────┤&d▒\r\n")
-		player.Send("&c│ STR: &G%-2d&c               XP: &G%-14d&c │&d▒\r\n", char.Stats[0], char.XP)
-		player.Send("&c│ INT: &G%-2d&c            MONEY: &G%-14d&c │&d▒\r\n", char.Stats[1], char.Gold)
-		player.Send("&c│ DEX: &G%-2d&c             BANK: &G%-14d&c │&d▒\r\n", char.Stats[2], char.Bank)
-		player.Send("&c│ WIS: &G%-2d&c                                  │&d▒\r\n", char.Stats[3])
-		player.Send("&c│ CON: &G%-2d&c                                  │&d▒\r\n", char.Stats[4])
-		player.Send("&c│ CHA: &G%-2d&c                                  │&d▒\r\n", char.Stats[5])
-		player.Send("&c╞══════════════════════════════════════════╡&d▒\r\n")
-		player.Send("&c│ Weight: &G%3d kg&c                           │&d▒\r\n", char.CurrentWeight())
-		player.Send("&c│ Inventory: &G%3d&p(%3d)&c                      │&d▒\r\n", char.CurrentInventoryCount(), (int(char.Level)*3)+char.Stats[0])
-		player.Send("&c├─( Equipment )────────────────────────────┤▒&d\r\n")
-		player.Send("&c│       Head: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│      Torso: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│      Waist: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│       Legs: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│       Feet: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│      Hands: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│                                          │&d▒\r\n")
-		player.Send("&c│     &RWeapon: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│                                          │&d▒\r\n")
-		player.Send("&c├──( Skills )──────────────────────────────┤&d▒\r\n")
-		for s, v := range char.Skills {
-			player.Send("&c│ &w%-25s&c          &w%3d&c   │&d▒\r\n", s, v)
-		}
-		player.Send("&c├──( Languages )───────────────────────────┤&d▒\r\n")
-		for s, v := range char.Languages {
-			player.Send("&c│ &w%-25s&c          &w%3d&c   │&d▒\r\n", s, v)
-		}
-		player.Send("&c└──────────────────────────────────────────┘▒&d\r\n")
-		player.Send(" ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒\r\n")
-	}
-}
-
 func do_north(entity Entity, args ...string) {
 	do_direction(entity, "north")
 }
@@ -220,18 +178,25 @@ func do_direction(entity Entity, direction string) {
 			entity.Send("\r\n&RThat room doesn't exist!\r\n")
 			return
 		} else {
-			entity.GetCharData().Room = to_room.Id
-			for _, e := range room.GetEntities() {
-				if e != entity {
-					e.Send("\r\n%s has left going %s.\r\n", entity.GetCharData().Name, direction)
+			if entity.CurrentMv() > 0 {
+				entity.GetCharData().Mv[0]--
+				entity.GetCharData().Room = to_room.Id
+				for _, e := range room.GetEntities() {
+					if e != entity {
+						e.Send("\r\n%s has left going %s.\r\n", entity.GetCharData().Name, direction)
+					}
 				}
-			}
-			for _, e := range to_room.GetEntities() {
-				if e != entity {
-					e.Send("\r\n%s has arrived from the %s.\r\n", entity.GetCharData().Name, direction_reverse(direction))
+				for _, e := range to_room.GetEntities() {
+					if e != entity {
+						e.Send("\r\n%s has arrived from the %s.\r\n", entity.GetCharData().Name, direction_reverse(direction))
+					}
 				}
+				do_look(entity)
+				return
+			} else {
+				entity.Send("\r\n&YYou are too exhausted.&d\r\n")
+				return
 			}
-			do_look(entity)
 		}
 
 	}

@@ -87,12 +87,6 @@ func (d *GameDatabase) Unlock() {
 	d.m.Unlock()
 }
 
-func (d *GameDatabase) RemoveIndex(s []int, index int) []int {
-	ret := make([]int, 0)
-	ret = append(ret, s[:index]...)
-	return append(ret, s[index+1:]...)
-}
-
 func (d *GameDatabase) AddClient(client *MudClient) {
 	d.Lock()
 	defer d.Unlock()
