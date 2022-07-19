@@ -54,12 +54,12 @@ type GameDatabase struct {
 	clients         []*MudClient
 	entities        []Entity
 	areas           map[string]*AreaData // pointers to the [AreaData] of the game.
-	rooms           map[uint]RoomData    // pointers to the room structs in [AreaData]
+	rooms           map[uint]*RoomData   // pointers to the room structs in [AreaData]
 	mobs            map[uint]*CharData   // used as templates for spawning [entities]
 	ships           []Ship
 	ship_prototypes map[uint]*ShipData // used as templates for spawning [ships]
 	starsystems     []Starsystem       // Planets (star systems)
-	helps           []HelpData
+	helps           []*HelpData
 }
 
 func DB() *GameDatabase {
@@ -69,12 +69,12 @@ func DB() *GameDatabase {
 		_db.clients = make([]*MudClient, 0, 64)
 		_db.entities = make([]Entity, 0)
 		_db.areas = make(map[string]*AreaData)
-		_db.rooms = make(map[uint]RoomData)
+		_db.rooms = make(map[uint]*RoomData)
 		_db.mobs = make(map[uint]*CharData)
 		_db.ships = make([]Ship, 0)
 		_db.ship_prototypes = make(map[uint]*ShipData)
 		_db.starsystems = make([]Starsystem, 0)
-		_db.helps = make([]HelpData, 0)
+		_db.helps = make([]*HelpData, 0)
 	}
 	return _db
 }
@@ -116,6 +116,23 @@ func (d *GameDatabase) RemoveClient(client *MudClient) {
 	}
 }
 
+func (d *GameDatabase) RemoveEntity(entity Entity) {
+	d.Lock()
+	defer d.Unlock()
+	index := -1
+	for i, e := range d.entities {
+		if e.GetCharData().Name == entity.GetCharData().Name {
+			index = i
+		}
+	}
+	if index > -1 {
+		ret := make([]Entity, len(d.entities)-1)
+		ret = append(ret, d.entities[:index]...)
+		ret = append(ret, d.entities[index+1:]...)
+		d.entities = ret
+	}
+}
+
 // The Mother of all load functions
 func (d *GameDatabase) Load() {
 	d.Lock()
@@ -150,7 +167,7 @@ func (d *GameDatabase) LoadHelps() {
 		help := new(HelpData)
 		err = yaml.Unmarshal(fp, help)
 		ErrorCheck(err)
-		d.helps = append(d.helps, *help)
+		d.helps = append(d.helps, help)
 	}
 	log.Printf("%d help files loaded.\n", len(flist))
 }
@@ -175,9 +192,10 @@ func (d *GameDatabase) LoadArea(name string) {
 	area := new(AreaData)
 	err = yaml.Unmarshal(fp, area)
 	ErrorCheck(err)
-	for vnum, r := range area.Rooms {
-		r.Id = uint(vnum)
-		d.rooms[r.Id] = r
+	for i := range area.Rooms {
+		room := area.Rooms[i]
+		room.Area = area
+		d.rooms[room.Id] = &room
 		time.Sleep(1 * time.Millisecond)
 	}
 	d.areas[area.Name] = area
@@ -283,7 +301,7 @@ func (d *GameDatabase) GetRoom(roomId uint) *RoomData {
 	defer d.Unlock()
 	for _, r := range d.rooms {
 		if r.Id == roomId {
-			return &r
+			return r
 		}
 	}
 	return nil
@@ -301,8 +319,8 @@ func (d *GameDatabase) GetEntityForClient(client Client) Entity {
 	return nil
 }
 
-func (d *GameDatabase) GetHelp(help string) []HelpData {
-	ret := []HelpData{}
+func (d *GameDatabase) GetHelp(help string) []*HelpData {
+	ret := []*HelpData{}
 	for _, h := range d.helps {
 		for _, keyword := range h.Keywords {
 			if len(keyword) < len(help) {

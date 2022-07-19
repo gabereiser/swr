@@ -20,22 +20,51 @@ package swr
 import "fmt"
 
 type AreaData struct {
-	Name     string            `yaml:"name"`
-	Author   string            `yaml:"author,omitempty"`
-	Levels   []uint16          `yaml:"levels,flow"`
-	Reset    uint              `yaml:"reset"`
-	ResetMsg string            `yaml:"reset_msg`
-	Rooms    map[uint]RoomData `yaml:"rooms"`
+	Name     string     `yaml:"name"`
+	Author   string     `yaml:"author,omitempty"`
+	Levels   []uint16   `yaml:"levels,flow"`
+	Reset    uint       `yaml:"reset"`
+	ResetMsg string     `yaml:"reset_msg`
+	Rooms    []RoomData `yaml:"rooms"`
 }
 
 type RoomData struct {
-	Id        uint                   `yaml:"-"`
+	Id        uint                   `yaml:"id"`
 	Name      string                 `yaml:"name"`
 	Desc      string                 `yaml:"desc,flow"`
 	Exits     map[string]uint        `yaml:"exits,flow"`
 	ExitFlags map[string]interface{} `yaml:"exflags,flow,omitempty"`
 	Flags     []string               `yaml:"flags,flow,omitempty"`
 	RoomProgs map[string]string      `yaml:"room_progs,flow,omitempty"`
+	Area      *AreaData              `yaml:"-"`
+}
+
+func RoomFromMap(data map[string]interface{}) *RoomData {
+	room := new(RoomData)
+	room.Id = uint(data["id"].(int))
+	room.Name = data["name"].(string)
+	room.Desc = data["desc"].(string)
+	room.Exits = make(map[string]uint)
+	room.ExitFlags = make(map[string]interface{})
+	room.Flags = make([]string, 0)
+	room.RoomProgs = make(map[string]string)
+	if d, ok := data["exits"]; ok {
+		for dir, e := range d.(map[string]interface{}) {
+			room.Exits[dir] = uint(e.(int))
+		}
+	}
+	if d, ok := data["exflags"]; ok {
+		for dir, f := range d.(map[string]interface{}) {
+			room.ExitFlags[dir] = f
+		}
+	}
+	if d, ok := data["flags"]; ok {
+		for f := range d.([]interface{}) {
+			flag := data["flags"].([]interface{})[f]
+			room.Flags = append(room.Flags, flag.(string))
+		}
+	}
+	return room
 }
 
 func (r *RoomData) String() string {

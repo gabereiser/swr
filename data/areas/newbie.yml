@@ -6,7 +6,8 @@ levels: [1, 10]
 reset: 3600
 reset_msg: You hear a loud thud as the spaceship lurches slightly.
 rooms: 
-  100:
+  -
+    id: 100
     name: A jail cell
     desc: |
       You are standing in an imperial jail cell with no recollection
@@ -21,7 +22,8 @@ rooms:
         locked: True
         key: 100
     roomProgs: {}
-  101:
+  -
+    id: 101
     name: Outside a jail cell
     desc: |
       You are standing outside of a jail cell in an imperial jail.

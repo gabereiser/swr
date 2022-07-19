@@ -77,6 +77,7 @@ func (c *MudClient) Read() string {
 
 func (c *MudClient) Close() {
 	c.Closed = true
+	c.Con.CloseRead()
 }
 
 func (c *MudClient) Echo(enabled bool) {
@@ -165,6 +166,7 @@ func acceptClient(con *net.TCPConn) {
 				break
 			}
 			if client.Closed {
+				db.RemoveEntity(entity)
 				break
 			}
 			input := client.Read()
