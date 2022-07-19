@@ -1,6 +1,11 @@
 ---
 #Basic Commands
 -
+  name: qui
+  keywords: [ "qui" ]
+  level: 1
+  func: do_qui
+-
   name: quit
   keywords: [ "quit" ]
   level: 1
@@ -35,7 +40,31 @@
   keywords: [ "help" ]
   level: 1
   func: do_help
-
+- 
+  name: kill
+  keywords: [ "kill" ]
+  level: 1
+  func: do_kill
+- 
+  name: fight
+  keywords: [ "fight" ]
+  level: 1
+  func: do_fight
+- 
+  name: tune
+  keywords: [ "tune" ]
+  level: 1
+  func: do_tune_frequency
+- 
+  name: say_comlink
+  keywords: [ "\"", "comsay" ]
+  level: 1
+  func: do_say_comlink
+- 
+  name: starsystems
+  keywords: [ "starsystems" ]
+  level: 1
+  func: do_starsystems
 # Wiz Commands
 -
   name: acreate

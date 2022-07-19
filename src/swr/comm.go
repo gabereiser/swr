@@ -26,13 +26,19 @@ import (
 )
 
 var CommandFuncs = map[string]func(Entity, ...string){
-	"do_quit":  do_quit,
-	"do_say":   do_say,
-	"do_look":  do_look,
-	"do_who":   do_who,
-	"do_save":  do_save,
-	"do_score": do_score,
-	"do_help":  do_help,
+	"do_quit":           do_quit,
+	"do_qui":            do_qui,
+	"do_say":            do_say,
+	"do_look":           do_look,
+	"do_who":            do_who,
+	"do_save":           do_save,
+	"do_score":          do_score,
+	"do_help":           do_help,
+	"do_say_comlink":    do_say_comlink,
+	"do_tune_frequency": do_tune_frequency,
+	"do_fight":          do_fight,
+	"do_kill":           do_kill,
+	"do_starsystems":    do_starsystems,
 }
 var GMCommandFuncs = map[string]func(Entity, ...string){
 	"do_area_create": do_area_create,
@@ -106,7 +112,6 @@ func command_fuzzy_match(command string) []Command {
 }
 func do_command(entity Entity, input string) {
 	args := strings.Split(input, " ")
-	commands := command_fuzzy_match(args[0])
 
 	if strings.HasPrefix(args[0], "'") {
 		args[0] = strings.TrimPrefix(args[0], "'")
@@ -114,7 +119,14 @@ func do_command(entity Entity, input string) {
 		entity.Prompt()
 		return
 	}
+	if strings.HasPrefix(args[0], "\"") {
+		args[0] = strings.TrimPrefix(args[0], "\"")
+		do_say_comlink(entity, args...)
+		entity.Prompt()
+		return
+	}
 
+	commands := command_fuzzy_match(args[0])
 	if len(commands) > 0 {
 		a := args[1:]
 		command_map_to_func(commands[0].Func)(entity, a...)

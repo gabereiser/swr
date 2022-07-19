@@ -17,6 +17,8 @@
  */
 package swr
 
+import "fmt"
+
 type AreaData struct {
 	Name     string            `yaml:"name"`
 	Author   string            `yaml:"author,omitempty"`
@@ -24,8 +26,6 @@ type AreaData struct {
 	Reset    uint              `yaml:"reset"`
 	ResetMsg string            `yaml:"reset_msg`
 	Rooms    map[uint]RoomData `yaml:"rooms"`
-	Mobs     map[uint]CharData `yaml:"mobs,omitempty"`
-	Items    map[uint]ItemData `yaml:"items,omitempty"`
 }
 
 type RoomData struct {
@@ -36,6 +36,13 @@ type RoomData struct {
 	ExitFlags map[string]interface{} `yaml:"exflags,flow,omitempty"`
 	Flags     []string               `yaml:"flags,flow,omitempty"`
 	RoomProgs map[string]string      `yaml:"room_progs,flow,omitempty"`
+}
+
+func (r *RoomData) String() string {
+	return fmt.Sprintf("ROOM:[%d-%s]", r.Id, r.Name)
+}
+func (r *RoomData) GetEntities() []Entity {
+	return DB().GetEntitiesInRoom(r.Id)
 }
 
 func room_get_exit_status(exitFlags map[string]interface{}) string {

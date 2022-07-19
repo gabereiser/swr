@@ -389,7 +389,7 @@ func MakeTitle(title string, style int, alignment int) string {
 		cap_left = "["
 		cap_right = "]"
 	default:
-		t = strings.Repeat("-=", 38) + "-"
+		t = strings.Repeat("──", 38) + "─"
 		cap_left = "("
 		cap_right = ")"
 	}
@@ -398,11 +398,11 @@ func MakeTitle(title string, style int, alignment int) string {
 
 	switch alignment {
 	case ANSI_TITLE_ALIGNMENT_CENTER:
-		offset = (len(t) / 2) - (title_length / 2)
+		offset = (len(t) / 2) - ((title_length / 2) + 2)
 	case ANSI_TITLE_ALIGNMENT_RIGHT:
-		offset = (len(t) - (title_length + 1))
+		offset = (len(t) - (title_length + 2))
 	default:
-		offset = 1
+		offset = 2
 	}
 	text_color := "&W"
 	title_color := "&g"
@@ -418,7 +418,7 @@ func MakeTitle(title string, style int, alignment int) string {
 	if ANSI_TITLE_STYLE_SENATE == style {
 		title_color = "&C"
 	}
-	ret := fmt.Sprintf("%s%s%s %s%s %s%s%s&d\r\n", title_color, t[0:offset], cap_left, text_color, title, title_color, cap_right, t[(offset+title_length):])
+	ret := fmt.Sprintf("%s%s%s %s%s %s%s%s&d\r\n", title_color, t[:offset], cap_left, text_color, title, title_color, cap_right, t[(offset+title_length):])
 
 	return Color().Colorize(ret)
 }

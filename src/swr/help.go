@@ -18,6 +18,7 @@
 package swr
 
 import (
+	"fmt"
 	"sort"
 	"strings"
 )
@@ -42,9 +43,9 @@ func do_help(entity Entity, args ...string) {
 		}
 		sort.Strings(keys)
 		buf := ""
-		for i := 0; i < len(keys); i++ {
-			buf += "&W" + keys[i] + "&d "
-			if i%4 == 0 && i > 1 {
+		for i := 1; i <= len(keys); i++ {
+			buf += fmt.Sprintf("&W%-14s&d ", keys[i-1])
+			if i%5 == 0 {
 				buf += "\r\n"
 			}
 		}

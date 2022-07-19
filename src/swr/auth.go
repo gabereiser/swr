@@ -63,7 +63,7 @@ Login:
 			goto Login
 		}
 		if encrypt_string(password) == player.Password {
-			client.Send(fmt.Sprintf("\r\n&GAccess granted! Welcome %s.&d\r\n", player.Name()))
+			client.Send(fmt.Sprintf("\r\n&GAccess granted! Welcome %s.&d\r\n", player.Char.Name))
 			time.Sleep(1 * time.Second)
 			client.Send(Color().ClearScreen())
 			player.LastSeen = time.Now()
@@ -81,7 +81,7 @@ Login:
 		if strings.HasPrefix(are_new, "y") {
 			player := new(PlayerProfile)
 			player.Char = CharData{}
-			player.Char.CharName = username
+			player.Char.Name = username
 			auth_do_new_player(client, player)
 		} else {
 			goto Login
@@ -175,19 +175,19 @@ Gender:
 	name_t := strings.ToUpper(name[0:1])
 	name = name_t + name[1:]
 	player.Char = CharData{}
-	player.Char.CharName = name
+	player.Char.Name = name
 	player.Char.Room = 100
 	player.Char.Race = race
 	player.Char.Gender = gender
-	player.Char.Title = fmt.Sprintf("%s the %s", player.Name(), player.Char.Race)
+	player.Char.Title = fmt.Sprintf("%s the %s", player.Char.Name, player.Char.Race)
 	player.Char.Level = 1
 	player.Char.XP = 0
 	player.Char.Gold = 0
-	player.Char.Stats = []uint16{10, 10, 10, 10, 10, 10}
+	player.Char.Stats = []int{10, 10, 10, 10, 10, 10}
 	player.Char.Skills = map[string]int{"kick": 1, "beg": 1, "search": 1}
-	player.Char.Hp = []uint16{10, 10}
-	player.Char.Mp = []uint16{0, 0}
-	player.Char.Mv = []uint16{10, 10}
+	player.Char.Hp = []int{10, 10}
+	player.Char.Mp = []int{0, 0}
+	player.Char.Mv = []int{10, 10}
 	player.Char.Equipment = make(map[string]Item)
 	player.Char.Inventory = make([]Item, 0)
 	player.Char.Keywords = []string{name, race}
@@ -202,6 +202,7 @@ Gender:
 	player.Password = encrypt_string(password)
 	player.Email = email
 	player.Banned = false
+	player.Frequency = tune_random_frequency()
 
 	client.Sendf("\r\n\r\n&GYou are about to create the character &W%s the %s&G.\r\nAre you ok with this? [&Wy&G/&Wn&G]&d ", name, race)
 	k := client.Read()

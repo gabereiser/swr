@@ -21,6 +21,6 @@ import "log"
 
 func ErrorCheck(err error) {
 	if err != nil {
-		log.Printf("Error %v", err)
+		log.Printf("Error %+v", err)
 	}
 }

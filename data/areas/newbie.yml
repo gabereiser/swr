@@ -28,36 +28,3 @@ rooms:
       Alarms are going off around you. The room keeps flashing 
       }Rred&d and }Wwhite&d. You feel a slight thud
       coming from outside the ship.
-
-mobs:
-  100:
-    name: An imperial guard
-    desc: An imperial guard stands here. He doesn't look very attentive.
-    keywords: [ guard, imperial, guy ]
-    gender: Male
-    race: Human
-    stats: [10, 10, 10, 10, 10, 10]
-    skills:
-      kick: 1
-    equipment:
-      - head: 1
-      - torso: 2
-      - legs: 3
-      - feet: 4
-      - hands: 101
-    inventory: []
-    gold: 5
-    level: 1
-    xp: 50
-    hp: [10, 10]
-    mp: [0,0]
-    mv: [10, 10]
-    languages:
-      basic: 100
-    speaking: basic
-items:
-  100:
-    name: A keycard
-    desc: A small blue imperial keycard with the name of an officer D.Straus
-    type: key
-    weight: 0.1kg

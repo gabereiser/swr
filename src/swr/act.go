@@ -20,6 +20,7 @@ package swr
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 )
 
@@ -27,12 +28,6 @@ func do_nothing(entity Entity, args ...string) {
 	entity.Send("\r\n&rInput not recognized.&d\r\n")
 }
 
-func do_quit(entity Entity, args ...string) {
-	if entity.IsPlayer() {
-		player := entity.(*PlayerProfile)
-		player.Client.Close()
-	}
-}
 func do_save(entity Entity, args ...string) {
 	if entity.IsPlayer() {
 		player := entity.(*PlayerProfile)
@@ -47,7 +42,11 @@ func do_look(entity Entity, args ...string) {
 			log.Printf("Entity RoomId %d", roomId)
 			room := DB().GetRoom(roomId)
 			if room != nil {
-				entity.Send(fmt.Sprintf("\r\n-=-=-=-=-=-=-=-=-=( %s %d )=-=-=-=-=-=-=-=-=-\r\n", room.Name, room.Id))
+				entity.Send(fmt.Sprintf("\r\n%s\r\n",
+					MakeTitle(fmt.Sprintf("%s %d",
+						room.Name, room.Id),
+						ANSI_TITLE_STYLE_NORMAL,
+						ANSI_TITLE_ALIGNMENT_CENTER)))
 				entity.Send(room.Desc)
 				entity.Send("\r\nExits:\r\n")
 				for dir, toRoom := range room.Exits {
@@ -60,7 +59,7 @@ func do_look(entity Entity, args ...string) {
 					}
 				}
 			} else {
-				log.Fatalf("Entity %s is in room %d, only it doesn't exist and crashed the server.", entity.Name(), entity.RoomId())
+				log.Fatalf("Entity %s is in room %d, only it doesn't exist and crashed the server.", entity.GetCharData().Name, entity.RoomId())
 			}
 
 		} else {
@@ -82,12 +81,7 @@ func do_look(entity Entity, args ...string) {
 
 func do_say(entity Entity, args ...string) {
 	words := strings.Join(args, " ")
-	var speaker *CharData
-	if entity.IsPlayer() {
-		speaker = &(entity.(*PlayerProfile).Char)
-	} else {
-		speaker = entity.(*CharData)
-	}
+	speaker := entity.GetCharData()
 	if entity.IsPlayer() {
 		entity.Send(fmt.Sprintf("You say \"%s\"\n", words))
 	}
@@ -96,18 +90,57 @@ func do_say(entity Entity, args ...string) {
 		if ex != entity {
 			if ex.IsPlayer() {
 				listener := &(ex.(*PlayerProfile).Char)
-				ex.Send(fmt.Sprintf("%s says \"%s\"\n", speaker.Name(), language_spoken(speaker, listener, words)))
+				ex.Send(fmt.Sprintf("%s says \"%s\"\n", speaker.Name, language_spoken(speaker, listener, words)))
 			} else {
-				ex.Send(fmt.Sprintf("%s says \"%s\"\n", speaker.Name(), words))
+				ex.Send(fmt.Sprintf("%s says \"%s\"\n", speaker.Name, words))
 			}
 		}
+	}
+}
+func do_say_comlink(entity Entity, args ...string) {
+	words := strings.Join(args, " ")
+	speaker := entity.GetCharData()
+	if entity.IsPlayer() {
+		entity.Send(fmt.Sprintf("You're comlink clicks and buzzes after you say &W\"%s\"&d\r\n", words))
+	}
+	db := DB()
+	for _, ex := range db.entities {
+		if ex != entity {
+			if ex.IsPlayer() {
+				listener := ex.GetCharData()
+				ex.Send(fmt.Sprintf("&CYou're comlink crackles to life with a voice that says...&d\r\n\"&W%s&Y:&d %s\"\r\n", speaker.Name, language_spoken(speaker, listener, words)))
+			}
+		}
+	}
+}
+
+func do_tune_frequency(entity Entity, args ...string) {
+	if entity.IsPlayer() {
+		player := entity.(*PlayerProfile)
+		if len(args) > 0 {
+			freq, err := strconv.ParseFloat(args[0], 32)
+			if err != nil {
+				entity.Send("\r\n&RError parsing frequency!&d\r\n")
+				return
+			}
+			if freq < 100.000 || freq > 500.000 {
+				entity.Send("\r\n&RFrequency out-of-band of your comlink!&d\r\n")
+				return
+			}
+			freq_str := fmt.Sprintf("%3.3f", freq)
+			player.Frequency = freq_str
+		} else {
+			player.Frequency = tune_random_frequency()
+		}
+		entity.Send("\r\n&YYou're comlink frequency has been set to &W%s&Y.&d\r\n", player.Frequency)
 	}
 }
 
 func do_who(entity Entity, args ...string) {
 	db := DB()
 	total := 0
-	entity.Send("\r\n&G-=-=-=-=-=-=-=-=-=-=-=-=-=-=( &WWho&G )=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-&d\r\n")
+	entity.Send("\r\n")
+	entity.Send(MakeTitle("Who", ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_CENTER))
 	for _, e := range db.entities {
 		if e.IsPlayer() {
 			player := e.(*PlayerProfile)
@@ -115,14 +148,17 @@ func do_who(entity Entity, args ...string) {
 			total++
 		}
 	}
-	entity.Send(fmt.Sprintf("\r\n&G-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=( &W%3d&Y Online&G )=-=-=&d\r\n", total))
+	entity.Send("\r\n")
+	entity.Send(MakeTitle(fmt.Sprintf("%d Online", total), ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_RIGHT))
+	entity.Send("\r\n")
+	entity.Send(MakeTitle(fmt.Sprintf("%d Online", total), ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_LEFT))
 }
 
 func do_score(entity Entity, args ...string) {
 	if entity.IsPlayer() {
 		player := entity.(*PlayerProfile)
 		char := player.Char
-		player.Send("\r\n&c╒════════════════( &W%16s&c )══════╕&d\r\n", char.CharName)
+		player.Send("\r\n&c╒════════════════( &W%16s&c )══════╕&d\r\n", char.Name)
 		player.Send("&c│ Title: &G%-25s&c         │&d▒\r\n", char.Title)
 		player.Send("&c│  Race: &G%-25s&c         │&d▒\r\n", char.Race)
 		player.Send("&c│ Level: &G%-25d&c         │&d▒\r\n", char.Level)
@@ -135,7 +171,7 @@ func do_score(entity Entity, args ...string) {
 		player.Send("&c│ CHA: &G%-2d&c                                  │&d▒\r\n", char.Stats[5])
 		player.Send("&c╞══════════════════════════════════════════╡&d▒\r\n")
 		player.Send("&c│ Weight: &G%3d kg&c                           │&d▒\r\n", char.CurrentWeight())
-		player.Send("&c│ Inventory: &G%3d&p(%3d)&c                      │&d▒\r\n", char.CurrentInventoryCount(), (char.Level*3)+char.Stats[0])
+		player.Send("&c│ Inventory: &G%3d&p(%3d)&c                      │&d▒\r\n", char.CurrentInventoryCount(), (int(char.Level)*3)+char.Stats[0])
 		player.Send("&c├─( Equipment )────────────────────────────┤▒&d\r\n")
 		player.Send("&c│       Head: &d%-20s&c         │&d▒\r\n", "None")
 		player.Send("&c│      Torso: &d%-20s&c         │&d▒\r\n", "None")

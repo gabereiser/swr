@@ -25,6 +25,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -49,12 +50,16 @@ type HelpData struct {
 }
 
 type GameDatabase struct {
-	m        *sync.Mutex
-	clients  []*MudClient
-	entities []Entity
-	areas    []AreaData
-	rooms    []RoomData
-	helps    []HelpData
+	m               *sync.Mutex
+	clients         []*MudClient
+	entities        []Entity
+	areas           map[string]*AreaData // pointers to the [AreaData] of the game.
+	rooms           map[uint]RoomData    // pointers to the room structs in [AreaData]
+	mobs            map[uint]*CharData   // used as templates for spawning [entities]
+	ships           []Ship
+	ship_prototypes map[uint]*ShipData // used as templates for spawning [ships]
+	starsystems     []Starsystem       // Planets (star systems)
+	helps           []HelpData
 }
 
 func DB() *GameDatabase {
@@ -63,8 +68,13 @@ func DB() *GameDatabase {
 		_db.m = &sync.Mutex{}
 		_db.clients = make([]*MudClient, 0, 64)
 		_db.entities = make([]Entity, 0)
-		_db.areas = make([]AreaData, 0)
-		_db.rooms = make([]RoomData, 0)
+		_db.areas = make(map[string]*AreaData)
+		_db.rooms = make(map[uint]RoomData)
+		_db.mobs = make(map[uint]*CharData)
+		_db.ships = make([]Ship, 0)
+		_db.ship_prototypes = make(map[uint]*ShipData)
+		_db.starsystems = make([]Starsystem, 0)
+		_db.helps = make([]HelpData, 0)
 	}
 	return _db
 }
@@ -120,6 +130,9 @@ func (d *GameDatabase) Load() {
 	// Load Items
 	d.LoadItems()
 
+	// Load Planets / Star Systems
+	d.LoadPlanets()
+
 	// Load Mobs
 	d.LoadMobs()
 
@@ -145,10 +158,14 @@ func (d *GameDatabase) LoadHelps() {
 func (d *GameDatabase) LoadAreas() {
 	flist, err := ioutil.ReadDir("data/areas")
 	ErrorCheck(err)
+	count := 0
 	for _, area_file := range flist {
-		d.LoadArea(area_file.Name())
+		if strings.HasSuffix(area_file.Name(), "yml") {
+			d.LoadArea(area_file.Name())
+			count++
+		}
 	}
-	log.Printf("%d areas loaded.\n", len(flist))
+	log.Printf("%d areas loaded.\n", count)
 }
 
 func (d *GameDatabase) LoadArea(name string) {
@@ -160,9 +177,24 @@ func (d *GameDatabase) LoadArea(name string) {
 	ErrorCheck(err)
 	for vnum, r := range area.Rooms {
 		r.Id = uint(vnum)
-		d.rooms = append(d.rooms, r)
+		d.rooms[r.Id] = r
+		time.Sleep(1 * time.Millisecond)
 	}
-	d.areas = append(d.areas, *area)
+	d.areas[area.Name] = area
+}
+
+func (d *GameDatabase) LoadPlanets() {
+	flist, err := ioutil.ReadDir("data/planets")
+	ErrorCheck(err)
+	for _, f := range flist {
+		fpath := fmt.Sprintf("data/planets/%s", f.Name())
+		fp, err := ioutil.ReadFile(fpath)
+		ErrorCheck(err)
+		p := new(StarSystemData)
+		err = yaml.Unmarshal(fp, p)
+		ErrorCheck(err)
+		d.starsystems = append(d.starsystems, p)
+	}
 }
 
 func (d *GameDatabase) LoadItems() {
@@ -186,7 +218,7 @@ func (d *GameDatabase) Save() {
 
 func (d *GameDatabase) SaveAreas() {
 	for _, area := range d.areas {
-		d.SaveArea(&area)
+		d.SaveArea(area)
 	}
 }
 
@@ -206,7 +238,7 @@ func (d *GameDatabase) ReadPlayerData(filename string) *PlayerProfile {
 }
 
 func (d *GameDatabase) SavePlayerData(player *PlayerProfile) {
-	name := strings.ToLower(player.Name())
+	name := strings.ToLower(player.Char.Name)
 	filename := fmt.Sprintf("data/accounts/%s/%s.yml", name[0:1], name)
 	buf, err := yaml.Marshal(player)
 	ErrorCheck(err)
@@ -247,16 +279,14 @@ func (d *GameDatabase) GetEntitiesInRoom(roomId uint) []Entity {
 }
 
 func (d *GameDatabase) GetRoom(roomId uint) *RoomData {
-	for _, a := range d.areas {
-		for vnum, r := range a.Rooms {
-			if uint(vnum) == roomId {
-				return &r
-			}
+	d.Lock()
+	defer d.Unlock()
+	for _, r := range d.rooms {
+		if r.Id == roomId {
+			return &r
 		}
 	}
-
-	panic(fmt.Sprintf("RoomId %d not found!", roomId))
-
+	return nil
 }
 
 func (d *GameDatabase) GetEntityForClient(client Client) Entity {

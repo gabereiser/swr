@@ -17,4 +17,13 @@
  */
 package swr
 
-var version string = "0.0.1-aced185"
+func do_quit(entity Entity, args ...string) {
+	if entity.IsPlayer() {
+		player := entity.(*PlayerProfile)
+		player.Client.Close()
+	}
+}
+
+func do_qui(entity Entity, args ...string) {
+	entity.Send("\r\n}RYou'll have to be more specific when quitting!&d\r\n&RType &Wquit&R to quit!&d\r\n")
+}

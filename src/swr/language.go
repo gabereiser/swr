@@ -135,6 +135,3 @@ func language_decay() {
 		}
 	}
 }
-func Capitalize(str string) string {
-	return fmt.Sprintf("%s%s", strings.ToUpper(str[0:1]), str[1:])
-}

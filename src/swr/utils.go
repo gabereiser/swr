@@ -18,35 +18,45 @@
 package swr
 
 import (
-	"fmt"
-	"log"
-	"os"
+	"math/rand"
+	"strconv"
+	"strings"
 )
 
-func Init() {
-	// Ensure that the player directories exists
-	for _, p := range "abcdefghijklmnopqrstuvwxyz" {
-		_ = os.MkdirAll(fmt.Sprintf("data/accounts/%s", string(p)), 0755)
+func roll_dice(d20 string) int {
+	p := strings.Split(strings.ToLower(d20), "d")
+	num_dice, _ := strconv.Atoi(p[0])
+	sides, _ := strconv.Atoi(p[1])
+	roll := 0
+	for i := 0; i < num_dice; i++ {
+		roll += rand.Intn(sides-1) + 1
 	}
-	_ = os.MkdirAll("backup", 0755)
-	// Start the scheduler
-	Scheduler()
+	return roll
 }
 
-func Main() {
-
-	log.Printf("Starting version %s\n", version)
-
-	DB().Load()
-	CommandsLoad()
-	LanguageLoad()
-	StartBackup()
-
-	ServerStart(Config().Addr)
-
-	DB().Save()
+func tune_random_frequency() string {
+	buf := ""
+	buf += strconv.Itoa(rand.Intn(2) + 1) // 1,2,3
+	buf += strconv.Itoa(rand.Intn(9))     // 0-9
+	buf += strconv.Itoa(rand.Intn(9))     // 0-9
+	buf += "."
+	buf += strconv.Itoa(rand.Intn(9))
+	switch rand.Intn(3) {
+	case 0:
+		buf += "00"
+	case 1:
+		buf += "25"
+	case 2:
+		buf += "50"
+	case 3:
+		buf += "75"
+	}
+	return buf
 }
 
-func GetVersion() string {
-	return version
+func get_skill_value(ch *CharData, skill string) int {
+	if v, ok := ch.Skills[strings.ToLower(skill)]; ok {
+		return v
+	}
+	return 0
 }

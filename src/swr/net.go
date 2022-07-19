@@ -107,6 +107,7 @@ func ServerStart(addr string) {
 	log.Printf("Listening for connections on %s\n", addr)
 	ServerRunning = true
 	go processClients()
+	go processServerPump()
 	for {
 		if !ServerRunning {
 			break
@@ -132,6 +133,16 @@ func processClients() {
 		cmd := <-ServerQueue
 		do_command(cmd.Entity, cmd.Command)
 		time.Sleep(500 * time.Millisecond)
+	}
+}
+func processServerPump() {
+	for {
+		if !ServerRunning {
+			break
+		}
+		processCombat()
+		processEntities()
+
 	}
 }
 func acceptClient(con *net.TCPConn) {

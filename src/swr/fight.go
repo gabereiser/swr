@@ -22,6 +22,10 @@ import (
 	"strings"
 )
 
+func do_kill(entity Entity, args ...string) {
+	do_fight(entity, args...)
+}
+
 func do_fight(entity Entity, args ...string) {
 	if len(args) < 1 {
 		entity.Send("\r\n&RFight who?&d\r\n")
@@ -32,22 +36,59 @@ func do_fight(entity Entity, args ...string) {
 		entity.Send("\r\n&RYou are already fighting!&d\r\n")
 		return
 	} else {
-		pch := entity.GetCharData()
+		state := entity.GetCharData().State
+		if state == ENTITY_STATE_CRAFTING {
+			entity.Send("\r\n&RYou can't fight while working!&d\r\n")
+			return
+		}
+		if state == ENTITY_STATE_DEAD {
+			entity.Send("\r\n&RYou are dead!&d\r\n")
+			return
+		}
+		if state == ENTITY_STATE_GUNNING {
+			entity.Send("\r\n&RYou can't gun and fight at the same time!&d\r\n")
+			return
+		}
+		if state == ENTITY_STATE_PILOTING {
+			entity.Send("\r\n&RYou can't fly and fight at the same time!&d\r\n")
+			return
+		}
+		if state == ENTITY_STATE_SEDATED {
+			entity.Send("\r\nYou feel too relaxed!\r\n")
+			return
+		}
+		if state == ENTITY_STATE_SLEEPING {
+			entity.Send("\r\nYou are asleep!\r\n")
+			return
+		}
+		if state == ENTITY_STATE_UNCONSCIOUS {
+			entity.Send("\r\n&RYou are unconscious!&d\r\n")
+			return
+		}
+		found := false
 		for _, e := range db.GetEntitiesInRoom(entity.RoomId()) {
+			if e == entity {
+				continue
+			}
 			ch := e.GetCharData()
 			for _, k := range ch.Keywords {
 				if strings.HasPrefix(k, args[0]) {
-					e.SetAttacker(&entity)
-					entity.SetAttacker(&e)
-					entity.Send("\r\n&RYou begin fighting &w%s&R!!&d\r\n", e.Name())
+					e.SetAttacker(entity)
+					entity.SetAttacker(e)
+					entity.Send("\r\n&RYou begin fighting &w%s&R!!&d\r\n", ch.Name)
+					found = true
 					do_combat(entity, e)
 				}
 			}
 		}
+		if !found {
+			entity.Send("\r\n&dThey aren't here.\r\n")
+		}
 	}
 }
 
-func process_combat() {
+func processCombat() {
+	db := DB()
 	db.Lock()
 	defer db.Unlock()
 	for _, e := range db.entities {
@@ -59,6 +100,7 @@ func process_combat() {
 }
 
 func do_combat(attacker Entity, defender Entity) {
+
 	ach := attacker.GetCharData()
 	dch := defender.GetCharData()
 
@@ -69,8 +111,8 @@ func do_combat(attacker Entity, defender Entity) {
 		dch.ApplyDamage(damage)
 
 	}
-	attacker.Send(get_damage_string(damage, "You", dch.CharName, "an object."))
-	defender.Send(get_damage_string(damage, dch.CharName, "you", "an object."))
+	attacker.Send(get_damage_string(damage, "You", dch.Name, "an object."))
+	defender.Send(get_damage_string(damage, dch.Name, "you", "an object."))
 }
 
 func get_damage_string(damage uint, attacker string, defender string, weapon string) string {

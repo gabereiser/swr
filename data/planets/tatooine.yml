@@ -1,0 +1,26 @@
+---
+name: Tatooine
+sector: Outer Rim
+grid: R-16
+position: [4500, 6000]
+stars:
+  1:
+    name: Tatoo I
+    type: Yellow Giant
+    radius: 150
+    position: [-50.0, 50.0]
+  2:
+    name: Tatoo II
+    type: Yellow Giant
+    radius: 110
+    position: [80.0, -50.0]
+orbits:
+  1:
+    name: Tatooine
+    type: Desert
+    radius: 10  # 10,465km
+    position: [523.0, 5.0]
+    spaceports: [500]
+    market:
+      imports: []
+      exports: []
