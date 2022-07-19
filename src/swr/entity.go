@@ -69,6 +69,7 @@ type Entity interface {
 	MaxMv() int
 	IsFighting() bool
 	SetAttacker(entity Entity)
+	ApplyDamage(damage uint)
 	GetCharData() *CharData
 }
 
@@ -135,7 +136,7 @@ func (c *CharData) MaxMv() int {
 func (c *CharData) CurrentWeight() int {
 	weight := 75
 	for _, item := range c.Inventory {
-		weight += item.GetWeight()
+		weight += item.GetData().Weight
 	}
 	return weight
 }
@@ -159,8 +160,8 @@ func (c *CharData) ArmorAC() int {
 
 	ac_armor := 0
 	for _, i := range c.Equipment {
-		item := i.(ItemData)
-		ac_armor += item["ac"].(int)
+		item := i.GetData()
+		ac_armor += item.AC
 	}
 	return ac_armor + (dex / 10) + (str / 10)
 }
@@ -171,8 +172,8 @@ func (c *CharData) DamageRoll() uint {
 
 	dmg := uint(0)
 	if i, ok := c.Equipment["weapon"]; ok {
-		item := i.(ItemData)
-		dmg := item["dmg"].(string)
+		item := i.GetData()
+		dmg := *item.Dmg
 		roll_dice(dmg)
 	}
 	return dmg + (str / 10) + (dex / 10)
@@ -180,15 +181,14 @@ func (c *CharData) DamageRoll() uint {
 
 func (c *CharData) ApplyDamage(damage uint) {
 	c.Hp[0] -= int(damage)
-	if c.Hp[0] < 0 {
-		c.State = "unconcious"
-		if c.Hp[0] < (2 * c.Hp[1]) {
+	if c.Hp[0] <= 0 {
+		c.State = ENTITY_STATE_UNCONSCIOUS
+		if c.Hp[0] <= (2 * c.Hp[1]) {
 			c.State = ENTITY_STATE_DEAD
-			c.Send("\r\n&RYou have died.&d\r\n")
-			return
+			ScheduleFunc(func() {
+				DB().RemoveCorpse(c)
+			}, false, 360)
 		}
-		c.Send("\r\n&YYou have been knocked unconscious...&d\r\n")
-		return
 	}
 }
 
@@ -257,6 +257,74 @@ func (p *PlayerProfile) SetAttacker(entity Entity) {
 
 func (p *PlayerProfile) GetCharData() *CharData {
 	return &p.Char
+}
+func (p *PlayerProfile) ApplyDamage(damage uint) {
+	c := p.GetCharData()
+	c.Hp[0] -= int(damage)
+	if c.Hp[0] <= 0 {
+		c.State = ENTITY_STATE_UNCONSCIOUS
+		if c.Hp[0] <= (2 * c.Hp[1]) {
+			c.State = ENTITY_STATE_DEAD
+			p.Send("\r\n&RYou have died.&d\r\n")
+			return
+		}
+		p.Send("\r\n&YYou have been knocked unconscious...&d\r\n")
+		return
+	}
+}
+
+func entity_clone(entity Entity) Entity {
+	ch := entity.GetCharData()
+	c := &CharData{
+		Room:      ch.Room,
+		Name:      ch.Name,
+		Keywords:  make([]string, 0),
+		Title:     ch.Title,
+		Desc:      ch.Desc,
+		Race:      ch.Race,
+		Gender:    ch.Gender,
+		Level:     ch.Level,
+		XP:        ch.XP,
+		Gold:      ch.Gold,
+		Bank:      ch.Bank,
+		Speaking:  ch.Speaking,
+		Hp:        make([]int, 2),
+		Mp:        make([]int, 2),
+		Mv:        make([]int, 2),
+		Stats:     make([]int, 6),
+		Equipment: make(map[string]Item),
+		Inventory: make([]Item, 0),
+		Languages: make(map[string]int),
+		AI:        ch.AI,
+		State:     ch.State,
+		Brain:     ch.Brain,
+		Attacker:  ch.Attacker,
+	}
+	for i := range ch.Keywords {
+		k := ch.Keywords[i]
+		c.Keywords = append(c.Keywords, k)
+	}
+	c.Hp[0] = ch.Hp[0]
+	c.Hp[1] = ch.Hp[1]
+	c.Mp[0] = ch.Mp[0]
+	c.Mp[1] = ch.Mp[1]
+	c.Mv[0] = ch.Mv[0]
+	c.Mv[1] = ch.Mv[1]
+	for i := range ch.Stats {
+		s := ch.Stats[i]
+		c.Stats[i] = s
+	}
+	for wearLoc, item := range ch.Equipment {
+		c.Equipment[wearLoc] = item_clone(item)
+	}
+	for language, level := range ch.Languages {
+		c.Languages[language] = level
+	}
+	for i := range ch.Inventory {
+		item := ch.Inventory[i]
+		c.Inventory = append(c.Inventory, item)
+	}
+	return c
 }
 
 func player_prompt(player *PlayerProfile) string {

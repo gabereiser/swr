@@ -37,14 +37,16 @@ func do_help(entity Entity, args ...string) {
 		}
 	} else {
 		player.Send("\r\n&W%s&d\r\n", MakeTitle("Help", ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_CENTER))
-		keys := []string{}
+		keys := []string{} // slice to keep track of all of the keywords of all the help files.
 		for i := 0; i < len(db.helps); i++ {
-			keys = append(keys, db.helps[i].Keywords...)
+			if db.helps[i].Level <= uint(player.Priv) { // if the help file level is less than or equal to our priv (access level)
+				keys = append(keys, db.helps[i].Keywords...)
+			}
 		}
 		sort.Strings(keys)
 		buf := ""
 		for i := 1; i <= len(keys); i++ {
-			buf += fmt.Sprintf("&W%-14s&d ", keys[i-1])
+			buf += fmt.Sprintf("&W%-14s&d ", keys[i-1]) // print the keys out
 			if i%5 == 0 {
 				buf += "\r\n"
 			}

@@ -17,12 +17,71 @@
  */
 package swr
 
-type ItemData map[string]interface{}
+const (
+	ITEM_TYPE_GENERIC   = "generic"
+	ITEM_TYPE_COMS      = "comlink"
+	ITEM_TYPE_1H_WEAPON = "weapon"
+	ITEM_TYPE_2H_WEAPON = "weapon-2h"
+	ITEM_TYPE_CONTAINER = "container"
+	ITEM_TYPE_ARMOR     = "armor"
+	ITEM_TYPE_TRASH_BIN = "bin"
+	ITEM_TYPE_KEY       = "key"
+)
 
-type Item interface {
-	GetWeight() int
+type ItemData struct {
+	Id        uint    `yaml:"id"`
+	Name      string  `yaml:"name"`
+	Desc      string  `yaml:"desc"`
+	Type      string  `yaml:"type"`
+	Value     int     `yaml:"value"`
+	Weight    int     `yaml:"weight"`
+	AC        int     `yaml:"ac,omitempty"`
+	WearLoc   *string `yaml:"wearLoc,omitempty"`
+	WeaponLoc *string `yaml:"weaponLoc,omitempty"`
+	Dmg       *string `yaml:"dmgRoll,omitempty"`
+	Items     []Item  `yaml:"contains,omitempty,flow"`
 }
 
-func (i ItemData) GetWeight() int {
-	return i["weight"].(int)
+type Item interface {
+	GetData() *ItemData
+	IsWeapon() bool
+	IsContainer() bool
+	IsWearable() bool
+}
+
+func (i *ItemData) GetData() *ItemData {
+	return i
+}
+
+func item_clone(item Item) Item {
+	i := item.GetData()
+	c := &ItemData{
+		Id:      i.Id,
+		Name:    i.Name,
+		Desc:    i.Desc,
+		Type:    i.Type,
+		Value:   i.Value,
+		Weight:  i.Weight,
+		AC:      i.AC,
+		WearLoc: i.WearLoc,
+		Dmg:     i.Dmg,
+		Items:   make([]Item, 0),
+	}
+	for idx := range i.Items {
+		con_item := i.Items[idx]
+		c.Items = append(c.Items, item_clone(con_item))
+	}
+	return c
+}
+
+func (i *ItemData) IsWeapon() bool {
+	return i.WeaponLoc != nil
+}
+
+func (i *ItemData) IsWearable() bool {
+	return i.WearLoc != nil
+}
+
+func (i *ItemData) IsContainer() bool {
+	return len(i.Items) > 0 && i.Type == ITEM_TYPE_CONTAINER
 }

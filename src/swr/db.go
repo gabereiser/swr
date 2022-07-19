@@ -55,10 +55,11 @@ type GameDatabase struct {
 	entities        []Entity
 	areas           map[string]*AreaData // pointers to the [AreaData] of the game.
 	rooms           map[uint]*RoomData   // pointers to the room structs in [AreaData]
-	mobs            map[uint]*CharData   // used as templates for spawning [entities]
+	mobs            map[string]*CharData // used as templates for spawning [entities]
+	items           map[uint]*ItemData   // used as templates for spawning [items]
 	ships           []Ship
-	ship_prototypes map[uint]*ShipData // used as templates for spawning [ships]
-	starsystems     []Starsystem       // Planets (star systems)
+	ship_prototypes map[string]*ShipData // used as templates for spawning [ships]
+	starsystems     []Starsystem         // Planets (star systems)
 	helps           []*HelpData
 }
 
@@ -70,9 +71,10 @@ func DB() *GameDatabase {
 		_db.entities = make([]Entity, 0)
 		_db.areas = make(map[string]*AreaData)
 		_db.rooms = make(map[uint]*RoomData)
-		_db.mobs = make(map[uint]*CharData)
+		_db.mobs = make(map[string]*CharData)
+		_db.items = make(map[uint]*ItemData)
 		_db.ships = make([]Ship, 0)
-		_db.ship_prototypes = make(map[uint]*ShipData)
+		_db.ship_prototypes = make(map[string]*ShipData)
 		_db.starsystems = make([]Starsystem, 0)
 		_db.helps = make([]*HelpData, 0)
 	}
@@ -115,7 +117,7 @@ func (d *GameDatabase) RemoveEntity(entity Entity) {
 	defer d.Unlock()
 	index := -1
 	for i, e := range d.entities {
-		if e.GetCharData().Name == entity.GetCharData().Name {
+		if e == entity {
 			index = i
 		}
 	}
@@ -210,11 +212,31 @@ func (d *GameDatabase) LoadPlanets() {
 }
 
 func (d *GameDatabase) LoadItems() {
-
+	flist, err := ioutil.ReadDir("data/items")
+	ErrorCheck(err)
+	for _, f := range flist {
+		fpath := fmt.Sprintf("data/items/%s", f.Name())
+		fp, err := ioutil.ReadFile(fpath)
+		ErrorCheck(err)
+		item := new(ItemData)
+		err = yaml.Unmarshal(fp, item)
+		ErrorCheck(err)
+		d.items[item.Id] = item
+	}
 }
 
 func (d *GameDatabase) LoadMobs() {
-
+	flist, err := ioutil.ReadDir("data/mobs")
+	ErrorCheck(err)
+	for _, f := range flist {
+		fpath := fmt.Sprintf("data/mobs/%s", f.Name())
+		fp, err := ioutil.ReadFile(fpath)
+		ErrorCheck(err)
+		ch := new(CharData)
+		err = yaml.Unmarshal(fp, ch)
+		ErrorCheck(err)
+		d.mobs[ch.Name] = ch
+	}
 }
 
 func (d *GameDatabase) LoadMudProgs() {
@@ -276,6 +298,23 @@ func (d *GameDatabase) AddEntity(entity Entity) {
 	d.Lock()
 	defer d.Unlock()
 	d.entities = append(d.entities, entity)
+}
+
+func (d *GameDatabase) SpawnEntity(mobName string) Entity {
+	d.Lock()
+	defer d.Unlock()
+	e := entity_clone(d.mobs[mobName])
+	d.entities = append(d.entities, e)
+	return e
+}
+
+func (d *GameDatabase) RemoveCorpse(entity Entity) {
+	for _, e := range d.GetEntitiesInRoom(entity.RoomId()) {
+		if e != entity {
+			e.Send("\r\n&xThe corpse of %s wastes away...&d\r\n", entity.GetCharData().Name)
+		}
+	}
+	d.RemoveEntity(entity)
 }
 
 func (d *GameDatabase) GetEntitiesInRoom(roomId uint) []Entity {
