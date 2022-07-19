@@ -1,4 +1,7 @@
 # SWR
+
+[![Makefile CI](https://github.com/gabereiser/swr/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/gabereiser/swr/actions/workflows/build.yml)
+
 ## Building
 After cloning the repository, `make all` will download dependencies and build the server.
 
