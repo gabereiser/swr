@@ -17,6 +17,8 @@
  */
 package swr
 
+import "fmt"
+
 func do_quit(entity Entity, args ...string) {
 	if entity.IsPlayer() {
 		player := entity.(*PlayerProfile)
@@ -26,4 +28,21 @@ func do_quit(entity Entity, args ...string) {
 
 func do_qui(entity Entity, args ...string) {
 	entity.Send("\r\n}RYou'll have to be more specific when quitting!&d\r\n&RType &Wquit&R to quit!&d\r\n")
+}
+
+func do_who(entity Entity, args ...string) {
+	db := DB()
+	total := 0
+	entity.Send("\r\n")
+	entity.Send(MakeTitle("Who", ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_CENTER))
+	for _, e := range db.entities {
+		if e.IsPlayer() {
+			player := e.(*PlayerProfile)
+			entity.Send(fmt.Sprintf("&W%-54s&G [ &WLevel %2d&G ]\r\n", player.Char.Title, player.Char.Level))
+			total++
+		}
+	}
+	entity.Send("\r\n")
+	entity.Send(MakeTitle(fmt.Sprintf("%d Online", total), ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_RIGHT))
+	entity.Send("\r\n")
 }
