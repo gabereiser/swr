@@ -60,3 +60,30 @@ func get_skill_value(ch *CharData, skill string) int {
 	}
 	return 0
 }
+
+func direction_reverse(direction string) string {
+	switch direction {
+	case "north":
+		return "south"
+	case "south":
+		return "north"
+	case "east":
+		return "west"
+	case "west":
+		return "east"
+	case "northwest":
+		return "southeast"
+	case "northeast":
+		return "southwest"
+	case "southwest":
+		return "northeast"
+	case "southeast":
+		return "northwest"
+	case "up":
+		return "down"
+	case "down":
+		return "up"
+	default:
+		return "somewhere"
+	}
+}

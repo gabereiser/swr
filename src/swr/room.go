@@ -35,7 +35,7 @@ type RoomData struct {
 	Exits     map[string]uint        `yaml:"exits,flow"`
 	ExitFlags map[string]interface{} `yaml:"exflags,flow,omitempty"`
 	Flags     []string               `yaml:"flags,flow,omitempty"`
-	RoomProgs map[string]string      `yaml:"room_progs,flow,omitempty"`
+	RoomProgs map[string]string      `yaml:"roomProgs,flow,omitempty"`
 	Area      *AreaData              `yaml:"-"`
 }
 
@@ -64,6 +64,11 @@ func RoomFromMap(data map[string]interface{}) *RoomData {
 			room.Flags = append(room.Flags, flag.(string))
 		}
 	}
+	if d, ok := data["roomProgs"]; ok {
+		for evt, prog := range d.(map[string]string) {
+			room.RoomProgs[evt] = prog
+		}
+	}
 	return room
 }
 
@@ -72,6 +77,12 @@ func (r *RoomData) String() string {
 }
 func (r *RoomData) GetEntities() []Entity {
 	return DB().GetEntitiesInRoom(r.Id)
+}
+func (r *RoomData) HasExit(direction string) bool {
+	if _, ok := r.Exits[direction]; ok {
+		return true
+	}
+	return false
 }
 
 func room_get_exit_status(exitFlags map[string]interface{}) string {

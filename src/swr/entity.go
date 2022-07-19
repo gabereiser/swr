@@ -302,6 +302,9 @@ func processEntities() {
 			if ch.Mv[0] < 0 {
 				ch.Mv[0] = 0
 			}
+			if roll_dice("1d10") == 10 {
+				e.Send("\r\n&cYou feel extremely relaxed.&d\r\n")
+			}
 		default:
 			continue
 		}

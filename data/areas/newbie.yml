@@ -30,3 +30,7 @@ rooms:
       Alarms are going off around you. The room keeps flashing 
       }Rred&d and }Wwhite&d. You feel a slight thud
       coming from outside the ship.
+    flags: []
+    exits:
+      west: 100
+    roomProgs: {}

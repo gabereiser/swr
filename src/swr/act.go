@@ -176,3 +176,63 @@ func do_score(entity Entity, args ...string) {
 		player.Send(" ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒\r\n")
 	}
 }
+
+func do_north(entity Entity, args ...string) {
+	do_direction(entity, "north")
+}
+func do_northwest(entity Entity, args ...string) {
+	do_direction(entity, "northwest")
+}
+func do_northeast(entity Entity, args ...string) {
+	do_direction(entity, "northeast")
+}
+func do_east(entity Entity, args ...string) {
+	do_direction(entity, "east")
+}
+func do_west(entity Entity, args ...string) {
+	do_direction(entity, "west")
+}
+func do_southeast(entity Entity, args ...string) {
+	do_direction(entity, "southeast")
+}
+func do_southwest(entity Entity, args ...string) {
+	do_direction(entity, "southwest")
+}
+func do_south(entity Entity, args ...string) {
+	do_direction(entity, "south")
+}
+func do_up(entity Entity, args ...string) {
+	do_direction(entity, "up")
+}
+func do_down(entity Entity, args ...string) {
+	do_direction(entity, "down")
+}
+
+func do_direction(entity Entity, direction string) {
+	db := DB()
+	room := db.GetRoom(entity.RoomId())
+	if !room.HasExit(direction) {
+		entity.Send("\r\nYou can't go that way.\r\n")
+		return
+	} else {
+		to_room := db.GetRoom(room.Exits[direction])
+		if to_room == nil {
+			entity.Send("\r\n&RThat room doesn't exist!\r\n")
+			return
+		} else {
+			entity.GetCharData().Room = to_room.Id
+			for _, e := range room.GetEntities() {
+				if e != entity {
+					e.Send("\r\n%s has left going %s.\r\n", entity.GetCharData().Name, direction)
+				}
+			}
+			for _, e := range to_room.GetEntities() {
+				if e != entity {
+					e.Send("\r\n%s has arrived from the %s.\r\n", entity.GetCharData().Name, direction_reverse(direction))
+				}
+			}
+			do_look(entity)
+		}
+
+	}
+}

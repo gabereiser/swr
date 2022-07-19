@@ -39,6 +39,16 @@ var CommandFuncs = map[string]func(Entity, ...string){
 	"do_fight":          do_fight,
 	"do_kill":           do_kill,
 	"do_starsystems":    do_starsystems,
+	"do_north":          do_north,
+	"do_northwest":      do_northwest,
+	"do_northeast":      do_northeast,
+	"do_west":           do_west,
+	"do_east":           do_east,
+	"do_south":          do_south,
+	"do_southeast":      do_southeast,
+	"do_southwest":      do_southwest,
+	"do_up":             do_up,
+	"do_down":           do_down,
 }
 var GMCommandFuncs = map[string]func(Entity, ...string){
 	"do_area_create": do_area_create,
