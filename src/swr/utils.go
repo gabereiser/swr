@@ -103,3 +103,17 @@ func direction_reverse(direction string) string {
 		return "somewhere"
 	}
 }
+
+func get_gender_for_code(gender string) string {
+	g := strings.ToLower(gender)
+	if g[0:1] == "m" {
+		return "Male"
+	}
+	if g[0:1] == "f" {
+		return "Female"
+	}
+	if g[0:1] == "n" {
+		return "Neuter"
+	}
+	return "Male"
+}

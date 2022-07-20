@@ -115,6 +115,16 @@
   keywords: [ "starsystems" ]
   level: 1
   func: do_starsystems
+- 
+  name: stand
+  keywords: [ "stand" ]
+  level: 1
+  func: do_stand
+- 
+  name: sleep
+  keywords: [ "sleep" ]
+  level: 1
+  func: do_sleep
 # Wiz Commands
 -
   name: acreate

@@ -306,15 +306,6 @@ func (d *GameDatabase) SpawnEntity(mobName string) Entity {
 	return e
 }
 
-func (d *GameDatabase) RemoveCorpse(entity Entity) {
-	for _, e := range d.GetEntitiesInRoom(entity.RoomId()) {
-		if e != entity {
-			e.Send("\r\n&xThe corpse of %s wastes away...&d\r\n", entity.GetCharData().Name)
-		}
-	}
-	d.RemoveEntity(entity)
-}
-
 func (d *GameDatabase) GetEntitiesInRoom(roomId uint) []Entity {
 	d.Lock()
 	defer d.Unlock()
@@ -328,8 +319,6 @@ func (d *GameDatabase) GetEntitiesInRoom(roomId uint) []Entity {
 }
 
 func (d *GameDatabase) GetRoom(roomId uint) *RoomData {
-	d.Lock()
-	defer d.Unlock()
 	for _, r := range d.rooms {
 		if r.Id == roomId {
 			return r

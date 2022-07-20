@@ -180,7 +180,7 @@ Stats:
 	stats[3] = rand_min_max(3, 6) + rand_min_max(3, 6) + rand_min_max(3, 6)
 	stats[4] = rand_min_max(3, 6) + rand_min_max(3, 6) + rand_min_max(3, 6)
 	stats[5] = rand_min_max(3, 6) + rand_min_max(3, 6) + rand_min_max(3, 6)
-	client.Send("\r\n\r\n&YSTR: &w%d  &YINT: &w%d  &YDEX: &w%d  &YWIS: &w%d  &YCON: &w%d  &YCHA: &w%d\r\n\r\n")
+	client.Send(fmt.Sprintf("\r\n\r\n&YSTR: &w%d  &YINT: &w%d  &YDEX: &w%d  &YWIS: &w%d  &YCON: &w%d  &YCHA: &w%d\r\n\r\n", stats[0], stats[1], stats[2], stats[3], stats[4], stats[5]))
 	client.Send("&GAre these ok? &G[&Wy&G/&Wn&G]&d ")
 	if !strings.HasPrefix(strings.ToLower(client.Read()), "y") {
 		goto Stats
@@ -218,6 +218,7 @@ Stats:
 	player.Email = email
 	player.Banned = false
 	player.Frequency = tune_random_frequency()
+	player.Priv = 1
 
 	client.Sendf("\r\n\r\n&GYou are about to create the character &W%s the %s&G.\r\nAre you ok with this? [&Wy&G/&Wn&G]&d ", name, race)
 	k := client.Read()

@@ -19,6 +19,7 @@ package swr
 
 import (
 	"fmt"
+	"log"
 	"strings"
 )
 
@@ -72,7 +73,7 @@ func do_fight(entity Entity, args ...string) {
 			}
 			ch := e.GetCharData()
 			for _, k := range ch.Keywords {
-				if strings.HasPrefix(k, args[0]) {
+				if strings.HasPrefix(strings.ToLower(k), strings.ToLower(args[0])) {
 					e.SetAttacker(entity)
 					entity.SetAttacker(e)
 					entity.Send("\r\n&RYou begin fighting &w%s&R!!&d\r\n", ch.Name)
@@ -89,8 +90,6 @@ func do_fight(entity Entity, args ...string) {
 
 func processCombat() {
 	db := DB()
-	db.Lock()
-	defer db.Unlock()
 	for _, e := range db.entities {
 		if e.IsFighting() {
 			target := e.GetCharData().Attacker
@@ -106,16 +105,48 @@ func do_combat(attacker Entity, defender Entity) {
 
 	hit_chance := roll_dice("1d20")
 	damage := uint(0)
+	if dch.State == ENTITY_STATE_UNCONSCIOUS {
+		ach.Attacker = nil
+		ach.State = ENTITY_STATE_NORMAL
+	}
+	if dch.Attacker == nil {
+		dch.Attacker = attacker
+		dch.State = ENTITY_STATE_FIGHTING
+	}
 	if hit_chance > dch.ArmorAC() {
 		damage = ach.DamageRoll()
 		dch.ApplyDamage(damage)
-
 	}
 	attacker.Send(get_damage_string(damage, "You", dch.Name, "an object."))
-	defender.Send(get_damage_string(damage, dch.Name, "you", "an object."))
-
-	make_corpse(attacker)
-	make_corpse(defender)
+	defender.Send(get_damage_string(damage, ach.Name, "you", "an object."))
+	if ach.State == ENTITY_STATE_DEAD {
+		attacker.Send("\r\n&W%s &Rhas killed you.&d\r\n", dch.Name)
+		defender.Send("\r\n&RYou have killed &W%s&d\r\n", ach.Name)
+		ach.Attacker = nil
+		dch.Attacker = nil
+		dch.State = ENTITY_STATE_NORMAL
+		ach.State = ENTITY_STATE_NORMAL
+		make_corpse(attacker)
+	}
+	if ach.State == ENTITY_STATE_UNCONSCIOUS {
+		attacker.Send("\r\n&W%s &Rhas knocked you out.&d\r\n", dch.Name)
+		defender.Send("\r\n&RYou have knocked out &W%s&d\r\n", ach.Name)
+	}
+	if dch.State == ENTITY_STATE_DEAD {
+		defender.Send("\r\n&R%s has killed you.&d\r\n", ach.Name)
+		attacker.Send("\r\n&RYou have killed &W%s&d\r\n", dch.Name)
+		ach.Attacker = nil
+		dch.Attacker = nil
+		dch.State = ENTITY_STATE_NORMAL
+		ach.State = ENTITY_STATE_NORMAL
+		make_corpse(defender)
+	}
+	if dch.State == ENTITY_STATE_UNCONSCIOUS {
+		defender.Send("\r\n&W%s &Rhas knocked you out.&d\r\n", ach.Name)
+		attacker.Send("\r\n&RYou have knocked out &W%s&d\r\n", dch.Name)
+	}
+	attacker.Prompt()
+	defender.Prompt()
 }
 
 func get_damage_string(damage uint, attacker string, defender string, weapon string) string {
@@ -136,11 +167,11 @@ func get_damage_string(damage uint, attacker string, defender string, weapon str
 
 func make_corpse(entity Entity) {
 	ch := entity.GetCharData()
-	if entity.CurrentHp() < entity.MaxHp()*2 {
+	if ch.State == ENTITY_STATE_DEAD {
 		corpse := &ItemData{
 			Id:     gen_item_id(),
-			Name:   fmt.Sprintf("A corpse of a %s %s", ch.Race, ch.Gender),
-			Desc:   fmt.Sprintf("A bloody corpse of a %s %s lies here in rot.", ch.Race, ch.Gender),
+			Name:   fmt.Sprintf("A corpse of a %s %s", get_gender_for_code(ch.Gender), strings.ToLower(ch.Race)),
+			Desc:   fmt.Sprintf("A bloody corpse of a %s %s lies here in rot.", get_gender_for_code(ch.Gender), strings.ToLower(ch.Race)),
 			Type:   ITEM_TYPE_CORPSE,
 			Value:  int(ch.Gold),
 			Weight: ch.CurrentWeight(),
@@ -163,20 +194,24 @@ func make_corpse(entity Entity) {
 		room := DB().GetRoom(ch.Room)
 		room.AddItem(corpse)
 		if entity.IsPlayer() {
-			entity.Send("\r\n&RYou have been killed.")
-			respawn_entity(entity, 100)
-			entity.Prompt()
+			entity.Send("\r\n&RYou have been killed.&d\r\n\r\n&yRespawning in 30 seconds...&d\r\n")
+			ScheduleFunc(func() {
+				respawn_entity(entity, 100)
+			}, false, 30)
 		} else {
 			DB().RemoveEntity(entity)
 		}
-
+		log.Printf("Entity %s [%d] has been killed.", ch.Name, ch.Id)
 	}
 }
 
 // Respawn an entity in a room.
 func respawn_entity(entity Entity, roomId uint) {
 	ch := entity.GetCharData()
+	ch.Attacker = nil
 	ch.Room = roomId
 	ch.Hp[0] = ch.Hp[1]
 	ch.State = ENTITY_STATE_NORMAL
+	do_look(entity)
+	entity.Prompt()
 }

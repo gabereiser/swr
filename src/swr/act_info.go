@@ -21,8 +21,14 @@ import "fmt"
 
 func do_quit(entity Entity, args ...string) {
 	if entity.IsPlayer() {
+		if entity.IsFighting() {
+			entity.Send("\r\n&RYou can't quit while fighting!&d\r\n")
+			return
+		}
+		entity.GetCharData().State = ENTITY_STATE_SLEEPING
 		player := entity.(*PlayerProfile)
 		player.Client.Close()
+		entity.Send("\r\n&CThe world slowly fades away as you close your eyes and leave the game...&d\r\n\r\n")
 	}
 }
 
@@ -63,7 +69,7 @@ func do_score(entity Entity, args ...string) {
 		player.Send("&c│ CON: &G%-2d&c                                  │&d▒\r\n", char.Stats[4])
 		player.Send("&c│ CHA: &G%-2d&c                                  │&d▒\r\n", char.Stats[5])
 		player.Send("&c╞══════════════════════════════════════════╡&d▒\r\n")
-		player.Send("&c│ Weight: &G%3d kg&c                           │&d▒\r\n", char.CurrentWeight())
+		player.Send("&c│ Weight: &G%3d kg&p(%3d kg)&c                   │&d▒\r\n", char.CurrentWeight(), char.MaxWeight())
 		player.Send("&c│ Inventory: &G%3d&p(%3d)&c                      │&d▒\r\n", char.CurrentInventoryCount(), char.MaxInventoryCount())
 		player.Send("&c├─( Equipment )────────────────────────────┤▒&d\r\n")
 		player.Send("&c│       Head: &d%-20s&c         │&d▒\r\n", "None")

@@ -142,6 +142,13 @@ func (c *CharData) CurrentWeight() int {
 	return weight
 }
 
+func (c *CharData) MaxWeight() int {
+	weight := 75
+
+	// str / 10 * base_weight + (level * 5) + dex
+	return (c.Stats[0]/10)*weight + int(c.Level*5) + c.Stats[2]
+}
+
 func (c *CharData) CurrentInventoryCount() int {
 	return len(c.Inventory)
 }
@@ -188,11 +195,8 @@ func (c *CharData) ApplyDamage(damage uint) {
 	c.Hp[0] -= int(damage)
 	if c.Hp[0] <= 0 {
 		c.State = ENTITY_STATE_UNCONSCIOUS
-		if c.Hp[0] <= (2 * c.Hp[1]) {
+		if c.Hp[0] <= -(c.Hp[1] * 2) {
 			c.State = ENTITY_STATE_DEAD
-			ScheduleFunc(func() {
-				DB().RemoveCorpse(c)
-			}, false, 360)
 		}
 	}
 }
@@ -202,15 +206,16 @@ func (c *CharData) GetCharData() *CharData {
 }
 
 type PlayerProfile struct {
-	Char       CharData  `yaml:"char,inline"`
-	Email      string    `yaml:"email,omitempty"`
-	Password   string    `yaml:"password,omitempty"`
-	Priv       int       `yaml:"priv,omitempty"`
-	LastSeen   time.Time `yaml:"last_seen,omitempty"`
-	Banned     bool      `yaml:"banned,omitempty"`
-	Client     Client    `yaml:"-"`
-	NeedPrompt bool      `yaml:"-"`
-	Frequency  string    `yaml:"freq"`
+	Char        CharData  `yaml:"char,inline"`
+	Email       string    `yaml:"email,omitempty"`
+	Password    string    `yaml:"password,omitempty"`
+	Priv        int       `yaml:"priv,omitempty"`
+	LastSeen    time.Time `yaml:"last_seen,omitempty"`
+	Banned      bool      `yaml:"banned,omitempty"`
+	Frequency   string    `yaml:"freq"`
+	Client      Client    `yaml:"-"`
+	NeedPrompt  bool      `yaml:"-"`
+	LastCommand string    `yaml:"-"`
 }
 
 func (*PlayerProfile) IsPlayer() bool {
@@ -254,10 +259,11 @@ func (p *PlayerProfile) Prompt() {
 	}
 }
 func (p *PlayerProfile) IsFighting() bool {
-	return p.Char.Attacker != nil
+	return p.Char.State == ENTITY_STATE_FIGHTING
 }
 func (p *PlayerProfile) SetAttacker(entity Entity) {
 	p.Char.Attacker = entity
+	p.Char.State = ENTITY_STATE_FIGHTING
 }
 
 func (p *PlayerProfile) GetCharData() *CharData {
@@ -268,7 +274,7 @@ func (p *PlayerProfile) ApplyDamage(damage uint) {
 	c.Hp[0] -= int(damage)
 	if c.Hp[0] <= 0 {
 		c.State = ENTITY_STATE_UNCONSCIOUS
-		if c.Hp[0] <= (2 * c.Hp[1]) {
+		if c.Hp[0] <= -(c.Hp[1] * 2) {
 			c.State = ENTITY_STATE_DEAD
 			p.Send("\r\n&RYou have died.&d\r\n")
 			return
@@ -408,6 +414,11 @@ func processHealing(entity Entity) {
 	ch.Hp[0]++
 	if ch.Hp[0] > ch.Hp[1] {
 		ch.Hp[0] = ch.Hp[1]
+	}
+	if ch.State == ENTITY_STATE_UNCONSCIOUS {
+		if ch.Hp[0] > 0 {
+			ch.State = ENTITY_STATE_NORMAL
+		}
 	}
 	entity.Prompt()
 }

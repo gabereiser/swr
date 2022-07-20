@@ -37,24 +37,42 @@ func do_save(entity Entity, args ...string) {
 }
 func do_look(entity Entity, args ...string) {
 	if entity.IsPlayer() {
+		ch := entity.GetCharData()
+		if ch.State == ENTITY_STATE_DEAD {
+			return
+		}
+		if ch.State == ENTITY_STATE_SLEEPING || ch.State == ENTITY_STATE_UNCONSCIOUS {
+			entity.Send("\r\n&cIn your dreams?...&d\r\n")
+			return
+		}
 		if len(args) == 0 { // l or look with no args
 			roomId := entity.RoomId()
 			room := DB().GetRoom(roomId)
 			if room != nil {
 				entity.Send(fmt.Sprintf("\r\n%s\r\n",
-					MakeTitle(fmt.Sprintf("%s %d",
-						room.Name, room.Id),
+					MakeTitle(room.Name,
 						ANSI_TITLE_STYLE_NORMAL,
 						ANSI_TITLE_ALIGNMENT_CENTER)))
 				entity.Send(room.Desc)
 				entity.Send("\r\nExits:\r\n")
-				for dir, toRoom := range room.Exits {
+				for dir := range room.Exits {
 					if k, ok := room.ExitFlags[dir]; ok {
 						exit_flags := k.(map[string]interface{})
 						ext := room_get_exit_status(exit_flags)
-						entity.Send(fmt.Sprintf(" - %s%s[%d]\r\n", dir, ext, toRoom))
+						entity.Send(fmt.Sprintf(" - %s%s\r\n", dir, ext))
 					} else {
-						entity.Send(fmt.Sprintf(" - %s [%d]\r\n", dir, toRoom))
+						entity.Send(fmt.Sprintf(" - %s\r\n", dir))
+					}
+				}
+				entity.Send("\r\n")
+				for i := range room.Items {
+					item := room.Items[i]
+					entity.Send("&Y%s&d\r\n", item.GetData().Name)
+				}
+
+				for _, e := range DB().GetEntitiesInRoom(room.Id) {
+					if e != entity {
+						entity.Send("&P%s&d\r\n", e.GetCharData().Name)
 					}
 				}
 			} else {
@@ -200,4 +218,55 @@ func do_direction(entity Entity, direction string) {
 		}
 
 	}
+}
+
+func do_stand(entity Entity, args ...string) {
+	ch := entity.GetCharData()
+	if ch.State == ENTITY_STATE_DEAD {
+		entity.Send("\r\n&RYou can't move when you're dead.&d\r\n")
+		return
+	}
+	if ch.State == ENTITY_STATE_UNCONSCIOUS {
+		entity.Send("\r\n&YYou are unconscious...&d\r\n")
+		return
+	}
+	if ch.State == ENTITY_STATE_SITTING || ch.State == ENTITY_STATE_SLEEPING {
+		ch.State = ENTITY_STATE_NORMAL
+		for _, e := range DB().GetEntitiesInRoom(entity.RoomId()) {
+			if e != entity {
+				e.Send("\r\n&d%s stands to their feet.\r\n", ch.Name)
+			}
+		}
+		entity.Send("\r\n&dYou spring to your feet.\r\n")
+		return
+	} else {
+		entity.Send("\r\n&dYou are already standing.\r\n")
+		return
+	}
+}
+
+func do_sleep(entity Entity, args ...string) {
+	ch := entity.GetCharData()
+	if ch.State == ENTITY_STATE_DEAD {
+		entity.Send("\r\n&RYou're already permanently asleep (*DEAD*).&d\r\n")
+		return
+	}
+	if ch.State == ENTITY_STATE_SLEEPING {
+		entity.Send("\r\n&dYou're already asleep.\r\n")
+		return
+	}
+	if ch.State == ENTITY_STATE_UNCONSCIOUS {
+		entity.Send("\r\n&dYou're unconscious.\r\n")
+		return
+	}
+	if ch.State == ENTITY_STATE_FIGHTING {
+		entity.Send("\r\n&dYou can't sleep when you're fighting.\r\n")
+		return
+	}
+	if ch.State == ENTITY_STATE_GUNNING || ch.State == ENTITY_STATE_PILOTING {
+		entity.Send("\r\n&dYou can't sleep.\r\n")
+		return
+	}
+	ch.State = ENTITY_STATE_SLEEPING
+	entity.Send("\r\n&dYou're fall asleep.\r\n")
 }

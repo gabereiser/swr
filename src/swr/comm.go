@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"log"
 	"strings"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -49,6 +50,8 @@ var CommandFuncs = map[string]func(Entity, ...string){
 	"do_southwest":      do_southwest,
 	"do_up":             do_up,
 	"do_down":           do_down,
+	"do_stand":          do_stand,
+	"do_sleep":          do_sleep,
 }
 var GMCommandFuncs = map[string]func(Entity, ...string){
 	"do_area_create": do_area_create,
@@ -146,5 +149,14 @@ func do_command(entity Entity, input string) {
 			entity.Send("\r\nHuh?\r\n")
 			entity.Prompt()
 		}
+	}
+
+	if entity.IsPlayer() {
+		player := entity.(*PlayerProfile)
+		player.LastSeen = time.Now().UTC()
+		if input != "!" {
+			player.LastCommand = input
+		}
+
 	}
 }
