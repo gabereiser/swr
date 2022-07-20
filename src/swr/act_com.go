@@ -45,7 +45,7 @@ func do_say_comlink(entity Entity, args ...string) {
 	words := strings.Join(args, " ")
 	speaker := entity.GetCharData()
 	if entity.IsPlayer() {
-		entity.Send(fmt.Sprintf("You're comlink clicks and buzzes after you say &W\"%s\"&d\r\n", words))
+		entity.Send(fmt.Sprintf("You're comlink hums after you say &W\"%s\"&d\r\n", words))
 	}
 	db := DB()
 	for _, ex := range db.entities {
@@ -91,6 +91,7 @@ func do_speak(entity Entity, args ...string) {
 		skill := ch.Languages[language.Name]
 		if skill > 0 {
 			ch.Speaking = language.Name
+			entity.Send("\r\n&YYou are now speaking &W%s&d.\r\n", language.Name)
 		} else {
 			entity.Send("\r\n&YLanguage not known.&d\r\n")
 		}
