@@ -74,6 +74,7 @@ type Entity interface {
 }
 
 type CharData struct {
+	Id        uint            `yaml:"id"`
 	Room      uint            `yaml:"room,omitempty"`
 	Name      string          `yaml:"name"`
 	Keywords  []string        `yaml:"keywords,flow,omitempty"`
@@ -143,6 +144,10 @@ func (c *CharData) CurrentWeight() int {
 
 func (c *CharData) CurrentInventoryCount() int {
 	return len(c.Inventory)
+}
+
+func (c *CharData) MaxInventoryCount() int {
+	return (int(c.Level) * 3) + c.Stats[0]
 }
 
 func (c *CharData) IsFighting() bool {
@@ -276,6 +281,7 @@ func (p *PlayerProfile) ApplyDamage(damage uint) {
 func entity_clone(entity Entity) Entity {
 	ch := entity.GetCharData()
 	c := &CharData{
+		Id:        gen_npc_char_id(),
 		Room:      ch.Room,
 		Name:      ch.Name,
 		Keywords:  make([]string, 0),

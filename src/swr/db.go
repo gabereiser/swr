@@ -301,10 +301,8 @@ func (d *GameDatabase) AddEntity(entity Entity) {
 }
 
 func (d *GameDatabase) SpawnEntity(mobName string) Entity {
-	d.Lock()
-	defer d.Unlock()
 	e := entity_clone(d.mobs[mobName])
-	d.entities = append(d.entities, e)
+	d.AddEntity(e)
 	return e
 }
 

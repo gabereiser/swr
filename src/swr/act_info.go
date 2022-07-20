@@ -64,7 +64,7 @@ func do_score(entity Entity, args ...string) {
 		player.Send("&c│ CHA: &G%-2d&c                                  │&d▒\r\n", char.Stats[5])
 		player.Send("&c╞══════════════════════════════════════════╡&d▒\r\n")
 		player.Send("&c│ Weight: &G%3d kg&c                           │&d▒\r\n", char.CurrentWeight())
-		player.Send("&c│ Inventory: &G%3d&p(%3d)&c                      │&d▒\r\n", char.CurrentInventoryCount(), (int(char.Level)*3)+char.Stats[0])
+		player.Send("&c│ Inventory: &G%3d&p(%3d)&c                      │&d▒\r\n", char.CurrentInventoryCount(), char.MaxInventoryCount())
 		player.Send("&c├─( Equipment )────────────────────────────┤▒&d\r\n")
 		player.Send("&c│       Head: &d%-20s&c         │&d▒\r\n", "None")
 		player.Send("&c│      Torso: &d%-20s&c         │&d▒\r\n", "None")
@@ -83,6 +83,7 @@ func do_score(entity Entity, args ...string) {
 		for s, v := range char.Languages {
 			player.Send("&c│ &w%-25s&c          &w%3d&c   │&d▒\r\n", s, v)
 		}
+		player.Send("&c│   &cSpeaking: &w%-20s&c         │&d▒\r\n", char.Speaking)
 		player.Send("&c└──────────────────────────────────────────┘▒&d\r\n")
 		player.Send(" ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒\r\n")
 	}

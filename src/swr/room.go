@@ -37,39 +37,7 @@ type RoomData struct {
 	Flags     []string               `yaml:"flags,flow,omitempty"`
 	RoomProgs map[string]string      `yaml:"roomProgs,flow,omitempty"`
 	Area      *AreaData              `yaml:"-"`
-}
-
-func RoomFromMap(data map[string]interface{}) *RoomData {
-	room := new(RoomData)
-	room.Id = uint(data["id"].(int))
-	room.Name = data["name"].(string)
-	room.Desc = data["desc"].(string)
-	room.Exits = make(map[string]uint)
-	room.ExitFlags = make(map[string]interface{})
-	room.Flags = make([]string, 0)
-	room.RoomProgs = make(map[string]string)
-	if d, ok := data["exits"]; ok {
-		for dir, e := range d.(map[string]interface{}) {
-			room.Exits[dir] = uint(e.(int))
-		}
-	}
-	if d, ok := data["exflags"]; ok {
-		for dir, f := range d.(map[string]interface{}) {
-			room.ExitFlags[dir] = f
-		}
-	}
-	if d, ok := data["flags"]; ok {
-		for f := range d.([]interface{}) {
-			flag := data["flags"].([]interface{})[f]
-			room.Flags = append(room.Flags, flag.(string))
-		}
-	}
-	if d, ok := data["roomProgs"]; ok {
-		for evt, prog := range d.(map[string]string) {
-			room.RoomProgs[evt] = prog
-		}
-	}
-	return room
+	Items     []Item                 `yaml:"-"`
 }
 
 func (r *RoomData) String() string {
@@ -83,6 +51,23 @@ func (r *RoomData) HasExit(direction string) bool {
 		return true
 	}
 	return false
+}
+
+func (r *RoomData) AddItem(item Item) {
+	r.Items = append(r.Items, item)
+}
+func (r *RoomData) RemoveItem(item Item) {
+	idx := -1
+	for id := range r.Items {
+		i := r.Items[id]
+		if i.GetId() == item.GetId() {
+			idx = id
+		}
+	}
+	ret := make([]Item, len(r.Items)-1)
+	ret = append(ret, r.Items[:idx]...)
+	ret = append(ret, r.Items[idx+1:]...)
+	r.Items = ret
 }
 
 func room_get_exit_status(exitFlags map[string]interface{}) string {

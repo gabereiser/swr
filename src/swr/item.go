@@ -26,6 +26,7 @@ const (
 	ITEM_TYPE_ARMOR     = "armor"
 	ITEM_TYPE_TRASH_BIN = "bin"
 	ITEM_TYPE_KEY       = "key"
+	ITEM_TYPE_CORPSE    = "corpse"
 )
 
 type ItemData struct {
@@ -43,6 +44,7 @@ type ItemData struct {
 }
 
 type Item interface {
+	GetId() uint
 	GetData() *ItemData
 	IsWeapon() bool
 	IsContainer() bool
@@ -51,6 +53,10 @@ type Item interface {
 
 func (i *ItemData) GetData() *ItemData {
 	return i
+}
+
+func (i *ItemData) GetId() uint {
+	return i.Id
 }
 
 func item_clone(item Item) Item {
@@ -83,5 +89,5 @@ func (i *ItemData) IsWearable() bool {
 }
 
 func (i *ItemData) IsContainer() bool {
-	return len(i.Items) > 0 && i.Type == ITEM_TYPE_CONTAINER
+	return i.Type == ITEM_TYPE_CONTAINER || i.Type == ITEM_TYPE_CORPSE
 }

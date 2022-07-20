@@ -34,6 +34,22 @@ func roll_dice(d20 string) int {
 	return roll
 }
 
+func rand_min_max(min int, max int) int {
+	return min + rand.Intn((max-min)+1)
+}
+
+func gen_player_char_id() uint {
+	return uint(rand.Intn(9000000000)) + 9000000000
+}
+
+func gen_npc_char_id() uint {
+	return uint(rand.Intn(1000000000)) + 1000000000
+}
+
+func gen_item_id() uint {
+	return uint(rand.Intn(2000000000)) + 2000000000
+}
+
 func tune_random_frequency() string {
 	buf := ""
 	buf += strconv.Itoa(rand.Intn(2) + 1) // 1,2,3

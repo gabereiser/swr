@@ -113,6 +113,9 @@ func do_combat(attacker Entity, defender Entity) {
 	}
 	attacker.Send(get_damage_string(damage, "You", dch.Name, "an object."))
 	defender.Send(get_damage_string(damage, dch.Name, "you", "an object."))
+
+	make_corpse(attacker)
+	make_corpse(defender)
 }
 
 func get_damage_string(damage uint, attacker string, defender string, weapon string) string {
@@ -129,4 +132,51 @@ func get_damage_string(damage uint, attacker string, defender string, weapon str
 	} else {
 		return fmt.Sprintf("\r\n&R%s MISSES %s.&d\r\n", attacker, defender)
 	}
+}
+
+func make_corpse(entity Entity) {
+	ch := entity.GetCharData()
+	if entity.CurrentHp() < entity.MaxHp()*2 {
+		corpse := &ItemData{
+			Id:     gen_item_id(),
+			Name:   fmt.Sprintf("A corpse of a %s %s", ch.Race, ch.Gender),
+			Desc:   fmt.Sprintf("A bloody corpse of a %s %s lies here in rot.", ch.Race, ch.Gender),
+			Type:   ITEM_TYPE_CORPSE,
+			Value:  int(ch.Gold),
+			Weight: ch.CurrentWeight(),
+			AC:     0,
+			Items:  make([]Item, 0),
+		}
+		items := make([]Item, 0)
+		for _, item := range ch.Equipment {
+			if !entity.IsPlayer() && roll_dice("1d4") == 4 {
+				items = append(items, item_clone(item))
+			} else if entity.IsPlayer() {
+				items = append(items, item_clone(item))
+			}
+		}
+		for i := range ch.Inventory {
+			item := ch.Inventory[i]
+			items = append(items, item_clone(item))
+		}
+		corpse.Items = items
+		room := DB().GetRoom(ch.Room)
+		room.AddItem(corpse)
+		if entity.IsPlayer() {
+			entity.Send("\r\n&RYou have been killed.")
+			respawn_entity(entity, 100)
+			entity.Prompt()
+		} else {
+			DB().RemoveEntity(entity)
+		}
+
+	}
+}
+
+// Respawn an entity in a room.
+func respawn_entity(entity Entity, roomId uint) {
+	ch := entity.GetCharData()
+	ch.Room = roomId
+	ch.Hp[0] = ch.Hp[1]
+	ch.State = ENTITY_STATE_NORMAL
 }
