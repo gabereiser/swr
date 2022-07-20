@@ -59,7 +59,8 @@ func LanguageLoad() {
 	ScheduleFunc(language_decay, true, 60*60)
 }
 func language_get_by_name(name string) *Language {
-	for _, l := range Languages {
+	for i := range Languages {
+		l := Languages[i]
 		if l.Name == name {
 			return &l
 		}

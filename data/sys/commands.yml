@@ -42,12 +42,12 @@
   func: do_southwest
 -
   name: up
-  keywords: [ "up" ]
+  keywords: [ "u", "up" ]
   level: 1
   func: do_up
 -
   name: down
-  keywords: [ "down" ]
+  keywords: [ "d", "down" ]
   level: 1
   func: do_down
 -
@@ -70,6 +70,11 @@
   keywords: [ "say" ]
   level: 1
   func: do_say
+- 
+  name: speak
+  keywords: [ "speak" ]
+  level: 1
+  func: do_speak
 - 
   name: look
   keywords: [ "look" ]
@@ -107,7 +112,7 @@
   func: do_tune_frequency
 - 
   name: say_comlink
-  keywords: [ "\"", "comsay" ]
+  keywords: [ "comsay" ]
   level: 1
   func: do_say_comlink
 - 

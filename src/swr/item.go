@@ -29,18 +29,31 @@ const (
 	ITEM_TYPE_CORPSE    = "corpse"
 )
 
+const (
+	ITEM_WEAPON_TYPE_KNIFE      = "vibro-blade"
+	ITEM_WEAPON_TYPE_BLASTER    = "blaster"
+	ITEM_WEAPON_TYPE_RIFLE      = "rifle"
+	ITEM_WEAPON_TYPE_REPEATER   = "repeater"
+	ITEM_WEAPON_TYPE_BOWCASTER  = "bowcaster"
+	ITEM_WEAPON_TYPE_FORCEPIKE  = "force-pike"
+	ITEM_WEAPON_TYPE_GRENADE    = "grenade"
+	ITEM_WEAPON_TYPE_MINE       = "mine"
+	ITEM_WEAPON_TYPE_CLAYMORE   = "claymore"
+	ITEM_WEAPON_TYPE_LIGHTSABER = "lightsaber"
+)
+
 type ItemData struct {
-	Id        uint    `yaml:"id"`
-	Name      string  `yaml:"name"`
-	Desc      string  `yaml:"desc"`
-	Type      string  `yaml:"type"`
-	Value     int     `yaml:"value"`
-	Weight    int     `yaml:"weight"`
-	AC        int     `yaml:"ac,omitempty"`
-	WearLoc   *string `yaml:"wearLoc,omitempty"`
-	WeaponLoc *string `yaml:"weaponLoc,omitempty"`
-	Dmg       *string `yaml:"dmgRoll,omitempty"`
-	Items     []Item  `yaml:"contains,omitempty,flow"`
+	Id         uint    `yaml:"id"`
+	Name       string  `yaml:"name"`
+	Desc       string  `yaml:"desc"`
+	Type       string  `yaml:"type"`
+	Value      int     `yaml:"value"`
+	Weight     int     `yaml:"weight"`
+	AC         int     `yaml:"ac,omitempty"`
+	WearLoc    *string `yaml:"wearLoc,omitempty"`
+	WeaponType *string `yaml:"weaponType,omitempty"`
+	Dmg        *string `yaml:"dmgRoll,omitempty"`
+	Items      []Item  `yaml:"contains,omitempty,flow"`
 }
 
 type Item interface {
@@ -81,7 +94,7 @@ func item_clone(item Item) Item {
 }
 
 func (i *ItemData) IsWeapon() bool {
-	return i.WeaponLoc != nil
+	return i.Type == ITEM_TYPE_1H_WEAPON || i.Type == ITEM_TYPE_2H_WEAPON
 }
 
 func (i *ItemData) IsWearable() bool {
@@ -90,4 +103,14 @@ func (i *ItemData) IsWearable() bool {
 
 func (i *ItemData) IsContainer() bool {
 	return i.Type == ITEM_TYPE_CONTAINER || i.Type == ITEM_TYPE_CORPSE
+}
+
+func get_weapon_skill(item Item) string {
+	data := item.GetData()
+	if data.Type == ITEM_TYPE_1H_WEAPON || data.Type == ITEM_TYPE_2H_WEAPON {
+		weaponType := *data.WeaponType
+		return weaponType
+	} else {
+		return "martial-arts"
+	}
 }

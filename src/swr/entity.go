@@ -68,9 +68,11 @@ type Entity interface {
 	CurrentMv() int
 	MaxMv() int
 	IsFighting() bool
+	StopFighting()
 	SetAttacker(entity Entity)
 	ApplyDamage(damage uint)
 	GetCharData() *CharData
+	Weapon() Item
 }
 
 type CharData struct {
@@ -161,6 +163,14 @@ func (c *CharData) IsFighting() bool {
 	return c.State == ENTITY_STATE_FIGHTING
 }
 
+func (c *CharData) StopFighting() {
+	if c.State == ENTITY_STATE_FIGHTING {
+		c.State = ENTITY_STATE_NORMAL
+		c.Attacker = nil
+		c.Send("\r\n&dYou stop fighting.\r\n")
+	}
+}
+
 func (c *CharData) SetAttacker(entity Entity) {
 	c.Attacker = entity
 	c.State = ENTITY_STATE_FIGHTING
@@ -191,13 +201,18 @@ func (c *CharData) DamageRoll() uint {
 	return dmg + (str / 10) + (dex / 10)
 }
 
+func (c *CharData) Weapon() Item {
+	if i, ok := c.Equipment["weapon"]; ok {
+		item := i
+		return item
+	}
+	return nil
+}
+
 func (c *CharData) ApplyDamage(damage uint) {
 	c.Hp[0] -= int(damage)
 	if c.Hp[0] <= 0 {
-		c.State = ENTITY_STATE_UNCONSCIOUS
-		if c.Hp[0] <= -(c.Hp[1] * 2) {
-			c.State = ENTITY_STATE_DEAD
-		}
+		c.State = ENTITY_STATE_DEAD
 	}
 }
 
@@ -261,6 +276,13 @@ func (p *PlayerProfile) Prompt() {
 func (p *PlayerProfile) IsFighting() bool {
 	return p.Char.State == ENTITY_STATE_FIGHTING
 }
+func (p *PlayerProfile) StopFighting() {
+	if p.Char.State == ENTITY_STATE_FIGHTING {
+		p.Char.State = ENTITY_STATE_NORMAL
+		p.Char.Attacker = nil
+		p.Send("\r\n&dYou stop fighting.\r\n")
+	}
+}
 func (p *PlayerProfile) SetAttacker(entity Entity) {
 	p.Char.Attacker = entity
 	p.Char.State = ENTITY_STATE_FIGHTING
@@ -274,7 +296,7 @@ func (p *PlayerProfile) ApplyDamage(damage uint) {
 	c.Hp[0] -= int(damage)
 	if c.Hp[0] <= 0 {
 		c.State = ENTITY_STATE_UNCONSCIOUS
-		if c.Hp[0] <= -(c.Hp[1] * 2) {
+		if c.Hp[0] <= -(c.Hp[1]) {
 			c.State = ENTITY_STATE_DEAD
 			p.Send("\r\n&RYou have died.&d\r\n")
 			return
@@ -282,6 +304,14 @@ func (p *PlayerProfile) ApplyDamage(damage uint) {
 		p.Send("\r\n&YYou have been knocked unconscious...&d\r\n")
 		return
 	}
+}
+
+func (p *PlayerProfile) Weapon() Item {
+	if i, ok := p.Char.Equipment["weapon"]; ok {
+		item := i
+		return item
+	}
+	return nil
 }
 
 func entity_clone(entity Entity) Entity {
@@ -418,7 +448,32 @@ func processHealing(entity Entity) {
 	if ch.State == ENTITY_STATE_UNCONSCIOUS {
 		if ch.Hp[0] > 0 {
 			ch.State = ENTITY_STATE_NORMAL
+			entity.Send("\r\n&YYou awake from unconsciousness.&d\r\n")
+			entity.Prompt()
 		}
 	}
 	entity.Prompt()
+}
+
+func entity_add_xp(entity Entity, xp uint) {
+	ch := entity.GetCharData()
+	level := ch.Level
+	ch.XP += xp
+	ch.Level = get_level_for_xp(ch.XP)
+	if ch.Level != level {
+		entity.Send("\r\n}YYou have gained a level!&d\r\n")
+		entity.Send("\r\n&YYou are now level &W%d&d.\r\n", ch.Level)
+	}
+}
+
+func get_level_for_xp(xp uint) uint {
+	level := (xp / 750) / 4
+	if level < 1 {
+		level = 1
+	}
+	return level
+}
+
+func get_xp_for_level(level uint) uint {
+	return (level * 4) * 750
 }

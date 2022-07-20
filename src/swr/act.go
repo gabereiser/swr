@@ -20,7 +20,6 @@ package swr
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 )
 
@@ -94,63 +93,6 @@ func do_look(entity Entity, args ...string) {
 		}
 	}
 
-}
-
-func do_say(entity Entity, args ...string) {
-	words := strings.Join(args, " ")
-	speaker := entity.GetCharData()
-	if entity.IsPlayer() {
-		entity.Send(fmt.Sprintf("You say \"%s\"\n", words))
-	}
-	entities := DB().GetEntitiesInRoom(speaker.RoomId())
-	for _, ex := range entities {
-		if ex != entity {
-			if ex.IsPlayer() {
-				listener := &(ex.(*PlayerProfile).Char)
-				ex.Send(fmt.Sprintf("%s says \"%s\"\n", speaker.Name, language_spoken(speaker, listener, words)))
-			} else {
-				ex.Send(fmt.Sprintf("%s says \"%s\"\n", speaker.Name, words))
-			}
-		}
-	}
-}
-func do_say_comlink(entity Entity, args ...string) {
-	words := strings.Join(args, " ")
-	speaker := entity.GetCharData()
-	if entity.IsPlayer() {
-		entity.Send(fmt.Sprintf("You're comlink clicks and buzzes after you say &W\"%s\"&d\r\n", words))
-	}
-	db := DB()
-	for _, ex := range db.entities {
-		if ex != entity {
-			if ex.IsPlayer() {
-				listener := ex.GetCharData()
-				ex.Send(fmt.Sprintf("&CYou're comlink crackles to life with a voice that says...&d\r\n\"&W%s&Y:&d %s\"\r\n", speaker.Name, language_spoken(speaker, listener, words)))
-			}
-		}
-	}
-}
-
-func do_tune_frequency(entity Entity, args ...string) {
-	if entity.IsPlayer() {
-		player := entity.(*PlayerProfile)
-		if len(args) > 0 {
-			freq, err := strconv.ParseFloat(args[0], 32)
-			if err != nil {
-				entity.Send("\r\n&RError parsing frequency!&d\r\n")
-				return
-			}
-			if freq < 100.000 || freq > 500.000 {
-				entity.Send("\r\n&RFrequency out-of-band of your comlink!&d\r\n")
-				return
-			}
-			freq_str := fmt.Sprintf("%3.3f", freq)
-			player.Frequency = freq_str
-		} else {
-			player.Frequency = tune_random_frequency()
-		}
-		entity.Send("\r\n&YYou're comlink frequency has been set to &W%s&Y.&d\r\n", player.Frequency)
-	}
 }
 
 func do_north(entity Entity, args ...string) {
@@ -269,4 +211,9 @@ func do_sleep(entity Entity, args ...string) {
 	}
 	ch.State = ENTITY_STATE_SLEEPING
 	entity.Send("\r\n&dYou're fall asleep.\r\n")
+	for _, e := range DB().GetEntitiesInRoom(entity.RoomId()) {
+		if e != entity {
+			e.Send("\r\n&d%s falls asleep.\r\n", ch.Name)
+		}
+	}
 }

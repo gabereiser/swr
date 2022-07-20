@@ -77,6 +77,17 @@ func get_skill_value(ch *CharData, skill string) int {
 	return 0
 }
 
+func add_skill_value(entity Entity, skill string, value int) {
+	ch := entity.GetCharData()
+	ch.Skills[skill] += value
+	if ch.Skills[skill] >= 100 {
+		ch.Skills[skill] = 100
+	} else {
+		entity.Send("\r\n&CYou gain some knowledge of %s.&d\r\n", skill)
+	}
+
+}
+
 func direction_reverse(direction string) string {
 	switch direction {
 	case "north":

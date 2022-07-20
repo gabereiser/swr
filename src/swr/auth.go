@@ -70,6 +70,7 @@ Login:
 			player.Client = client
 			DB().SavePlayerData(player)
 			DB().AddEntity(player)
+
 			ServerQueue <- MudClientCommand{
 				Entity:  player,
 				Command: "look",
@@ -208,7 +209,11 @@ Stats:
 	player.Char.Keywords = []string{name, race}
 	player.Char.Bank = 0
 	player.Char.Brain = "client"
-	player.Char.Speaking = strings.ToLower(race)
+	if race == "human" {
+		player.Char.Speaking = "basic"
+	} else {
+		player.Char.Speaking = strings.ToLower(race)
+	}
 	player.Char.Languages = make(map[string]int)
 	player.Char.Languages["basic"] = 100
 	player.Char.Languages[player.Char.Speaking] = 100

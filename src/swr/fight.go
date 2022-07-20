@@ -20,6 +20,8 @@ package swr
 import (
 	"fmt"
 	"log"
+	"math"
+	"math/rand"
 	"strings"
 )
 
@@ -90,6 +92,8 @@ func do_fight(entity Entity, args ...string) {
 
 func processCombat() {
 	db := DB()
+	db.Lock()
+	defer db.Unlock()
 	for _, e := range db.entities {
 		if e.IsFighting() {
 			target := e.GetCharData().Attacker
@@ -105,6 +109,10 @@ func do_combat(attacker Entity, defender Entity) {
 
 	hit_chance := roll_dice("1d20")
 	damage := uint(0)
+	ach_weapon := "fists"
+	if attacker.Weapon() != nil {
+		ach_weapon = attacker.Weapon().GetData().Name
+	}
 	if dch.State == ENTITY_STATE_UNCONSCIOUS {
 		ach.Attacker = nil
 		ach.State = ENTITY_STATE_NORMAL
@@ -115,36 +123,45 @@ func do_combat(attacker Entity, defender Entity) {
 	}
 	if hit_chance > dch.ArmorAC() {
 		damage = ach.DamageRoll()
-		dch.ApplyDamage(damage)
+		defender.ApplyDamage(damage)
 	}
-	attacker.Send(get_damage_string(damage, "You", dch.Name, "an object."))
-	defender.Send(get_damage_string(damage, ach.Name, "you", "an object."))
-	if ach.State == ENTITY_STATE_DEAD {
+
+	attacker.Send(get_damage_string(damage, "You", dch.Name, fmt.Sprintf("your %s.", ach_weapon)))
+	defender.Send(get_damage_string(damage, ach.Name, "you", fmt.Sprintf("their %s.", ach_weapon)))
+	if attacker.GetCharData().State == ENTITY_STATE_DEAD {
 		attacker.Send("\r\n&W%s &Rhas killed you.&d\r\n", dch.Name)
 		defender.Send("\r\n&RYou have killed &W%s&d\r\n", ach.Name)
-		ach.Attacker = nil
-		dch.Attacker = nil
-		dch.State = ENTITY_STATE_NORMAL
-		ach.State = ENTITY_STATE_NORMAL
+		attacker.StopFighting()
+		defender.StopFighting()
 		make_corpse(attacker)
 	}
-	if ach.State == ENTITY_STATE_UNCONSCIOUS {
+	if attacker.GetCharData().State == ENTITY_STATE_UNCONSCIOUS {
 		attacker.Send("\r\n&W%s &Rhas knocked you out.&d\r\n", dch.Name)
 		defender.Send("\r\n&RYou have knocked out &W%s&d\r\n", ach.Name)
+		attacker.StopFighting()
+		defender.StopFighting()
 	}
-	if dch.State == ENTITY_STATE_DEAD {
+	if defender.GetCharData().State == ENTITY_STATE_DEAD {
 		defender.Send("\r\n&R%s has killed you.&d\r\n", ach.Name)
 		attacker.Send("\r\n&RYou have killed &W%s&d\r\n", dch.Name)
-		ach.Attacker = nil
-		dch.Attacker = nil
-		dch.State = ENTITY_STATE_NORMAL
-		ach.State = ENTITY_STATE_NORMAL
+		attacker.StopFighting()
+		defender.StopFighting()
 		make_corpse(defender)
 	}
-	if dch.State == ENTITY_STATE_UNCONSCIOUS {
+	if defender.GetCharData().State == ENTITY_STATE_UNCONSCIOUS {
 		defender.Send("\r\n&W%s &Rhas knocked you out.&d\r\n", ach.Name)
 		attacker.Send("\r\n&RYou have knocked out &W%s&d\r\n", dch.Name)
+		attacker.StopFighting()
+		defender.StopFighting()
 	}
+	if roll_dice("1d20") == 20 {
+		skill := "martial-arts"
+		if ach.Weapon() != nil {
+			skill = get_weapon_skill(ach.Weapon())
+		}
+		add_skill_value(attacker, skill, 1)
+	}
+	entity_add_xp(attacker, uint(math.Floor(float64(dch.Level)*float64(rand.Intn(20)+1.0))))
 	attacker.Prompt()
 	defender.Prompt()
 }
