@@ -39,7 +39,7 @@ type OribitalObject struct {
 	Type       string                 `yaml:"type"`
 	Radius     uint                   `yaml:"radius"`
 	Position   []float32              `yaml:"position,flow"`
-	Spaceports []uint16               `yaml:"spaceports,flow,omitempty`
+	Spaceports []uint16               `yaml:"spaceports,flow,omitempty"`
 	Market     map[string]interface{} `yaml:"market,omitempty"`
 }
 

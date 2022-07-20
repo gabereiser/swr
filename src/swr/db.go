@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -212,31 +213,43 @@ func (d *GameDatabase) LoadPlanets() {
 }
 
 func (d *GameDatabase) LoadItems() {
-	flist, err := ioutil.ReadDir("data/items")
+	err := filepath.Walk("data/items",
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() {
+				fp, err := ioutil.ReadFile(path)
+				ErrorCheck(err)
+				item := new(ItemData)
+				err = yaml.Unmarshal(fp, item)
+				ErrorCheck(err)
+				d.items[item.Id] = item
+			}
+			return nil
+		})
 	ErrorCheck(err)
-	for _, f := range flist {
-		fpath := fmt.Sprintf("data/items/%s", f.Name())
-		fp, err := ioutil.ReadFile(fpath)
-		ErrorCheck(err)
-		item := new(ItemData)
-		err = yaml.Unmarshal(fp, item)
-		ErrorCheck(err)
-		d.items[item.Id] = item
-	}
+	log.Printf("%d items loaded.", len(d.items))
 }
 
 func (d *GameDatabase) LoadMobs() {
-	flist, err := ioutil.ReadDir("data/mobs")
+	err := filepath.Walk("data/mobs",
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() {
+				fp, err := ioutil.ReadFile(path)
+				ErrorCheck(err)
+				ch := new(CharData)
+				err = yaml.Unmarshal(fp, ch)
+				ErrorCheck(err)
+				d.mobs[ch.Name] = ch
+			}
+			return nil
+		})
 	ErrorCheck(err)
-	for _, f := range flist {
-		fpath := fmt.Sprintf("data/mobs/%s", f.Name())
-		fp, err := ioutil.ReadFile(fpath)
-		ErrorCheck(err)
-		ch := new(CharData)
-		err = yaml.Unmarshal(fp, ch)
-		ErrorCheck(err)
-		d.mobs[ch.Name] = ch
-	}
+	log.Printf("%d mobs loaded.", len(d.mobs))
 }
 
 func (d *GameDatabase) LoadMudProgs() {

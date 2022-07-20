@@ -1,0 +1,8 @@
+---
+id: 3
+name: a small comlink
+desc: |
+  A small comlink.
+type: comlink
+weight: 1
+value: 50

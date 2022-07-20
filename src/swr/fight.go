@@ -100,6 +100,9 @@ func processCombat() {
 			do_combat(e, target)
 		}
 	}
+	for _, e := range db.entities {
+		e.Prompt()
+	}
 }
 
 func do_combat(attacker Entity, defender Entity) {
@@ -162,8 +165,6 @@ func do_combat(attacker Entity, defender Entity) {
 		add_skill_value(attacker, skill, 1)
 	}
 	entity_add_xp(attacker, uint(math.Floor(float64(dch.Level)*float64(rand.Intn(20)+1.0))))
-	attacker.Prompt()
-	defender.Prompt()
 }
 
 func get_damage_string(damage uint, attacker string, defender string, weapon string) string {
