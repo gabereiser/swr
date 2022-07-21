@@ -117,6 +117,9 @@ func language_spoken(speaker *CharData, listener *CharData, words string) string
 
 func language_decay() {
 	for _, entity := range DB().entities {
+		if entity == nil {
+			continue
+		}
 		if entity.IsPlayer() {
 			player := entity.(*PlayerProfile)
 			lost := false

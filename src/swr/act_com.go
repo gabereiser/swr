@@ -26,11 +26,18 @@ import (
 func do_say(entity Entity, args ...string) {
 	words := strings.Join(args, " ")
 	speaker := entity.GetCharData()
+	if entity_unspeakable_state(entity) {
+		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
+		return
+	}
 	if entity.IsPlayer() {
 		entity.Send(fmt.Sprintf("You say \"%s\"\n", words))
 	}
 	entities := DB().GetEntitiesInRoom(speaker.RoomId())
 	for _, ex := range entities {
+		if entity_unspeakable_state(ex) {
+			continue
+		}
 		if ex != entity {
 			if ex.IsPlayer() {
 				listener := ex.GetCharData()
@@ -44,11 +51,18 @@ func do_say(entity Entity, args ...string) {
 func do_say_comlink(entity Entity, args ...string) {
 	words := strings.Join(args, " ")
 	speaker := entity.GetCharData()
+	if entity_unspeakable_state(entity) {
+		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
+		return
+	}
 	if entity.IsPlayer() {
 		entity.Send(fmt.Sprintf("You're comlink hums after you say &W\"%s\"&d\r\n", words))
 	}
 	db := DB()
 	for _, ex := range db.entities {
+		if entity_unspeakable_state(ex) {
+			continue
+		}
 		if ex != entity {
 			if ex.IsPlayer() {
 				listener := ex.GetCharData()
@@ -61,6 +75,10 @@ func do_say_comlink(entity Entity, args ...string) {
 func do_tune_frequency(entity Entity, args ...string) {
 	if entity.IsPlayer() {
 		player := entity.(*PlayerProfile)
+		if entity_unspeakable_state(entity) {
+			entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
+			return
+		}
 		if len(args) > 0 {
 			freq, err := strconv.ParseFloat(args[0], 32)
 			if err != nil {
@@ -83,6 +101,10 @@ func do_tune_frequency(entity Entity, args ...string) {
 func do_speak(entity Entity, args ...string) {
 	if len(args) == 0 {
 		entity.Send("\r\n&CSyntax: speak <language>&d\r\n")
+		return
+	}
+	if entity_unspeakable_state(entity) {
+		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
 		return
 	}
 	ch := entity.GetCharData()

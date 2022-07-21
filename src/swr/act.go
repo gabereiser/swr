@@ -35,6 +35,10 @@ func do_save(entity Entity, args ...string) {
 	}
 }
 func do_look(entity Entity, args ...string) {
+	if entity_unspeakable_state(entity) {
+		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
+		return
+	}
 	if entity.IsPlayer() {
 		ch := entity.GetCharData()
 		if ch.State == ENTITY_STATE_DEAD {
@@ -127,6 +131,10 @@ func do_down(entity Entity, args ...string) {
 }
 
 func do_direction(entity Entity, direction string) {
+	if entity_unspeakable_state(entity) {
+		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
+		return
+	}
 	db := DB()
 	room := db.GetRoom(entity.RoomId())
 	if !room.HasExit(direction) {
@@ -142,11 +150,17 @@ func do_direction(entity Entity, direction string) {
 				entity.GetCharData().Mv[0]--
 				entity.GetCharData().Room = to_room.Id
 				for _, e := range room.GetEntities() {
+					if entity_unspeakable_state(e) {
+						continue
+					}
 					if e != entity {
 						e.Send("\r\n%s has left going %s.\r\n", entity.GetCharData().Name, direction)
 					}
 				}
 				for _, e := range to_room.GetEntities() {
+					if entity_unspeakable_state(e) {
+						continue
+					}
 					if e != entity {
 						e.Send("\r\n%s has arrived from the %s.\r\n", entity.GetCharData().Name, direction_reverse(direction))
 					}
@@ -175,6 +189,9 @@ func do_stand(entity Entity, args ...string) {
 	if ch.State == ENTITY_STATE_SITTING || ch.State == ENTITY_STATE_SLEEPING {
 		ch.State = ENTITY_STATE_NORMAL
 		for _, e := range DB().GetEntitiesInRoom(entity.RoomId()) {
+			if entity_unspeakable_state(e) {
+				continue
+			}
 			if e != entity {
 				e.Send("\r\n&d%s stands to their feet.\r\n", ch.Name)
 			}
@@ -184,6 +201,32 @@ func do_stand(entity Entity, args ...string) {
 	} else {
 		entity.Send("\r\n&dYou are already standing.\r\n")
 		return
+	}
+}
+
+func do_sit(entity Entity, args ...string) {
+	ch := entity.GetCharData()
+	if ch.State == ENTITY_STATE_DEAD {
+		entity.Send("\r\n&RYou can't move when you're dead.&d\r\n")
+		return
+	} else if ch.State == ENTITY_STATE_UNCONSCIOUS {
+		entity.Send("\r\n&YYou are unconscious...&d\r\n")
+		return
+	} else if ch.State == ENTITY_STATE_NORMAL {
+		ch.State = ENTITY_STATE_SITTING
+		for _, e := range DB().GetEntitiesInRoom(entity.RoomId()) {
+			if entity_unspeakable_state(e) {
+				continue
+			}
+			if e != entity {
+				e.Send("\r\n&d%s sits down.\r\n", ch.Name)
+			}
+		}
+		entity.Send("\r\n&dYou sit down.\r\n")
+	} else if ch.State == ENTITY_STATE_SITTING {
+		entity.Send("\r\n&dYou are already sitting.\r\n")
+	} else {
+		entity.Send("\r\n&dYou can't do that right now.\r\n")
 	}
 }
 
@@ -210,10 +253,13 @@ func do_sleep(entity Entity, args ...string) {
 		return
 	}
 	ch.State = ENTITY_STATE_SLEEPING
-	entity.Send("\r\n&dYou're fall asleep.\r\n")
+	entity.Send("\r\n&dYou lay down and fall asleep.\r\n")
 	for _, e := range DB().GetEntitiesInRoom(entity.RoomId()) {
+		if entity_unspeakable_state(e) {
+			continue
+		}
 		if e != entity {
-			e.Send("\r\n&d%s falls asleep.\r\n", ch.Name)
+			e.Send("\r\n&d%s lays down and falls asleep.\r\n", ch.Name)
 		}
 	}
 }

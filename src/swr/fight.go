@@ -76,12 +76,20 @@ func do_fight(entity Entity, args ...string) {
 			ch := e.GetCharData()
 			for _, k := range ch.Keywords {
 				if strings.HasPrefix(strings.ToLower(k), strings.ToLower(args[0])) {
-					e.SetAttacker(entity)
-					entity.SetAttacker(e)
-					entity.Send("\r\n&RYou begin fighting &w%s&R!!&d\r\n", ch.Name)
 					found = true
-					do_combat(entity, e)
+					if ch.State != ENTITY_STATE_DEAD && ch.State != ENTITY_STATE_UNCONSCIOUS {
+						e.SetAttacker(entity)
+						entity.SetAttacker(e)
+						entity.Send("\r\n&RYou begin fighting &w%s&R!!&d\r\n", ch.Name)
+						break
+					} else {
+						entity.Send("\r\n&RYou can't fight what can't fight back.&d\r\n")
+					}
+
 				}
+			}
+			if found {
+				break
 			}
 		}
 		if !found {
@@ -95,13 +103,17 @@ func processCombat() {
 	db.Lock()
 	defer db.Unlock()
 	for _, e := range db.entities {
-		if e.IsFighting() {
-			target := e.GetCharData().Attacker
-			do_combat(e, target)
+		if e != nil {
+			if e.IsFighting() {
+				target := e.GetCharData().Attacker
+				do_combat(e, target)
+			}
 		}
 	}
 	for _, e := range db.entities {
-		e.Prompt()
+		if e != nil {
+			e.Prompt()
+		}
 	}
 }
 
@@ -116,21 +128,33 @@ func do_combat(attacker Entity, defender Entity) {
 	if attacker.Weapon() != nil {
 		ach_weapon = attacker.Weapon().GetData().Name
 	}
-	if dch.State == ENTITY_STATE_UNCONSCIOUS {
-		ach.Attacker = nil
-		ach.State = ENTITY_STATE_NORMAL
+	if dch.State == ENTITY_STATE_UNCONSCIOUS && defender.IsPlayer() {
+		attacker.StopFighting()
+		return
 	}
-	if dch.Attacker == nil {
+	if dch.Attacker == nil && dch.Mv[0] > 0 {
 		dch.Attacker = attacker
 		dch.State = ENTITY_STATE_FIGHTING
 	}
+
 	if hit_chance > dch.ArmorAC() {
-		damage = ach.DamageRoll()
+		ach.Mv[0]--
+		if ach.Mv[0] <= 0 {
+			attacker.Send("\r\n&YYou are exhausted.&d\r\n")
+			attacker.StopFighting()
+			ach.State = ENTITY_STATE_NORMAL
+			return
+		}
+		skill := "martial-arts"
+		if ach.Weapon() != nil {
+			skill = get_weapon_skill(ach.Weapon())
+		}
+		damage = ach.DamageRoll() + umin(1, uint(ach.Skills[skill]))
 		defender.ApplyDamage(damage)
 	}
 
-	attacker.Send(get_damage_string(damage, "You", dch.Name, fmt.Sprintf("your %s.", ach_weapon)))
-	defender.Send(get_damage_string(damage, ach.Name, "you", fmt.Sprintf("their %s.", ach_weapon)))
+	attacker.Send(get_damage_string(damage, "You", dch.Name, fmt.Sprintf("your %s", ach_weapon)))
+	defender.Send(get_damage_string(damage, ach.Name, "you", fmt.Sprintf("their %s", ach_weapon)))
 	if attacker.GetCharData().State == ENTITY_STATE_DEAD {
 		attacker.Send("\r\n&W%s &Rhas killed you.&d\r\n", dch.Name)
 		defender.Send("\r\n&RYou have killed &W%s&d\r\n", ach.Name)
@@ -157,29 +181,29 @@ func do_combat(attacker Entity, defender Entity) {
 		attacker.StopFighting()
 		defender.StopFighting()
 	}
-	if roll_dice("1d20") == 20 {
+	if roll_dice("1d10") == 10 {
 		skill := "martial-arts"
 		if ach.Weapon() != nil {
 			skill = get_weapon_skill(ach.Weapon())
 		}
 		add_skill_value(attacker, skill, 1)
 	}
-	entity_add_xp(attacker, uint(math.Floor(float64(dch.Level)*float64(rand.Intn(20)+1.0))))
+	entity_add_xp(attacker, uint(math.Floor(float64(dch.Level)*float64(rand.Intn(50)+1.0))))
 }
 
 func get_damage_string(damage uint, attacker string, defender string, weapon string) string {
-	if damage > 20 {
-		return fmt.Sprintf("\r\n&R%s ANNIHILATES %s with %s.&d\r\n", attacker, defender, weapon)
-	} else if damage > 15 {
-		return fmt.Sprintf("\r\n&R%s EVICERATES %s with %s.&d\r\n", attacker, defender, weapon)
+	if damage > 50 {
+		return fmt.Sprintf("&R%s ANNIHILATED %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
+	} else if damage > 25 {
+		return fmt.Sprintf("&R%s EVICERATED %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
 	} else if damage > 10 {
-		return fmt.Sprintf("\r\n&R%s BRUISES %s with %s.&d\r\n", attacker, defender, weapon)
-	} else if damage > 5 {
-		return fmt.Sprintf("\r\n&R%s HITS %s with %s.&d\r\n", attacker, defender, weapon)
+		return fmt.Sprintf("&R%s BLASTED %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
+	} else if damage > 2 {
+		return fmt.Sprintf("&R%s HIT %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
 	} else if damage > 1 {
-		return fmt.Sprintf("\r\n&R%s NICKS %s with %s.&d\r\n", attacker, defender, weapon)
+		return fmt.Sprintf("&R%s SCRATCHED %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
 	} else {
-		return fmt.Sprintf("\r\n&R%s MISSES %s.&d\r\n", attacker, defender)
+		return fmt.Sprintf("&d%s MISSED %s.&d\r\n", attacker, defender)
 	}
 }
 

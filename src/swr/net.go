@@ -47,7 +47,7 @@ type MudClient struct {
 	Id     string
 	Con    *net.TCPConn
 	Closed bool
-	Queue  chan string
+	Idle   int
 }
 
 func (c *MudClient) Send(str string) {
@@ -63,16 +63,27 @@ func (c *MudClient) Sendf(format string, any ...interface{}) {
 func (c *MudClient) Read() string {
 	b := make([]byte, 1)
 	buf := ""
-
 	for {
-		c.Con.Read(b)
-		buf += string(b)
-		if strings.HasSuffix(buf, "\n") {
-			buf = strings.TrimSuffix(buf, "\r\n")
-			buf = strings.TrimSuffix(buf, "\n")
-			return buf
+		if c.Closed {
+			break
+		}
+		c.Con.SetReadDeadline(time.Now().Add(1 * time.Hour).Add(1 * time.Minute))
+		i, err := c.Con.Read(b)
+		if err != nil {
+			log.Printf("Error: %+v", err)
+			c.Con.Close()
+			c.Closed = true
+		}
+		if i > 0 {
+			buf += string(b)
+			if strings.HasSuffix(buf, "\n") {
+				buf = strings.TrimSuffix(buf, "\r\n")
+				buf = strings.TrimSuffix(buf, "\n")
+				return buf
+			}
 		}
 	}
+	return buf
 }
 
 func (c *MudClient) Close() {
@@ -141,19 +152,19 @@ func processServerPump() {
 		if !ServerRunning {
 			break
 		}
+		processIdleClients()
 		processCombat()
 		processEntities()
 		time.Sleep(1 * time.Second)
 	}
 }
 func acceptClient(con *net.TCPConn) {
-
 	db := DB()
 	client := new(MudClient)
 	client.Id = hex.EncodeToString([]byte(con.RemoteAddr().String()))
 	client.Con = con
 	client.Closed = false
-	client.Queue = make(chan string)
+	client.Idle = 0
 
 	auth_do_welcome(client)
 	if !client.Closed {
@@ -166,7 +177,6 @@ func acceptClient(con *net.TCPConn) {
 				break
 			}
 			if client.Closed {
-				db.RemoveEntity(entity)
 				break
 			}
 			input := client.Read()
@@ -176,10 +186,38 @@ func acceptClient(con *net.TCPConn) {
 					Command: input,
 				}
 			}
+			client.Idle = 0
 			time.Sleep(1 * time.Second)
 		}
 	}
-
+	db.RemoveEntity(entity)
 	db.RemoveClient(client)
 	con.Close()
+}
+
+func processIdleClients() {
+	db := DB()
+	db.Lock()
+	defer db.Unlock()
+	for i := range db.clients {
+		client := db.clients[i]
+		if client != nil {
+			client.Idle++
+			minuteSeconds := 60 * 60
+			if client.Idle == minuteSeconds-60 {
+				client.Sendf("\r\n}YConnection Idle Warning!!&d &wYou have been idle for %d minutes. You're connection will close in 1 minute.&d\r\n", client.Idle/60)
+			}
+			if client.Idle == minuteSeconds-30 {
+				client.Sendf("\r\n}YConnection Idle Warning!!&d &wYou have been idle for %d minutes. You're connection will close in 30 seconds.&d\r\n", client.Idle/60)
+			}
+			if client.Idle == minuteSeconds-15 {
+				client.Sendf("\r\n}YConnection Idle Warning!!&d &wYou have been idle for %d minutes. You're connection will close in 15 seconds.&d\r\n", client.Idle/60)
+			}
+			if client.Idle > minuteSeconds {
+				client.Send("\r\n&xClosing idle connection...&d\r\n")
+				client.Closed = true
+			}
+		}
+
+	}
 }

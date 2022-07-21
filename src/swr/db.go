@@ -101,6 +101,9 @@ func (d *GameDatabase) RemoveClient(client *MudClient) {
 	defer d.Unlock()
 	index := -1
 	for i, c := range d.clients {
+		if c == nil {
+			continue
+		}
 		if c.Id == client.Id {
 			index = i
 		}
@@ -118,6 +121,9 @@ func (d *GameDatabase) RemoveEntity(entity Entity) {
 	defer d.Unlock()
 	index := -1
 	for i, e := range d.entities {
+		if e == nil {
+			continue
+		}
 		if e == entity {
 			index = i
 		}
@@ -276,11 +282,37 @@ func (d *GameDatabase) SaveArea(area *AreaData) {
 	ErrorCheck(err)
 }
 
+func (d *GameDatabase) GetPlayer(name string) *PlayerProfile {
+	d.Lock()
+	defer d.Unlock()
+	var player *PlayerProfile
+	for i := range d.entities {
+		e := d.entities[i]
+		if e != nil {
+			if e.IsPlayer() {
+				if e.GetCharData().Name == name {
+					player = e.(*PlayerProfile)
+				}
+			}
+		}
+	}
+	// Player isn't online
+	if player == nil {
+		path := fmt.Sprintf("data/accounts/%s/%s.yml", strings.ToLower(name[0:1]), strings.ToLower(name))
+		player = d.ReadPlayerData(path)
+	}
+	return player
+}
+
 func (d *GameDatabase) ReadPlayerData(filename string) *PlayerProfile {
 	fp, err := ioutil.ReadFile(filename)
 	ErrorCheck(err)
 	p_data := new(PlayerProfile)
-	yaml.Unmarshal(fp, p_data)
+	err = yaml.Unmarshal(fp, p_data)
+	if err != nil {
+		ErrorCheck(err)
+		return nil
+	}
 	return p_data
 }
 
@@ -324,6 +356,9 @@ func (d *GameDatabase) GetEntitiesInRoom(roomId uint) []Entity {
 	defer d.Unlock()
 	ret := make([]Entity, 0)
 	for _, entity := range d.entities {
+		if entity == nil {
+			continue
+		}
 		if entity.RoomId() == roomId {
 			ret = append(ret, entity)
 		}
@@ -333,6 +368,9 @@ func (d *GameDatabase) GetEntitiesInRoom(roomId uint) []Entity {
 
 func (d *GameDatabase) GetRoom(roomId uint) *RoomData {
 	for _, r := range d.rooms {
+		if r == nil {
+			continue
+		}
 		if r.Id == roomId {
 			return r
 		}
@@ -342,6 +380,9 @@ func (d *GameDatabase) GetRoom(roomId uint) *RoomData {
 
 func (d *GameDatabase) GetEntityForClient(client Client) Entity {
 	for _, e := range d.entities {
+		if e == nil {
+			continue
+		}
 		if e.IsPlayer() {
 			player := e.(*PlayerProfile)
 			if player.Client == client {

@@ -116,20 +116,25 @@
   level: 1
   func: do_say_comlink
 - 
+  name: stand
+  keywords: [ "stand", "wake" ]
+  level: 1
+  func: do_stand
+- 
   name: starsystems
   keywords: [ "starsystems" ]
   level: 1
   func: do_starsystems
 - 
-  name: stand
-  keywords: [ "stand" ]
-  level: 1
-  func: do_stand
-- 
   name: sleep
   keywords: [ "sleep" ]
   level: 1
   func: do_sleep
+- 
+  name: sit
+  keywords: [ "sit" ]
+  level: 1
+  func: do_sit
 # Wiz Commands
 -
   name: acreate

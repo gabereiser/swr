@@ -63,7 +63,7 @@ func do_score(entity Entity, args ...string) {
 		player.Send("&c│ Level: &G%-25d&c         │&d▒\r\n", char.Level)
 		player.Send("&c├─( Stats )────────────────────────────────┤&d▒\r\n")
 		player.Send("&c│ STR: &G%-2d&c               XP: &G%-14d&c │&d▒\r\n", char.Stats[0], char.XP)
-		player.Send("&c│ INT: &G%-2d&c         NEXT LVL: &G%-14d&c │&d▒\r\n", char.Stats[1], get_xp_for_level(char.Level))
+		player.Send("&c│ INT: &G%-2d&c         NEXT LVL: &G%-14d&c │&d▒\r\n", char.Stats[1], get_xp_for_level(char.Level+1))
 		player.Send("&c│ DEX: &G%-2d&c            MONEY: &G%-14d&c │&d▒\r\n", char.Stats[2], char.Gold)
 		player.Send("&c│ WIS: &G%-2d&c             BANK: &G%-14d&c │&d▒\r\n", char.Stats[3], char.Bank)
 		player.Send("&c│ CON: &G%-2d&c                                  │&d▒\r\n", char.Stats[4])

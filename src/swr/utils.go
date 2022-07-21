@@ -38,6 +38,13 @@ func rand_min_max(min int, max int) int {
 	return min + rand.Intn((max-min)+1)
 }
 
+func umin(min uint, value uint) uint {
+	if value < min {
+		return min
+	}
+	return value
+}
+
 func gen_player_char_id() uint {
 	return uint(rand.Intn(9000000000)) + 9000000000
 }
@@ -128,3 +135,10 @@ func get_gender_for_code(gender string) string {
 	}
 	return "Male"
 }
+
+func distance_between_points(origin []float32, dest []float32) float32 {
+	return 0
+}
+
+var ZERO_DISTANCE float32 = distance_between_points([]float32{0.0, 0.0}, []float32{0.0, 0.0})
+var MAX_DISTANCE float32 = distance_between_points([]float32{-10000000.0, -10000000.0}, []float32{10000000.0, 10000000.0})

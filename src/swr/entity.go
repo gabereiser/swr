@@ -19,6 +19,7 @@ package swr
 
 import (
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -136,8 +137,27 @@ func (c *CharData) MaxMv() int {
 	return c.Mv[1]
 }
 
+func (c *CharData) base_weight() int {
+	switch c.Race {
+	case "Wookiee":
+		return 105
+	case "Hutt":
+		return 425
+	case "Ewok":
+	case "Jawa":
+		return 25
+	case "Droid":
+	case "Protocol Droid":
+		return 95
+	case "Assassin Droid":
+	case "Gladiator Droid":
+		return 245
+	}
+	return 75
+}
+
 func (c *CharData) CurrentWeight() int {
-	weight := 75
+	weight := c.base_weight()
 	for _, item := range c.Inventory {
 		weight += item.GetData().Weight
 	}
@@ -145,10 +165,10 @@ func (c *CharData) CurrentWeight() int {
 }
 
 func (c *CharData) MaxWeight() int {
-	weight := 75
+	weight := c.base_weight()
 
-	// str / 10 * base_weight + (level * 5) + dex
-	return (c.Stats[0]/10)*weight + int(c.Level*5) + c.Stats[2]
+	// str / 10 * base_weight + (level * 5) + dex / 10 * base_weight
+	return ((c.Stats[0] / 10) * weight) + int(c.Level*5) + ((c.Stats[2] / 10) * weight)
 }
 
 func (c *CharData) CurrentInventoryCount() int {
@@ -195,8 +215,8 @@ func (c *CharData) DamageRoll() uint {
 	dmg := uint(0)
 	if i, ok := c.Equipment["weapon"]; ok {
 		item := i.GetData()
-		dmg := *item.Dmg
-		roll_dice(dmg)
+		d := *item.Dmg
+		dmg = uint(roll_dice(d))
 	}
 	return dmg + (str / 10) + (dex / 10)
 }
@@ -396,6 +416,9 @@ func processEntities() {
 
 	for i := range db.entities {
 		e := db.entities[i]
+		if e == nil {
+			continue
+		}
 		ch := e.GetCharData()
 		switch ch.State {
 		case ENTITY_STATE_NORMAL:
@@ -411,7 +434,9 @@ func processEntities() {
 		case ENTITY_STATE_SLEEPING:
 			processHealing(e)
 		case ENTITY_STATE_UNCONSCIOUS:
-			processHealing(e)
+			if roll_dice("1d10") >= 5-get_skill_value(ch, "healing") {
+				processHealing(e)
+			}
 		case ENTITY_STATE_SEDATED:
 			ch.Mv[0]--
 			if ch.Mv[0] < 0 {
@@ -445,6 +470,10 @@ func processHealing(entity Entity) {
 	if ch.Hp[0] > ch.Hp[1] {
 		ch.Hp[0] = ch.Hp[1]
 	}
+	ch.Mv[0]++
+	if ch.Mv[0] > ch.Mv[1] {
+		ch.Mv[0] = ch.Mv[1]
+	}
 	if ch.State == ENTITY_STATE_UNCONSCIOUS {
 		if ch.Hp[0] > 0 {
 			ch.State = ENTITY_STATE_NORMAL
@@ -463,17 +492,42 @@ func entity_add_xp(entity Entity, xp uint) {
 	if ch.Level != level {
 		entity.Send("\r\n}YYou have gained a level!&d\r\n")
 		entity.Send("\r\n&YYou are now level &W%d&d.\r\n", ch.Level)
+		// reset current life stats as a reward.
+		ch.Hp[0] = ch.Hp[1]
+		ch.Mp[0] = ch.Mp[1]
+		ch.Mv[0] = ch.Mv[1]
 	}
+	entity.Send("\r\n&dYou gained &w%d&d xp.\r\n", xp)
 }
 
 func get_level_for_xp(xp uint) uint {
-	level := (xp / 750) / 4
-	if level < 1 {
-		level = 1
-	}
-	return level
+	return uint(math.Sqrt(float64(xp) / 500))
 }
 
 func get_xp_for_level(level uint) uint {
-	return (level * 4) * 750
+	return uint(math.Pow(float64(level), 2)) * 500
+}
+
+func entity_unspeakable_state(entity Entity) bool {
+	state := entity.GetCharData().State
+	switch state {
+	case ENTITY_STATE_DEAD:
+	case ENTITY_STATE_UNCONSCIOUS:
+	case ENTITY_STATE_SLEEPING:
+		return true
+	}
+	return false
+}
+
+func entity_unspeakable_reason(entity Entity) string {
+	state := entity.GetCharData().State
+	switch state {
+	case ENTITY_STATE_DEAD:
+		return "dead"
+	case ENTITY_STATE_UNCONSCIOUS:
+		return "unconscious"
+	case ENTITY_STATE_SLEEPING:
+		return "sleeping"
+	}
+	return "none"
 }
