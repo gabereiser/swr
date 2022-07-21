@@ -135,6 +135,10 @@ func do_direction(entity Entity, direction string) {
 		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
 		return
 	}
+	if entity.GetCharData().State == ENTITY_STATE_SITTING {
+		entity.Send("\r\nYou are unable to move while sitting.\r\n")
+		return
+	}
 	db := DB()
 	room := db.GetRoom(entity.RoomId())
 	if !room.HasExit(direction) {
@@ -168,7 +172,7 @@ func do_direction(entity Entity, direction string) {
 				do_look(entity)
 				return
 			} else {
-				entity.Send("\r\n&YYou are too exhausted.&d\r\n")
+				entity.Send("\r\n&You are too exhausted.\r\n")
 				return
 			}
 		}

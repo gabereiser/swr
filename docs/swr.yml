@@ -1,0 +1,30 @@
+---
+name: SWR
+keywords: ["swr", "authors", "mud"]
+level: 1
+desc: |
+  SWR (c) 2022 Gabriel Reiser <gabe@gabereiser.com>
+  Setting and content (c) 1977-2022 Lucasfilm, Ltd. & The Walt Disney Company.
+  All rights reserved.
+
+  SWR Codebase licensed under the GPLv3 [https://www.gnu.org/licenses/]
+  Written in Go for Unix/Posix based systems.
+  https://github.com/gabereiser/swr
+
+  -----------------------------------------------------------------------------
+  Based on ideas from:
+
+  Original Star Wars Reality copyright (c) 1997, 1998 was created by Sean Cooper
+  based on a concept and ideas from the original SWR immortals: 
+  Himself (Durga), Mark Matt (Merth), Jp Coldarone (Exar), Greg Baily (Thrawn), 
+  Ackbar, Satin, Streen and Bib as well as much input from our other builders 
+  and players.
+
+  Original SMAUG 1.4a written by Thoric (Derek Snider) with Altrag,
+  Blodkai, Haus, Narn, Scryn, Swordbearer, Tricops, Gorog, Rennard,
+  Grishnakh, Fireblade, and Nivek.
+
+  Original MERC 2.1 code by Hatchet, Furey, and Kahn.
+
+  Original DikuMUD code by: Hans Staerfeldt, Katja Nyboe, Tom Madsen,
+  Michael Seifert, and Sebastian Hammer.
