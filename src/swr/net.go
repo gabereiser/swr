@@ -67,7 +67,7 @@ func (c *MudClient) Read() string {
 		if c.Closed {
 			break
 		}
-		c.Con.SetReadDeadline(time.Now().Add(1 * time.Hour).Add(1 * time.Minute))
+		c.Con.SetReadDeadline(time.Now().Add(1 * time.Hour).Add(1 * time.Second))
 		i, err := c.Con.Read(b)
 		if err != nil {
 			log.Printf("Error: %+v", err)
