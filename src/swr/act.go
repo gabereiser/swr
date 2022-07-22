@@ -234,6 +234,34 @@ func do_sit(entity Entity, args ...string) {
 	}
 }
 
+func do_ooc(entity Entity, args ...string) {
+	db := DB()
+	words := strings.Join(args, " ")
+	speaker := entity.GetCharData()
+	for _, e:= range db.entities {
+		if e.IsPlayer() {
+			entity.Send(fmt.Sprintf("&C%s OOC:&W%s\r\n", speaker.Name, words))
+		}
+	}
+}
+
+func do_who(entity Entity, args ...string) {
+	db := DB()
+	total := 0
+	entity.Send("\r\n")
+	entity.Send(MakeTitle("Who", ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_CENTER))
+	for _, e := range db.entities {
+		if e.IsPlayer() {
+			player := e.(*PlayerProfile)
+			entity.Send(fmt.Sprintf("&W%-54s&G [ &WLevel %2d&G ]\r\n", player.Char.Title, player.Char.Level))
+			total++
+    }
+  entity.Send("\r\n")
+	entity.Send(MakeTitle(fmt.Sprintf("%d Online", total), ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_RIGHT))
+	entity.Send("\r\n")
+	entity.Send(MakeTitle(fmt.Sprintf("%d Online", total), ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_LEFT))
+}
+
 func do_sleep(entity Entity, args ...string) {
 	ch := entity.GetCharData()
 	if ch.State == ENTITY_STATE_DEAD {

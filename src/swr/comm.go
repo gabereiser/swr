@@ -31,6 +31,7 @@ var CommandFuncs = map[string]func(Entity, ...string){
 	"do_qui":            do_qui,
 	"do_say":            do_say,
 	"do_speak":          do_speak,
+	"do_ooc":            do_ooc,
 	"do_look":           do_look,
 	"do_who":            do_who,
 	"do_save":           do_save,
@@ -138,6 +139,21 @@ func do_command(entity Entity, input string) {
 	} else if strings.HasPrefix(args[0], "\"") {
 		args[0] = strings.TrimPrefix(args[0], "\"")
 		do_say_comlink(entity, args...)
+		entity.Prompt()
+		return
+	}
+	if strings.HasPrefix(args[0], "ooc") {
+		args[0] = strings.TrimPrefix(args[0], "ooc")
+		args[0] = strings.Trim(args[0], " ")
+		do_ooc(entity, args...)
+		entity.Prompt()
+		return
+	}
+
+	commands := command_fuzzy_match(args[0])
+	if len(commands) > 0 {
+		a := args[1:]
+		command_map_to_func(commands[0].Func)(entity, a...)
 		entity.Prompt()
 	} else {
 		commands := command_fuzzy_match(args[0])

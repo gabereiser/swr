@@ -135,6 +135,11 @@
   keywords: [ "sit" ]
   level: 1
   func: do_sit
+-
+  name: ooc
+  keywords: [ "ooc" ]
+  level: 1
+  function: do_ooc
 # Wiz Commands
 -
   name: acreate
