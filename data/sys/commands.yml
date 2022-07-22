@@ -65,6 +65,11 @@
   keywords: [ "starsystems" ]
   level: 1
   func: do_starsystems
+-
+  name: ooc
+  keywords: [ "ooc" ]
+  level: 1
+  function: do_ooc
 # Wiz Commands
 -
   name: acreate
