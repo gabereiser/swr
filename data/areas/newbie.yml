@@ -12,8 +12,8 @@ rooms:
     desc: |
       You are standing in an imperial jail cell with no recollection
       of how you got there. A simple white plastasteel room with a
-      durasteel door is all you can see. Through the small door 
-      window you can see a guard run by. Just then, the door clicks.
+      durasteel door is all you can see. You see a guard run by a small
+      door window. Just then, the door clicks.
     flags: [ safe ]
     exits:
       east: 101
