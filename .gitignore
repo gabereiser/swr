@@ -16,7 +16,7 @@
 *.o
 *.a
 *.lib
-
+src/swr/version.go
 backup/*
 bin/*
 data/accounts/*

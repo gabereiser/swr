@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -54,12 +55,13 @@ type GameDatabase struct {
 	clients         []*MudClient
 	entities        []Entity
 	areas           map[string]*AreaData // pointers to the [AreaData] of the game.
-	rooms           map[uint]RoomData    // pointers to the room structs in [AreaData]
-	mobs            map[uint]*CharData   // used as templates for spawning [entities]
+	rooms           map[uint]*RoomData   // pointers to the room structs in [AreaData]
+	mobs            map[string]*CharData // used as templates for spawning [entities]
+	items           map[uint]*ItemData   // used as templates for spawning [items]
 	ships           []Ship
-	ship_prototypes map[uint]*ShipData // used as templates for spawning [ships]
-	starsystems     []Starsystem       // Planets (star systems)
-	helps           []HelpData
+	ship_prototypes map[string]*ShipData // used as templates for spawning [ships]
+	starsystems     []Starsystem         // Planets (star systems)
+	helps           []*HelpData
 }
 
 func DB() *GameDatabase {
@@ -69,12 +71,13 @@ func DB() *GameDatabase {
 		_db.clients = make([]*MudClient, 0, 64)
 		_db.entities = make([]Entity, 0)
 		_db.areas = make(map[string]*AreaData)
-		_db.rooms = make(map[uint]RoomData)
-		_db.mobs = make(map[uint]*CharData)
+		_db.rooms = make(map[uint]*RoomData)
+		_db.mobs = make(map[string]*CharData)
+		_db.items = make(map[uint]*ItemData)
 		_db.ships = make([]Ship, 0)
-		_db.ship_prototypes = make(map[uint]*ShipData)
+		_db.ship_prototypes = make(map[string]*ShipData)
 		_db.starsystems = make([]Starsystem, 0)
-		_db.helps = make([]HelpData, 0)
+		_db.helps = make([]*HelpData, 0)
 	}
 	return _db
 }
@@ -85,12 +88,6 @@ func (d *GameDatabase) Lock() {
 
 func (d *GameDatabase) Unlock() {
 	d.m.Unlock()
-}
-
-func (d *GameDatabase) RemoveIndex(s []int, index int) []int {
-	ret := make([]int, 0)
-	ret = append(ret, s[:index]...)
-	return append(ret, s[index+1:]...)
 }
 
 func (d *GameDatabase) AddClient(client *MudClient) {
@@ -104,6 +101,9 @@ func (d *GameDatabase) RemoveClient(client *MudClient) {
 	defer d.Unlock()
 	index := -1
 	for i, c := range d.clients {
+		if c == nil {
+			continue
+		}
 		if c.Id == client.Id {
 			index = i
 		}
@@ -113,6 +113,26 @@ func (d *GameDatabase) RemoveClient(client *MudClient) {
 		ret = append(ret, d.clients[:index]...)
 		ret = append(ret, d.clients[index+1:]...)
 		d.clients = ret
+	}
+}
+
+func (d *GameDatabase) RemoveEntity(entity Entity) {
+	d.Lock()
+	defer d.Unlock()
+	index := -1
+	for i, e := range d.entities {
+		if e == nil {
+			continue
+		}
+		if e == entity {
+			index = i
+		}
+	}
+	if index > -1 {
+		ret := make([]Entity, len(d.entities)-1)
+		ret = append(ret, d.entities[:index]...)
+		ret = append(ret, d.entities[index+1:]...)
+		d.entities = ret
 	}
 }
 
@@ -150,7 +170,7 @@ func (d *GameDatabase) LoadHelps() {
 		help := new(HelpData)
 		err = yaml.Unmarshal(fp, help)
 		ErrorCheck(err)
-		d.helps = append(d.helps, *help)
+		d.helps = append(d.helps, help)
 	}
 	log.Printf("%d help files loaded.\n", len(flist))
 }
@@ -175,9 +195,10 @@ func (d *GameDatabase) LoadArea(name string) {
 	area := new(AreaData)
 	err = yaml.Unmarshal(fp, area)
 	ErrorCheck(err)
-	for vnum, r := range area.Rooms {
-		r.Id = uint(vnum)
-		d.rooms[r.Id] = r
+	for i := range area.Rooms {
+		room := area.Rooms[i]
+		room.Area = area
+		d.rooms[room.Id] = &room
 		time.Sleep(1 * time.Millisecond)
 	}
 	d.areas[area.Name] = area
@@ -198,11 +219,43 @@ func (d *GameDatabase) LoadPlanets() {
 }
 
 func (d *GameDatabase) LoadItems() {
-
+	err := filepath.Walk("data/items",
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() {
+				fp, err := ioutil.ReadFile(path)
+				ErrorCheck(err)
+				item := new(ItemData)
+				err = yaml.Unmarshal(fp, item)
+				ErrorCheck(err)
+				d.items[item.Id] = item
+			}
+			return nil
+		})
+	ErrorCheck(err)
+	log.Printf("%d items loaded.", len(d.items))
 }
 
 func (d *GameDatabase) LoadMobs() {
-
+	err := filepath.Walk("data/mobs",
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() {
+				fp, err := ioutil.ReadFile(path)
+				ErrorCheck(err)
+				ch := new(CharData)
+				err = yaml.Unmarshal(fp, ch)
+				ErrorCheck(err)
+				d.mobs[ch.Name] = ch
+			}
+			return nil
+		})
+	ErrorCheck(err)
+	log.Printf("%d mobs loaded.", len(d.mobs))
 }
 
 func (d *GameDatabase) LoadMudProgs() {
@@ -229,11 +282,37 @@ func (d *GameDatabase) SaveArea(area *AreaData) {
 	ErrorCheck(err)
 }
 
+func (d *GameDatabase) GetPlayer(name string) *PlayerProfile {
+	d.Lock()
+	defer d.Unlock()
+	var player *PlayerProfile
+	for i := range d.entities {
+		e := d.entities[i]
+		if e != nil {
+			if e.IsPlayer() {
+				if e.GetCharData().Name == name {
+					player = e.(*PlayerProfile)
+				}
+			}
+		}
+	}
+	// Player isn't online
+	if player == nil {
+		path := fmt.Sprintf("data/accounts/%s/%s.yml", strings.ToLower(name[0:1]), strings.ToLower(name))
+		player = d.ReadPlayerData(path)
+	}
+	return player
+}
+
 func (d *GameDatabase) ReadPlayerData(filename string) *PlayerProfile {
 	fp, err := ioutil.ReadFile(filename)
 	ErrorCheck(err)
 	p_data := new(PlayerProfile)
-	yaml.Unmarshal(fp, p_data)
+	err = yaml.Unmarshal(fp, p_data)
+	if err != nil {
+		ErrorCheck(err)
+		return nil
+	}
 	return p_data
 }
 
@@ -266,11 +345,20 @@ func (d *GameDatabase) AddEntity(entity Entity) {
 	d.entities = append(d.entities, entity)
 }
 
+func (d *GameDatabase) SpawnEntity(mobName string) Entity {
+	e := entity_clone(d.mobs[mobName])
+	d.AddEntity(e)
+	return e
+}
+
 func (d *GameDatabase) GetEntitiesInRoom(roomId uint) []Entity {
 	d.Lock()
 	defer d.Unlock()
 	ret := make([]Entity, 0)
 	for _, entity := range d.entities {
+		if entity == nil {
+			continue
+		}
 		if entity.RoomId() == roomId {
 			ret = append(ret, entity)
 		}
@@ -279,11 +367,12 @@ func (d *GameDatabase) GetEntitiesInRoom(roomId uint) []Entity {
 }
 
 func (d *GameDatabase) GetRoom(roomId uint) *RoomData {
-	d.Lock()
-	defer d.Unlock()
 	for _, r := range d.rooms {
+		if r == nil {
+			continue
+		}
 		if r.Id == roomId {
-			return &r
+			return r
 		}
 	}
 	return nil
@@ -291,6 +380,9 @@ func (d *GameDatabase) GetRoom(roomId uint) *RoomData {
 
 func (d *GameDatabase) GetEntityForClient(client Client) Entity {
 	for _, e := range d.entities {
+		if e == nil {
+			continue
+		}
 		if e.IsPlayer() {
 			player := e.(*PlayerProfile)
 			if player.Client == client {
@@ -301,8 +393,8 @@ func (d *GameDatabase) GetEntityForClient(client Client) Entity {
 	return nil
 }
 
-func (d *GameDatabase) GetHelp(help string) []HelpData {
-	ret := []HelpData{}
+func (d *GameDatabase) GetHelp(help string) []*HelpData {
+	ret := []*HelpData{}
 	for _, h := range d.helps {
 		for _, keyword := range h.Keywords {
 			if len(keyword) < len(help) {

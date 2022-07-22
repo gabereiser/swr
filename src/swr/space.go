@@ -39,7 +39,7 @@ type OribitalObject struct {
 	Type       string                 `yaml:"type"`
 	Radius     uint                   `yaml:"radius"`
 	Position   []float32              `yaml:"position,flow"`
-	Spaceports []uint16               `yaml:"spaceports,flow,omitempty`
+	Spaceports []uint16               `yaml:"spaceports,flow,omitempty"`
 	Market     map[string]interface{} `yaml:"market,omitempty"`
 }
 
@@ -95,7 +95,7 @@ func do_starsystems(entity Entity, args ...string) {
 	for _, s := range db.starsystems {
 		starsystem := s.GetData()
 		entity.Send("&Y┌──────────────────────────────────────────────────────────────────────────────┐&d\r\n")
-		entity.Send(fmt.Sprintf("&Y│ System: &W%-42s &YSector:&d%16s   &Y│\r\n", starsystem.Name, starsystem.Sector))
+		entity.Send(fmt.Sprintf("&Y│ System: &W%-42s &YSector:&d%17s  &Y│\r\n", starsystem.Name, starsystem.Sector))
 		for _, o := range starsystem.Orbits {
 			entity.Send(fmt.Sprintf("&Y│           &W└%-34s    &YPosition: &g%4.2f, %4.2f  &Y│\r\n", o.Name, starsystem.Position[0], starsystem.Position[1]))
 		}

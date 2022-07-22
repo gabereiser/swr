@@ -19,6 +19,7 @@ package swr
 
 import (
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -68,11 +69,15 @@ type Entity interface {
 	CurrentMv() int
 	MaxMv() int
 	IsFighting() bool
+	StopFighting()
 	SetAttacker(entity Entity)
+	ApplyDamage(damage uint)
 	GetCharData() *CharData
+	Weapon() Item
 }
 
 type CharData struct {
+	Id        uint            `yaml:"id"`
 	Room      uint            `yaml:"room,omitempty"`
 	Name      string          `yaml:"name"`
 	Keywords  []string        `yaml:"keywords,flow,omitempty"`
@@ -132,20 +137,58 @@ func (c *CharData) MaxMv() int {
 	return c.Mv[1]
 }
 
+func (c *CharData) base_weight() int {
+	switch c.Race {
+	case "Wookiee":
+		return 105
+	case "Hutt":
+		return 425
+	case "Ewok":
+	case "Jawa":
+		return 25
+	case "Droid":
+	case "Protocol Droid":
+		return 95
+	case "Assassin Droid":
+	case "Gladiator Droid":
+		return 245
+	}
+	return 75
+}
+
 func (c *CharData) CurrentWeight() int {
-	weight := 75
+	weight := c.base_weight()
 	for _, item := range c.Inventory {
-		weight += item.GetWeight()
+		weight += item.GetData().Weight
 	}
 	return weight
+}
+
+func (c *CharData) MaxWeight() int {
+	weight := c.base_weight()
+
+	// str / 10 * base_weight + (level * 5) + dex / 10 * base_weight
+	return ((c.Stats[0] / 10) * weight) + int(c.Level*5) + ((c.Stats[2] / 10) * weight)
 }
 
 func (c *CharData) CurrentInventoryCount() int {
 	return len(c.Inventory)
 }
 
+func (c *CharData) MaxInventoryCount() int {
+	return (int(c.Level) * 3) + c.Stats[0]
+}
+
 func (c *CharData) IsFighting() bool {
 	return c.State == ENTITY_STATE_FIGHTING
+}
+
+func (c *CharData) StopFighting() {
+	if c.State == ENTITY_STATE_FIGHTING {
+		c.State = ENTITY_STATE_NORMAL
+		c.Attacker = nil
+		c.Send("\r\n&dYou stop fighting.\r\n")
+	}
 }
 
 func (c *CharData) SetAttacker(entity Entity) {
@@ -159,8 +202,8 @@ func (c *CharData) ArmorAC() int {
 
 	ac_armor := 0
 	for _, i := range c.Equipment {
-		item := i.(ItemData)
-		ac_armor += item["ac"].(int)
+		item := i.GetData()
+		ac_armor += item.AC
 	}
 	return ac_armor + (dex / 10) + (str / 10)
 }
@@ -171,24 +214,25 @@ func (c *CharData) DamageRoll() uint {
 
 	dmg := uint(0)
 	if i, ok := c.Equipment["weapon"]; ok {
-		item := i.(ItemData)
-		dmg := item["dmg"].(string)
-		roll_dice(dmg)
+		item := i.GetData()
+		d := *item.Dmg
+		dmg = uint(roll_dice(d))
 	}
 	return dmg + (str / 10) + (dex / 10)
 }
 
+func (c *CharData) Weapon() Item {
+	if i, ok := c.Equipment["weapon"]; ok {
+		item := i
+		return item
+	}
+	return nil
+}
+
 func (c *CharData) ApplyDamage(damage uint) {
 	c.Hp[0] -= int(damage)
-	if c.Hp[0] < 0 {
-		c.State = "unconcious"
-		if c.Hp[0] < (2 * c.Hp[1]) {
-			c.State = ENTITY_STATE_DEAD
-			c.Send("\r\n&RYou have died.&d\r\n")
-			return
-		}
-		c.Send("\r\n&YYou have been knocked unconscious...&d\r\n")
-		return
+	if c.Hp[0] <= 0 {
+		c.State = ENTITY_STATE_DEAD
 	}
 }
 
@@ -197,15 +241,16 @@ func (c *CharData) GetCharData() *CharData {
 }
 
 type PlayerProfile struct {
-	Char       CharData  `yaml:"char,inline"`
-	Email      string    `yaml:"email,omitempty"`
-	Password   string    `yaml:"password,omitempty"`
-	Priv       int       `yaml:"priv,omitempty"`
-	LastSeen   time.Time `yaml:"last_seen,omitempty"`
-	Banned     bool      `yaml:"banned,omitempty"`
-	Client     Client    `yaml:"-"`
-	NeedPrompt bool      `yaml:"-"`
-	Frequency  string    `yaml:"freq"`
+	Char        CharData  `yaml:"char,inline"`
+	Email       string    `yaml:"email,omitempty"`
+	Password    string    `yaml:"password,omitempty"`
+	Priv        int       `yaml:"priv,omitempty"`
+	LastSeen    time.Time `yaml:"last_seen,omitempty"`
+	Banned      bool      `yaml:"banned,omitempty"`
+	Frequency   string    `yaml:"freq"`
+	Client      Client    `yaml:"-"`
+	NeedPrompt  bool      `yaml:"-"`
+	LastCommand string    `yaml:"-"`
 }
 
 func (*PlayerProfile) IsPlayer() bool {
@@ -249,14 +294,99 @@ func (p *PlayerProfile) Prompt() {
 	}
 }
 func (p *PlayerProfile) IsFighting() bool {
-	return p.Char.Attacker != nil
+	return p.Char.State == ENTITY_STATE_FIGHTING
+}
+func (p *PlayerProfile) StopFighting() {
+	if p.Char.State == ENTITY_STATE_FIGHTING {
+		p.Char.State = ENTITY_STATE_NORMAL
+		p.Char.Attacker = nil
+		p.Send("\r\n&dYou stop fighting.\r\n")
+	}
 }
 func (p *PlayerProfile) SetAttacker(entity Entity) {
 	p.Char.Attacker = entity
+	p.Char.State = ENTITY_STATE_FIGHTING
 }
 
 func (p *PlayerProfile) GetCharData() *CharData {
 	return &p.Char
+}
+func (p *PlayerProfile) ApplyDamage(damage uint) {
+	c := p.GetCharData()
+	c.Hp[0] -= int(damage)
+	if c.Hp[0] <= 0 {
+		c.State = ENTITY_STATE_UNCONSCIOUS
+		if c.Hp[0] <= -(c.Hp[1]) {
+			c.State = ENTITY_STATE_DEAD
+			p.Send("\r\n&RYou have died.&d\r\n")
+			return
+		}
+		p.Send("\r\n&YYou have been knocked unconscious...&d\r\n")
+		return
+	}
+}
+
+func (p *PlayerProfile) Weapon() Item {
+	if i, ok := p.Char.Equipment["weapon"]; ok {
+		item := i
+		return item
+	}
+	return nil
+}
+
+func entity_clone(entity Entity) Entity {
+	ch := entity.GetCharData()
+	c := &CharData{
+		Id:        gen_npc_char_id(),
+		Room:      ch.Room,
+		Name:      ch.Name,
+		Keywords:  make([]string, 0),
+		Title:     ch.Title,
+		Desc:      ch.Desc,
+		Race:      ch.Race,
+		Gender:    ch.Gender,
+		Level:     ch.Level,
+		XP:        ch.XP,
+		Gold:      ch.Gold,
+		Bank:      ch.Bank,
+		Speaking:  ch.Speaking,
+		Hp:        make([]int, 2),
+		Mp:        make([]int, 2),
+		Mv:        make([]int, 2),
+		Stats:     make([]int, 6),
+		Equipment: make(map[string]Item),
+		Inventory: make([]Item, 0),
+		Languages: make(map[string]int),
+		AI:        ch.AI,
+		State:     ch.State,
+		Brain:     ch.Brain,
+		Attacker:  ch.Attacker,
+	}
+	for i := range ch.Keywords {
+		k := ch.Keywords[i]
+		c.Keywords = append(c.Keywords, k)
+	}
+	c.Hp[0] = ch.Hp[0]
+	c.Hp[1] = ch.Hp[1]
+	c.Mp[0] = ch.Mp[0]
+	c.Mp[1] = ch.Mp[1]
+	c.Mv[0] = ch.Mv[0]
+	c.Mv[1] = ch.Mv[1]
+	for i := range ch.Stats {
+		s := ch.Stats[i]
+		c.Stats[i] = s
+	}
+	for wearLoc, item := range ch.Equipment {
+		c.Equipment[wearLoc] = item_clone(item)
+	}
+	for language, level := range ch.Languages {
+		c.Languages[language] = level
+	}
+	for i := range ch.Inventory {
+		item := ch.Inventory[i]
+		c.Inventory = append(c.Inventory, item)
+	}
+	return c
 }
 
 func player_prompt(player *PlayerProfile) string {
@@ -281,7 +411,14 @@ func player_prompt(player *PlayerProfile) string {
 
 func processEntities() {
 	db := DB()
-	for _, e := range db.entities {
+	db.Lock()
+	defer db.Unlock()
+
+	for i := range db.entities {
+		e := db.entities[i]
+		if e == nil {
+			continue
+		}
 		ch := e.GetCharData()
 		switch ch.State {
 		case ENTITY_STATE_NORMAL:
@@ -289,22 +426,42 @@ func processEntities() {
 				processHealing(e)
 			}
 		case ENTITY_STATE_SITTING:
-			if roll_dice("1d10") >= 10-get_skill_value(ch, "healing") {
+			if roll_dice("1d10") >= 8-get_skill_value(ch, "healing") {
 				processHealing(e)
 				processHealing(e)
+
 			}
 		case ENTITY_STATE_SLEEPING:
 			processHealing(e)
 		case ENTITY_STATE_UNCONSCIOUS:
-			processHealing(e)
+			if roll_dice("1d10") >= 5-get_skill_value(ch, "healing") {
+				processHealing(e)
+			}
 		case ENTITY_STATE_SEDATED:
 			ch.Mv[0]--
 			if ch.Mv[0] < 0 {
 				ch.Mv[0] = 0
 			}
-		default:
-			continue
+			if roll_dice("1d10") == 10 {
+				e.Send("\r\n&cYou feel extremely relaxed.&d\r\n")
+				e.Prompt()
+			}
 		}
+		if roll_dice("1d10") == 10 {
+			if ch.Mp[0] < ch.Mp[1] {
+				ch.Mp[0]++
+				if ch.Mp[0] > ch.Mp[1] {
+					ch.Mp[0] = ch.Mp[1]
+				}
+			}
+			if ch.Mv[0] < ch.Mv[1] {
+				ch.Mv[0]++
+				if ch.Mv[0] > ch.Mv[1] {
+					ch.Mv[0] = ch.Mv[1]
+				}
+			}
+		}
+
 	}
 }
 func processHealing(entity Entity) {
@@ -313,12 +470,64 @@ func processHealing(entity Entity) {
 	if ch.Hp[0] > ch.Hp[1] {
 		ch.Hp[0] = ch.Hp[1]
 	}
-	ch.Mp[0]++
-	if ch.Mp[0] > ch.Mp[1] {
-		ch.Mp[0] = ch.Mp[1]
-	}
 	ch.Mv[0]++
 	if ch.Mv[0] > ch.Mv[1] {
 		ch.Mv[0] = ch.Mv[1]
 	}
+	if ch.State == ENTITY_STATE_UNCONSCIOUS {
+		if ch.Hp[0] > 0 {
+			ch.State = ENTITY_STATE_NORMAL
+			entity.Send("\r\n&YYou awake from unconsciousness.&d\r\n")
+			entity.Prompt()
+		}
+	}
+	entity.Prompt()
+}
+
+func entity_add_xp(entity Entity, xp uint) {
+	ch := entity.GetCharData()
+	level := ch.Level
+	ch.XP += xp
+	ch.Level = get_level_for_xp(ch.XP)
+	if ch.Level != level {
+		entity.Send("\r\n}YYou have gained a level!&d\r\n")
+		entity.Send("\r\n&YYou are now level &W%d&d.\r\n", ch.Level)
+		// reset current life stats as a reward.
+		ch.Hp[0] = ch.Hp[1]
+		ch.Mp[0] = ch.Mp[1]
+		ch.Mv[0] = ch.Mv[1]
+	}
+	entity.Send("\r\n&dYou gained &w%d&d xp.\r\n", xp)
+}
+
+func get_level_for_xp(xp uint) uint {
+	return uint(math.Sqrt(float64(xp) / 500))
+}
+
+func get_xp_for_level(level uint) uint {
+	return uint(math.Pow(float64(level), 2)) * 500
+}
+
+func entity_unspeakable_state(entity Entity) bool {
+	state := entity.GetCharData().State
+	switch state {
+	case ENTITY_STATE_DEAD:
+	case ENTITY_STATE_UNCONSCIOUS:
+	case ENTITY_STATE_SLEEPING:
+		return true
+	}
+	return false
+}
+
+func entity_unspeakable_reason(entity Entity) string {
+	state := entity.GetCharData().State
+	switch state {
+	case ENTITY_STATE_DEAD:
+		return "dead"
+	case ENTITY_STATE_UNCONSCIOUS:
+		return "unconscious"
+	case ENTITY_STATE_SLEEPING:
+		return "sleeping"
+	}
+	return "none"
 }

@@ -20,22 +20,24 @@ package swr
 import "fmt"
 
 type AreaData struct {
-	Name     string            `yaml:"name"`
-	Author   string            `yaml:"author,omitempty"`
-	Levels   []uint16          `yaml:"levels,flow"`
-	Reset    uint              `yaml:"reset"`
-	ResetMsg string            `yaml:"reset_msg`
-	Rooms    map[uint]RoomData `yaml:"rooms"`
+	Name     string     `yaml:"name"`
+	Author   string     `yaml:"author,omitempty"`
+	Levels   []uint16   `yaml:"levels,flow"`
+	Reset    uint       `yaml:"reset"`
+	ResetMsg string     `yaml:"reset_msg`
+	Rooms    []RoomData `yaml:"rooms"`
 }
 
 type RoomData struct {
-	Id        uint                   `yaml:"-"`
+	Id        uint                   `yaml:"id"`
 	Name      string                 `yaml:"name"`
 	Desc      string                 `yaml:"desc,flow"`
 	Exits     map[string]uint        `yaml:"exits,flow"`
 	ExitFlags map[string]interface{} `yaml:"exflags,flow,omitempty"`
 	Flags     []string               `yaml:"flags,flow,omitempty"`
-	RoomProgs map[string]string      `yaml:"room_progs,flow,omitempty"`
+	RoomProgs map[string]string      `yaml:"roomProgs,flow,omitempty"`
+	Area      *AreaData              `yaml:"-"`
+	Items     []Item                 `yaml:"-"`
 }
 
 func (r *RoomData) String() string {
@@ -43,6 +45,29 @@ func (r *RoomData) String() string {
 }
 func (r *RoomData) GetEntities() []Entity {
 	return DB().GetEntitiesInRoom(r.Id)
+}
+func (r *RoomData) HasExit(direction string) bool {
+	if _, ok := r.Exits[direction]; ok {
+		return true
+	}
+	return false
+}
+
+func (r *RoomData) AddItem(item Item) {
+	r.Items = append(r.Items, item)
+}
+func (r *RoomData) RemoveItem(item Item) {
+	idx := -1
+	for id := range r.Items {
+		i := r.Items[id]
+		if i.GetId() == item.GetId() {
+			idx = id
+		}
+	}
+	ret := make([]Item, len(r.Items)-1)
+	ret = append(ret, r.Items[:idx]...)
+	ret = append(ret, r.Items[idx+1:]...)
+	r.Items = ret
 }
 
 func room_get_exit_status(exitFlags map[string]interface{}) string {

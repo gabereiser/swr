@@ -1,6 +1,56 @@
 ---
 #Basic Commands
 -
+  name: north
+  keywords: [ "n", "north" ]
+  level: 1
+  func: do_north
+-
+  name: south
+  keywords: [ "s", "south" ]
+  level: 1
+  func: do_south
+-
+  name: east
+  keywords: [ "e", "east" ]
+  level: 1
+  func: do_east
+-
+  name: west
+  keywords: [ "w", "west" ]
+  level: 1
+  func: do_west
+-
+  name: northeast
+  keywords: [ "ne", "northeast" ]
+  level: 1
+  func: do_northeast
+-
+  name: northwest
+  keywords: [ "nw", "northwest" ]
+  level: 1
+  func: do_northwest
+-
+  name: southeast
+  keywords: [ "se", "southeast" ]
+  level: 1
+  func: do_southeast
+-
+  name: southwest
+  keywords: [ "sw", "southwest" ]
+  level: 1
+  func: do_southwest
+-
+  name: up
+  keywords: [ "u", "up" ]
+  level: 1
+  func: do_up
+-
+  name: down
+  keywords: [ "d", "down" ]
+  level: 1
+  func: do_down
+-
   name: qui
   keywords: [ "qui" ]
   level: 1
@@ -20,6 +70,11 @@
   keywords: [ "say" ]
   level: 1
   func: do_say
+- 
+  name: speak
+  keywords: [ "speak" ]
+  level: 1
+  func: do_speak
 - 
   name: look
   keywords: [ "look" ]
@@ -57,14 +112,29 @@
   func: do_tune_frequency
 - 
   name: say_comlink
-  keywords: [ "\"", "comsay" ]
+  keywords: [ "comsay" ]
   level: 1
   func: do_say_comlink
+- 
+  name: stand
+  keywords: [ "stand", "wake" ]
+  level: 1
+  func: do_stand
 - 
   name: starsystems
   keywords: [ "starsystems" ]
   level: 1
   func: do_starsystems
+- 
+  name: sleep
+  keywords: [ "sleep" ]
+  level: 1
+  func: do_sleep
+- 
+  name: sit
+  keywords: [ "sit" ]
+  level: 1
+  func: do_sit
 -
   name: ooc
   keywords: [ "ooc" ]

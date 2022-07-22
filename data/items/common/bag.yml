@@ -1,0 +1,9 @@
+---
+id: 2
+name: a small bag
+desc: |
+  A small leather bag.
+type: container
+weight: 0
+value: 0
+items: []

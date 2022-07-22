@@ -41,7 +41,6 @@ func Main() {
 	CommandsLoad()
 	LanguageLoad()
 	StartBackup()
-
 	ServerStart(Config().Addr)
 
 	DB().Save()

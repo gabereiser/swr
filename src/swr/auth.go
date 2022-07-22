@@ -70,6 +70,7 @@ Login:
 			player.Client = client
 			DB().SavePlayerData(player)
 			DB().AddEntity(player)
+
 			ServerQueue <- MudClientCommand{
 				Entity:  player,
 				Command: "look",
@@ -171,10 +172,25 @@ Gender:
 		gender = "Non"
 	}
 
+	client.Send("\r\n\r\n&G-=-=-=-=-=-=-=-=-=-=-=( &WStats &G)=-=-=-=-=-=-=-=-=-=-=-=-=-&d")
+	stats := make([]int, 6)
+Stats:
+	stats[0] = rand_min_max(1, 6) + rand_min_max(1, 6) + rand_min_max(1, 6)
+	stats[1] = rand_min_max(3, 6) + rand_min_max(3, 6) + rand_min_max(3, 6)
+	stats[2] = rand_min_max(3, 6) + rand_min_max(3, 6) + rand_min_max(3, 6)
+	stats[3] = rand_min_max(3, 6) + rand_min_max(3, 6) + rand_min_max(3, 6)
+	stats[4] = rand_min_max(3, 6) + rand_min_max(3, 6) + rand_min_max(3, 6)
+	stats[5] = rand_min_max(3, 6) + rand_min_max(3, 6) + rand_min_max(3, 6)
+	client.Send(fmt.Sprintf("\r\n\r\n&YSTR: &w%d  &YINT: &w%d  &YDEX: &w%d  &YWIS: &w%d  &YCON: &w%d  &YCHA: &w%d\r\n\r\n", stats[0], stats[1], stats[2], stats[3], stats[4], stats[5]))
+	client.Send("&GAre these ok? &G[&Wy&G/&Wn&G]&d ")
+	if !strings.HasPrefix(strings.ToLower(client.Read()), "y") {
+		goto Stats
+	}
 	name = strings.ToLower(name)
 	name_t := strings.ToUpper(name[0:1])
 	name = name_t + name[1:]
 	player.Char = CharData{}
+	player.Char.Id = gen_player_char_id()
 	player.Char.Name = name
 	player.Char.Room = 100
 	player.Char.Race = race
@@ -183,7 +199,7 @@ Gender:
 	player.Char.Level = 1
 	player.Char.XP = 0
 	player.Char.Gold = 0
-	player.Char.Stats = []int{10, 10, 10, 10, 10, 10}
+	player.Char.Stats = stats
 	player.Char.Skills = map[string]int{"kick": 1, "beg": 1, "search": 1}
 	player.Char.Hp = []int{10, 10}
 	player.Char.Mp = []int{0, 0}
@@ -193,7 +209,11 @@ Gender:
 	player.Char.Keywords = []string{name, race}
 	player.Char.Bank = 0
 	player.Char.Brain = "client"
-	player.Char.Speaking = strings.ToLower(race)
+	if race == "human" {
+		player.Char.Speaking = "basic"
+	} else {
+		player.Char.Speaking = strings.ToLower(race)
+	}
 	player.Char.Languages = make(map[string]int)
 	player.Char.Languages["basic"] = 100
 	player.Char.Languages[player.Char.Speaking] = 100
@@ -203,6 +223,7 @@ Gender:
 	player.Email = email
 	player.Banned = false
 	player.Frequency = tune_random_frequency()
+	player.Priv = 1
 
 	client.Sendf("\r\n\r\n&GYou are about to create the character &W%s the %s&G.\r\nAre you ok with this? [&Wy&G/&Wn&G]&d ", name, race)
 	k := client.Read()

@@ -20,7 +20,6 @@ package swr
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 )
 
@@ -36,26 +35,47 @@ func do_save(entity Entity, args ...string) {
 	}
 }
 func do_look(entity Entity, args ...string) {
+	if entity_unspeakable_state(entity) {
+		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
+		return
+	}
 	if entity.IsPlayer() {
+		ch := entity.GetCharData()
+		if ch.State == ENTITY_STATE_DEAD {
+			return
+		}
+		if ch.State == ENTITY_STATE_SLEEPING || ch.State == ENTITY_STATE_UNCONSCIOUS {
+			entity.Send("\r\n&cIn your dreams?...&d\r\n")
+			return
+		}
 		if len(args) == 0 { // l or look with no args
 			roomId := entity.RoomId()
-			log.Printf("Entity RoomId %d", roomId)
 			room := DB().GetRoom(roomId)
 			if room != nil {
 				entity.Send(fmt.Sprintf("\r\n%s\r\n",
-					MakeTitle(fmt.Sprintf("%s %d",
-						room.Name, room.Id),
+					MakeTitle(room.Name,
 						ANSI_TITLE_STYLE_NORMAL,
 						ANSI_TITLE_ALIGNMENT_CENTER)))
 				entity.Send(room.Desc)
 				entity.Send("\r\nExits:\r\n")
-				for dir, toRoom := range room.Exits {
+				for dir := range room.Exits {
 					if k, ok := room.ExitFlags[dir]; ok {
 						exit_flags := k.(map[string]interface{})
 						ext := room_get_exit_status(exit_flags)
-						entity.Send(fmt.Sprintf(" - %s%s[%d]\r\n", dir, ext, toRoom))
+						entity.Send(fmt.Sprintf(" - %s%s\r\n", dir, ext))
 					} else {
-						entity.Send(fmt.Sprintf(" - %s [%d]\r\n", dir, toRoom))
+						entity.Send(fmt.Sprintf(" - %s\r\n", dir))
+					}
+				}
+				entity.Send("\r\n")
+				for i := range room.Items {
+					item := room.Items[i]
+					entity.Send("&Y%s&d\r\n", item.GetData().Name)
+				}
+
+				for _, e := range DB().GetEntitiesInRoom(room.Id) {
+					if e != entity {
+						entity.Send("&P%s&d\r\n", e.GetCharData().Name)
 					}
 				}
 			} else {
@@ -79,60 +99,138 @@ func do_look(entity Entity, args ...string) {
 
 }
 
-func do_say(entity Entity, args ...string) {
-	words := strings.Join(args, " ")
-	speaker := entity.GetCharData()
-	if entity.IsPlayer() {
-		entity.Send(fmt.Sprintf("You say \"%s\"\n", words))
-	}
-	entities := DB().GetEntitiesInRoom(speaker.RoomId())
-	for _, ex := range entities {
-		if ex != entity {
-			if ex.IsPlayer() {
-				listener := &(ex.(*PlayerProfile).Char)
-				ex.Send(fmt.Sprintf("%s says \"%s\"\n", speaker.Name, language_spoken(speaker, listener, words)))
-			} else {
-				ex.Send(fmt.Sprintf("%s says \"%s\"\n", speaker.Name, words))
-			}
-		}
-	}
+func do_north(entity Entity, args ...string) {
+	do_direction(entity, "north")
 }
-func do_say_comlink(entity Entity, args ...string) {
-	words := strings.Join(args, " ")
-	speaker := entity.GetCharData()
-	if entity.IsPlayer() {
-		entity.Send(fmt.Sprintf("You're comlink clicks and buzzes after you say &W\"%s\"&d\r\n", words))
+func do_northwest(entity Entity, args ...string) {
+	do_direction(entity, "northwest")
+}
+func do_northeast(entity Entity, args ...string) {
+	do_direction(entity, "northeast")
+}
+func do_east(entity Entity, args ...string) {
+	do_direction(entity, "east")
+}
+func do_west(entity Entity, args ...string) {
+	do_direction(entity, "west")
+}
+func do_southeast(entity Entity, args ...string) {
+	do_direction(entity, "southeast")
+}
+func do_southwest(entity Entity, args ...string) {
+	do_direction(entity, "southwest")
+}
+func do_south(entity Entity, args ...string) {
+	do_direction(entity, "south")
+}
+func do_up(entity Entity, args ...string) {
+	do_direction(entity, "up")
+}
+func do_down(entity Entity, args ...string) {
+	do_direction(entity, "down")
+}
+
+func do_direction(entity Entity, direction string) {
+	if entity_unspeakable_state(entity) {
+		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
+		return
+	}
+	if entity.GetCharData().State == ENTITY_STATE_SITTING {
+		entity.Send("\r\nYou are unable to move while sitting.\r\n")
+		return
 	}
 	db := DB()
-	for _, ex := range db.entities {
-		if ex != entity {
-			if ex.IsPlayer() {
-				listener := ex.GetCharData()
-				ex.Send(fmt.Sprintf("&CYou're comlink crackles to life with a voice that says...&d\r\n\"&W%s&Y:&d %s\"\r\n", speaker.Name, language_spoken(speaker, listener, words)))
+	room := db.GetRoom(entity.RoomId())
+	if !room.HasExit(direction) {
+		entity.Send("\r\nYou can't go that way.\r\n")
+		return
+	} else {
+		to_room := db.GetRoom(room.Exits[direction])
+		if to_room == nil {
+			entity.Send("\r\n&RThat room doesn't exist!\r\n")
+			return
+		} else {
+			if entity.CurrentMv() > 0 {
+				entity.GetCharData().Mv[0]--
+				entity.GetCharData().Room = to_room.Id
+				for _, e := range room.GetEntities() {
+					if entity_unspeakable_state(e) {
+						continue
+					}
+					if e != entity {
+						e.Send("\r\n%s has left going %s.\r\n", entity.GetCharData().Name, direction)
+					}
+				}
+				for _, e := range to_room.GetEntities() {
+					if entity_unspeakable_state(e) {
+						continue
+					}
+					if e != entity {
+						e.Send("\r\n%s has arrived from the %s.\r\n", entity.GetCharData().Name, direction_reverse(direction))
+					}
+				}
+				do_look(entity)
+				return
+			} else {
+				entity.Send("\r\n&You are too exhausted.\r\n")
+				return
 			}
 		}
+
 	}
 }
 
-func do_tune_frequency(entity Entity, args ...string) {
-	if entity.IsPlayer() {
-		player := entity.(*PlayerProfile)
-		if len(args) > 0 {
-			freq, err := strconv.ParseFloat(args[0], 32)
-			if err != nil {
-				entity.Send("\r\n&RError parsing frequency!&d\r\n")
-				return
+func do_stand(entity Entity, args ...string) {
+	ch := entity.GetCharData()
+	if ch.State == ENTITY_STATE_DEAD {
+		entity.Send("\r\n&RYou can't move when you're dead.&d\r\n")
+		return
+	}
+	if ch.State == ENTITY_STATE_UNCONSCIOUS {
+		entity.Send("\r\n&YYou are unconscious...&d\r\n")
+		return
+	}
+	if ch.State == ENTITY_STATE_SITTING || ch.State == ENTITY_STATE_SLEEPING {
+		ch.State = ENTITY_STATE_NORMAL
+		for _, e := range DB().GetEntitiesInRoom(entity.RoomId()) {
+			if entity_unspeakable_state(e) {
+				continue
 			}
-			if freq < 100.000 || freq > 500.000 {
-				entity.Send("\r\n&RFrequency out-of-band of your comlink!&d\r\n")
-				return
+			if e != entity {
+				e.Send("\r\n&d%s stands to their feet.\r\n", ch.Name)
 			}
-			freq_str := fmt.Sprintf("%3.3f", freq)
-			player.Frequency = freq_str
-		} else {
-			player.Frequency = tune_random_frequency()
 		}
-		entity.Send("\r\n&YYou're comlink frequency has been set to &W%s&Y.&d\r\n", player.Frequency)
+		entity.Send("\r\n&dYou spring to your feet.\r\n")
+		return
+	} else {
+		entity.Send("\r\n&dYou are already standing.\r\n")
+		return
+	}
+}
+
+func do_sit(entity Entity, args ...string) {
+	ch := entity.GetCharData()
+	if ch.State == ENTITY_STATE_DEAD {
+		entity.Send("\r\n&RYou can't move when you're dead.&d\r\n")
+		return
+	} else if ch.State == ENTITY_STATE_UNCONSCIOUS {
+		entity.Send("\r\n&YYou are unconscious...&d\r\n")
+		return
+	} else if ch.State == ENTITY_STATE_NORMAL {
+		ch.State = ENTITY_STATE_SITTING
+		for _, e := range DB().GetEntitiesInRoom(entity.RoomId()) {
+			if entity_unspeakable_state(e) {
+				continue
+			}
+			if e != entity {
+				e.Send("\r\n&d%s sits down.\r\n", ch.Name)
+			}
+		}
+		entity.Send("\r\n&dYou sit down.\r\n")
+	} else if ch.State == ENTITY_STATE_SITTING {
+		entity.Send("\r\n&dYou are already sitting.\r\n")
+	} else {
+		entity.Send("\r\n&dYou can't do that right now.\r\n")
 	}
 }
 
@@ -140,68 +238,43 @@ func do_ooc(entity Entity, args ...string) {
 	db := DB()
 	words := strings.Join(args, " ")
 	speaker := entity.GetCharData()
-	for _, e:= range db.entities {
+	for _, e := range db.entities {
 		if e.IsPlayer() {
 			entity.Send(fmt.Sprintf("&C%s OOC:&W%s\r\n", speaker.Name, words))
 		}
 	}
 }
 
-func do_who(entity Entity, args ...string) {
-	db := DB()
-	total := 0
-	entity.Send("\r\n")
-	entity.Send(MakeTitle("Who", ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_CENTER))
-	for _, e := range db.entities {
-		if e.IsPlayer() {
-			player := e.(*PlayerProfile)
-			entity.Send(fmt.Sprintf("&W%-54s&G [ &WLevel %2d&G ]\r\n", player.Char.Title, player.Char.Level))
-			total++
-		}
+func do_sleep(entity Entity, args ...string) {
+	ch := entity.GetCharData()
+	if ch.State == ENTITY_STATE_DEAD {
+		entity.Send("\r\n&RYou're already permanently asleep (*DEAD*).&d\r\n")
+		return
 	}
-	entity.Send("\r\n")
-	entity.Send(MakeTitle(fmt.Sprintf("%d Online", total), ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_RIGHT))
-	entity.Send("\r\n")
-	entity.Send(MakeTitle(fmt.Sprintf("%d Online", total), ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_LEFT))
-}
-
-func do_score(entity Entity, args ...string) {
-	if entity.IsPlayer() {
-		player := entity.(*PlayerProfile)
-		char := player.Char
-		player.Send("\r\n&c╒════════════════( &W%16s&c )══════╕&d\r\n", char.Name)
-		player.Send("&c│ Title: &G%-25s&c         │&d▒\r\n", char.Title)
-		player.Send("&c│  Race: &G%-25s&c         │&d▒\r\n", char.Race)
-		player.Send("&c│ Level: &G%-25d&c         │&d▒\r\n", char.Level)
-		player.Send("&c├─( Stats )────────────────────────────────┤&d▒\r\n")
-		player.Send("&c│ STR: &G%-2d&c               XP: &G%-14d&c │&d▒\r\n", char.Stats[0], char.XP)
-		player.Send("&c│ INT: &G%-2d&c            MONEY: &G%-14d&c │&d▒\r\n", char.Stats[1], char.Gold)
-		player.Send("&c│ DEX: &G%-2d&c             BANK: &G%-14d&c │&d▒\r\n", char.Stats[2], char.Bank)
-		player.Send("&c│ WIS: &G%-2d&c                                  │&d▒\r\n", char.Stats[3])
-		player.Send("&c│ CON: &G%-2d&c                                  │&d▒\r\n", char.Stats[4])
-		player.Send("&c│ CHA: &G%-2d&c                                  │&d▒\r\n", char.Stats[5])
-		player.Send("&c╞══════════════════════════════════════════╡&d▒\r\n")
-		player.Send("&c│ Weight: &G%3d kg&c                           │&d▒\r\n", char.CurrentWeight())
-		player.Send("&c│ Inventory: &G%3d&p(%3d)&c                      │&d▒\r\n", char.CurrentInventoryCount(), (int(char.Level)*3)+char.Stats[0])
-		player.Send("&c├─( Equipment )────────────────────────────┤▒&d\r\n")
-		player.Send("&c│       Head: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│      Torso: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│      Waist: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│       Legs: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│       Feet: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│      Hands: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│                                          │&d▒\r\n")
-		player.Send("&c│     &RWeapon: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│                                          │&d▒\r\n")
-		player.Send("&c├──( Skills )──────────────────────────────┤&d▒\r\n")
-		for s, v := range char.Skills {
-			player.Send("&c│ &w%-25s&c          &w%3d&c   │&d▒\r\n", s, v)
+	if ch.State == ENTITY_STATE_SLEEPING {
+		entity.Send("\r\n&dYou're already asleep.\r\n")
+		return
+	}
+	if ch.State == ENTITY_STATE_UNCONSCIOUS {
+		entity.Send("\r\n&dYou're unconscious.\r\n")
+		return
+	}
+	if ch.State == ENTITY_STATE_FIGHTING {
+		entity.Send("\r\n&dYou can't sleep when you're fighting.\r\n")
+		return
+	}
+	if ch.State == ENTITY_STATE_GUNNING || ch.State == ENTITY_STATE_PILOTING {
+		entity.Send("\r\n&dYou can't sleep.\r\n")
+		return
+	}
+	ch.State = ENTITY_STATE_SLEEPING
+	entity.Send("\r\n&dYou lay down and fall asleep.\r\n")
+	for _, e := range DB().GetEntitiesInRoom(entity.RoomId()) {
+		if entity_unspeakable_state(e) {
+			continue
 		}
-		player.Send("&c├──( Languages )───────────────────────────┤&d▒\r\n")
-		for s, v := range char.Languages {
-			player.Send("&c│ &w%-25s&c          &w%3d&c   │&d▒\r\n", s, v)
+		if e != entity {
+			e.Send("\r\n&d%s lays down and falls asleep.\r\n", ch.Name)
 		}
-		player.Send("&c└──────────────────────────────────────────┘▒&d\r\n")
-		player.Send(" ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒\r\n")
 	}
 }

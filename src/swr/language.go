@@ -59,7 +59,8 @@ func LanguageLoad() {
 	ScheduleFunc(language_decay, true, 60*60)
 }
 func language_get_by_name(name string) *Language {
-	for _, l := range Languages {
+	for i := range Languages {
+		l := Languages[i]
 		if l.Name == name {
 			return &l
 		}
@@ -116,6 +117,9 @@ func language_spoken(speaker *CharData, listener *CharData, words string) string
 
 func language_decay() {
 	for _, entity := range DB().entities {
+		if entity == nil {
+			continue
+		}
 		if entity.IsPlayer() {
 			player := entity.(*PlayerProfile)
 			lost := false

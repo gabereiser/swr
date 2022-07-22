@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"log"
 	"strings"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -29,6 +30,7 @@ var CommandFuncs = map[string]func(Entity, ...string){
 	"do_quit":           do_quit,
 	"do_qui":            do_qui,
 	"do_say":            do_say,
+	"do_speak":          do_speak,
 	"do_ooc":            do_ooc,
 	"do_look":           do_look,
 	"do_who":            do_who,
@@ -40,6 +42,19 @@ var CommandFuncs = map[string]func(Entity, ...string){
 	"do_fight":          do_fight,
 	"do_kill":           do_kill,
 	"do_starsystems":    do_starsystems,
+	"do_north":          do_north,
+	"do_northwest":      do_northwest,
+	"do_northeast":      do_northeast,
+	"do_west":           do_west,
+	"do_east":           do_east,
+	"do_south":          do_south,
+	"do_southeast":      do_southeast,
+	"do_southwest":      do_southwest,
+	"do_up":             do_up,
+	"do_down":           do_down,
+	"do_stand":          do_stand,
+	"do_sleep":          do_sleep,
+	"do_sit":            do_sit,
 }
 var GMCommandFuncs = map[string]func(Entity, ...string){
 	"do_area_create": do_area_create,
@@ -113,14 +128,15 @@ func command_fuzzy_match(command string) []Command {
 }
 func do_command(entity Entity, input string) {
 	args := strings.Split(input, " ")
-
+	if entity.IsPlayer() && input == "!" {
+		player := entity.(*PlayerProfile)
+		args = strings.Split(player.LastCommand, " ")
+	}
 	if strings.HasPrefix(args[0], "'") {
 		args[0] = strings.TrimPrefix(args[0], "'")
 		do_say(entity, args...)
 		entity.Prompt()
-		return
-	}
-	if strings.HasPrefix(args[0], "\"") {
+	} else if strings.HasPrefix(args[0], "\"") {
 		args[0] = strings.TrimPrefix(args[0], "\"")
 		do_say_comlink(entity, args...)
 		entity.Prompt()
@@ -140,9 +156,24 @@ func do_command(entity Entity, input string) {
 		command_map_to_func(commands[0].Func)(entity, a...)
 		entity.Prompt()
 	} else {
-		if entity.IsPlayer() {
-			entity.Send("\r\nHuh?\r\n")
+		commands := command_fuzzy_match(args[0])
+		if len(commands) > 0 {
+			a := args[1:]
+			command_map_to_func(commands[0].Func)(entity, a...)
 			entity.Prompt()
+		} else {
+			if entity.IsPlayer() {
+				entity.Send("\r\nHuh?\r\n")
+				entity.Prompt()
+			}
 		}
 	}
+	if entity.IsPlayer() {
+		player := entity.(*PlayerProfile)
+		player.LastSeen = time.Now().UTC()
+		if input[0:1] != "!" {
+			player.LastCommand = input
+		}
+	}
+
 }
