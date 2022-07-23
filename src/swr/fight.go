@@ -182,24 +182,20 @@ func do_combat(attacker Entity, defender Entity) {
 		defender.StopFighting()
 	}
 	if roll_dice("1d10") == 10 {
-		skill := "martial-arts"
-		if ach.Weapon() != nil {
-			skill = get_weapon_skill(ach.Weapon())
-		}
-		add_skill_value(attacker, skill, 1)
+		add_skill_value(attacker, get_weapon_skill(ach.Weapon()), 1)
 	}
 	entity_add_xp(attacker, uint(math.Floor(float64(dch.Level)*float64(rand.Intn(50)+1.0))))
 }
 
 func get_damage_string(damage uint, attacker string, defender string, weapon string) string {
 	if damage > 50 {
-		return fmt.Sprintf("&R%s ANNIHILATED %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
+		return fmt.Sprintf("&R%s **ANNIHILATED** %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
 	} else if damage > 25 {
-		return fmt.Sprintf("&R%s EVICERATED %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
+		return fmt.Sprintf("&R%s *EVICERATED* %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
 	} else if damage > 10 {
-		return fmt.Sprintf("&R%s BLASTED %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
+		return fmt.Sprintf("&R%s *BLASTED* %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
 	} else if damage > 2 {
-		return fmt.Sprintf("&R%s HIT %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
+		return fmt.Sprintf("&R%s *HIT* %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
 	} else if damage > 1 {
 		return fmt.Sprintf("&R%s SCRATCHED %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
 	} else {
