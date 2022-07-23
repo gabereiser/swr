@@ -58,13 +58,14 @@ func do_look(entity Entity, args ...string) {
 						ANSI_TITLE_ALIGNMENT_CENTER)))
 				entity.Send(room.Desc)
 				entity.Send("\r\nExits:\r\n")
-				for dir := range room.Exits {
+				for dir, to_room_id := range room.Exits {
+					to_room := DB().GetRoom(to_room_id)
 					if k, ok := room.ExitFlags[dir]; ok {
 						exit_flags := k.(map[string]interface{})
 						ext := room_get_exit_status(exit_flags)
-						entity.Send(fmt.Sprintf(" - %s%s\r\n", dir, ext))
+						entity.Send(fmt.Sprintf(" - %s %s %s\r\n", dir, to_room.Name, ext))
 					} else {
-						entity.Send(fmt.Sprintf(" - %s\r\n", dir))
+						entity.Send(fmt.Sprintf(" - %s %s\r\n", dir, to_room.Name))
 					}
 				}
 				entity.Send("\r\n")
@@ -150,6 +151,19 @@ func do_direction(entity Entity, direction string) {
 			entity.Send("\r\n&RThat room doesn't exist!\r\n")
 			return
 		} else {
+			locked := false
+			closed := false
+			if flags, ok := room.ExitFlags[direction]; ok {
+				locked, closed = room_get_blocked_exit_flags(flags.(map[string]interface{}))
+			}
+			if locked {
+				entity.Send("\r\nIt's locked.\r\n")
+				return
+			}
+			if closed {
+				entity.Send("\r\nIt's closed.\r\n")
+				return
+			}
 			if entity.CurrentMv() > 0 {
 				entity.GetCharData().Mv[0]--
 				entity.GetCharData().Room = to_room.Id
@@ -159,6 +173,9 @@ func do_direction(entity Entity, direction string) {
 					}
 					if e != entity {
 						e.Send("\r\n%s has left going %s.\r\n", entity.GetCharData().Name, direction)
+						if e.GetCharData().AI != nil {
+							e.GetCharData().AI.OnEnter(entity)
+						}
 					}
 				}
 				for _, e := range to_room.GetEntities() {
@@ -167,6 +184,9 @@ func do_direction(entity Entity, direction string) {
 					}
 					if e != entity {
 						e.Send("\r\n%s has arrived from the %s.\r\n", entity.GetCharData().Name, direction_reverse(direction))
+						if e.GetCharData().AI != nil {
+							e.GetCharData().AI.OnEnter(entity)
+						}
 					}
 				}
 				do_look(entity)
@@ -264,6 +284,114 @@ func do_sleep(entity Entity, args ...string) {
 		}
 		if e != entity {
 			e.Send("\r\n&d%s lays down and falls asleep.\r\n", ch.Name)
+		}
+	}
+}
+
+func do_open(entity Entity, args ...string) {
+	if entity_unspeakable_state(entity) {
+		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
+		return
+	}
+	if entity.GetCharData().State == ENTITY_STATE_SITTING {
+		entity.Send("\r\nYou are unable to move while sitting.\r\n")
+		return
+	}
+	db := DB()
+	room := db.GetRoom(entity.RoomId())
+	if len(args) == 0 {
+		entity.Send("\r\n&ROpen what?&d\r\n")
+		return
+	}
+	direction := strings.ToLower(args[0])
+	if !room.HasExit(direction) {
+		entity.Send("\r\n&ROpen what?&d.\r\n")
+	}
+	if flags, ok := room.ExitFlags[direction]; ok {
+		locked, closed := room_get_blocked_exit_flags(flags.(map[string]interface{}))
+		if locked {
+			// TODO: Search users inventory for the key.
+			entity.Send("\r\n&RYou don't have the key.&d\r\n")
+			return
+		}
+		if closed {
+			entity.Send("\r\n&GYou open the door.&d\r\n")
+			room.ExitFlags[direction].(map[string]interface{})["closed"] = false
+			to_room := db.GetRoom(room.Exits[direction])
+			reverse_direction := direction_reverse(direction)
+			if room.Id == to_room.Exits[reverse_direction] {
+				if _, ok := to_room.ExitFlags[reverse_direction]; ok {
+					to_room.ExitFlags[reverse_direction].(map[string]interface{})["closed"] = false
+				}
+			}
+			for _, e := range db.GetEntitiesInRoom(entity.RoomId()) {
+				if e != nil {
+					if e != entity {
+						e.Send("\r\n&P%s&d opens the door to the %s.\r\n", entity.GetCharData().Name, direction)
+					}
+				}
+			}
+			for _, e := range db.GetEntitiesInRoom(to_room.Id) {
+				if e != nil {
+					e.Send("\r\n&P%s&d opens the door to the %s.\r\n", entity.GetCharData().Name, reverse_direction)
+				}
+			}
+		}
+	} else {
+		entity.Send("\r\nYou can't close a door that doesn't exist.\r\n")
+	}
+}
+
+func do_close(entity Entity, args ...string) {
+	if entity_unspeakable_state(entity) {
+		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
+		return
+	}
+	if entity.GetCharData().State == ENTITY_STATE_SITTING {
+		entity.Send("\r\nYou are unable to move while sitting.\r\n")
+		return
+	}
+	db := DB()
+	room := db.GetRoom(entity.RoomId())
+	if len(args) == 0 {
+		entity.Send("\r\n&ROpen what?&d\r\n")
+		return
+	}
+	// TODO if args[0] is 'hatch' close the spaceship hatch/ramp.
+	// For now we'll assume it's a direction door.
+	direction := strings.ToLower(args[0])
+	if !room.HasExit(direction) {
+		entity.Send("\r\n&ROpen what?&d.\r\n")
+	}
+	if flags, ok := room.ExitFlags[direction]; ok {
+		locked, closed := room_get_blocked_exit_flags(flags.(map[string]interface{}))
+		if locked {
+			// TODO: Search users inventory for the key.
+			entity.Send("\r\n&RYou don't have the key.&d\r\n")
+			return
+		}
+		if !closed && !locked {
+			entity.Send("\r\n&GYou close the door.&d\r\n")
+			room.ExitFlags[direction].(map[string]interface{})["closed"] = true
+			to_room := db.GetRoom(room.Exits[direction])
+			reverse_direction := direction_reverse(direction)
+			if room.Id == to_room.Exits[reverse_direction] {
+				if _, ok := to_room.ExitFlags[reverse_direction]; ok {
+					to_room.ExitFlags[reverse_direction].(map[string]interface{})["closed"] = true
+				}
+			}
+			for _, e := range db.GetEntitiesInRoom(entity.RoomId()) {
+				if e != nil {
+					if e != entity {
+						e.Send("\r\n&P%s&d closes the door to the %s.\r\n", entity.GetCharData().Name, direction)
+					}
+				}
+			}
+			for _, e := range db.GetEntitiesInRoom(to_room.Id) {
+				if e != nil {
+					e.Send("\r\n&P%s&d closes the door to the %s.\r\n", entity.GetCharData().Name, reverse_direction)
+				}
+			}
 		}
 	}
 }

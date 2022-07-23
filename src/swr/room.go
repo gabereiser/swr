@@ -69,12 +69,22 @@ func (r *RoomData) RemoveItem(item Item) {
 	ret = append(ret, r.Items[idx+1:]...)
 	r.Items = ret
 }
-
-func room_get_exit_status(exitFlags map[string]interface{}) string {
-	ret := " "
-	locked := false
+func room_get_blocked_exit_flags(exitFlags map[string]interface{}) (locked bool, closed bool) {
+	locked = false
+	closed = false
+	if c, ok := exitFlags["closed"]; ok {
+		closed = c.(bool)
+	}
 	if l, ok := exitFlags["locked"]; ok {
 		locked = l.(bool)
+	}
+	return locked, closed
+}
+func room_get_exit_status(exitFlags map[string]interface{}) string {
+	ret := " "
+	locked, closed := room_get_blocked_exit_flags(exitFlags)
+	if closed {
+		ret += "(closed) "
 	}
 	if locked {
 		ret += "(locked) "

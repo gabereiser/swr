@@ -54,6 +54,8 @@ var CommandFuncs = map[string]func(Entity, ...string){
 	"do_stand":          do_stand,
 	"do_sleep":          do_sleep,
 	"do_sit":            do_sit,
+	"do_open":           do_open,
+	"do_close":          do_close,
 }
 var GMCommandFuncs = map[string]func(Entity, ...string){
 	"do_area_create": do_area_create,

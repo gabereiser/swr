@@ -135,6 +135,17 @@
   keywords: [ "sit" ]
   level: 1
   func: do_sit
+-
+  name: open
+  keywords: [ "open" ]
+  level: 1
+  func: do_open
+-
+  name: close
+  keywords: [ "close" ]
+  level: 1
+  func: do_close
+
 # Wiz Commands
 -
   name: acreate
