@@ -48,6 +48,18 @@ func do_say(entity Entity, args ...string) {
 		}
 	}
 }
+
+func do_ooc(entity Entity, args ...string) {
+	db := DB()
+	words := strings.Join(args, " ")
+	speaker := entity.GetCharData()
+	for _, e := range db.entities {
+		if e.IsPlayer() {
+			entity.Send(fmt.Sprintf("&C(OOC)&Y%s:&W%s&d\r\n", speaker.Name, words))
+		}
+	}
+}
+
 func do_say_comlink(entity Entity, args ...string) {
 	words := strings.Join(args, " ")
 	speaker := entity.GetCharData()

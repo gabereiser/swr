@@ -142,13 +142,6 @@ func do_command(entity Entity, input string) {
 		entity.Prompt()
 		return
 	}
-	if strings.HasPrefix(args[0], "ooc") {
-		args[0] = strings.TrimPrefix(args[0], "ooc")
-		args[0] = strings.Trim(args[0], " ")
-		do_ooc(entity, args...)
-		entity.Prompt()
-		return
-	}
 
 	commands := command_fuzzy_match(args[0])
 	if len(commands) > 0 {

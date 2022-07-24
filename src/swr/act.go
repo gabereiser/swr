@@ -234,16 +234,7 @@ func do_sit(entity Entity, args ...string) {
 	}
 }
 
-func do_ooc(entity Entity, args ...string) {
-	db := DB()
-	words := strings.Join(args, " ")
-	speaker := entity.GetCharData()
-	for _, e := range db.entities {
-		if e.IsPlayer() {
-			entity.Send(fmt.Sprintf("&C%s OOC:&W%s\r\n", speaker.Name, words))
-		}
-	}
-}
+
 
 func do_sleep(entity Entity, args ...string) {
 	ch := entity.GetCharData()
