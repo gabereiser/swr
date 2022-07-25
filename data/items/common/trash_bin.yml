@@ -1,0 +1,24 @@
+---
+id: 5
+name: a recycle bin
+keywords: [bin,trash,recycle,recycler]
+desc: |
+  A recycle bin. Items thrown into the bin will be discarded.
+  
+   _.,-----/=\-----,._
+  (__ ~~~"""""""~~~ __)
+   | ~~~"""""""""~~~ |
+   | |  ; ,   , ;  | |
+   | |  | |   | |  | |
+   | |  | |   | |  | |
+   | |  | |   | |  | |
+   | |  | |   | |  | |
+   | |  | |   | |  | |
+   | |  | |   | |  | |
+   | |  | |   | |  | |
+   |. \_| |   | |_/ .|
+    `-,.__ ~~~ __.,-'
+          ~~~~~
+type: bin
+weight: 1000000
+value: 0

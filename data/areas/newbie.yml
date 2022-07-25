@@ -45,6 +45,9 @@ items:
   - 
     item: 1
     room: 100
+  -
+    item: 200
+    room: 101
 mobs:
   -
     mob: 1

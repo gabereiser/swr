@@ -1,0 +1,11 @@
+---
+id: 200
+name: a vibro-blade
+desc: |
+  A basic looking vibro-blade.
+keywords: [blade,vibro,vibro-blade]
+type: weapon
+weaponType: vibro-blade
+dmgRoll: 1d6
+value: 100
+weight: 3
