@@ -104,6 +104,9 @@ func do_inventory(entity Entity, args ...string) {
 	player.Send("\r\n&c╒═══( Inventory )═══════════════════╕\r\n")
 	player.Send("&c├───────────────────────────────────┤&d▒\r\n")
 	for _, item := range ch.Inventory {
+		if item == nil {
+			continue
+		}
 		player.Send("&c│ %-34s│&d▒\r\n", item.GetData().Name)
 	}
 	player.Send("&c└───────────────────────────────────┘&d▒\r\n")

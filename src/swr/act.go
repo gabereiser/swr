@@ -565,6 +565,10 @@ func do_drop(entity Entity, args ...string) {
 	db := DB()
 	item_name := args[0]
 	item := entity.FindItem(item_name)
+	if item == nil {
+		entity.Send("\r\nCan't find that in your inventory.\r\n")
+		return
+	}
 	room := db.GetRoom(entity.RoomId())
 	room.AddItem(item)
 	entity.GetCharData().RemoveItem(item)

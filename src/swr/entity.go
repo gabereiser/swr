@@ -178,7 +178,11 @@ func (c *CharData) MaxWeight() int {
 }
 
 func (c *CharData) CurrentInventoryCount() int {
-	return len(c.Inventory)
+	count := 0
+	for range c.Inventory {
+		count++
+	}
+	return count
 }
 
 func (c *CharData) MaxInventoryCount() int {
@@ -273,9 +277,16 @@ func (c *CharData) RemoveItem(item Item) {
 		}
 	}
 	if idx > -1 {
-		ret := make([]*ItemData, len(c.Inventory)-1)
-		ret = append(ret, c.Inventory[:idx]...)
-		ret = append(ret, c.Inventory[idx+1:]...)
+		ret := make([]*ItemData, 0)
+		for id, i := range c.Inventory {
+			if id == idx {
+				continue
+			}
+			if i == nil {
+				continue
+			}
+			ret = append(ret, i)
+		}
 		c.Inventory = ret
 	}
 }
