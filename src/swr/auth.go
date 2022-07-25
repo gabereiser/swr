@@ -204,8 +204,8 @@ Stats:
 	player.Char.Hp = []int{10, 10}
 	player.Char.Mp = []int{0, 0}
 	player.Char.Mv = []int{10, 10}
-	player.Char.Equipment = make(map[string]Item)
-	player.Char.Inventory = make([]Item, 0)
+	player.Char.Equipment = make(map[string]*ItemData)
+	player.Char.Inventory = make([]*ItemData, 0)
 	player.Char.Keywords = []string{name, race}
 	player.Char.Bank = 0
 	player.Char.Brain = "client"

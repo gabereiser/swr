@@ -327,6 +327,7 @@ func do_open(entity Entity, args ...string) {
 	direction := get_direction_string(strings.ToLower(args[0]))
 	if !room.HasExit(direction) {
 		entity.Send("\r\n&ROpen what?&d.\r\n")
+		return
 	}
 	if flags, ok := room.ExitFlags[direction]; ok {
 		if flags.Locked {
@@ -368,16 +369,18 @@ func do_open(entity Entity, args ...string) {
 			for _, e := range db.GetEntitiesInRoom(entity.RoomId()) {
 				if e != nil {
 					if e != entity {
-						e.Send("\r\n&P%s&d opens the door to the %s.\r\n", entity.GetCharData().Name, direction)
+						e.Send("\r\nThe door to the %s opens.\r\n", direction)
 					}
 				}
 			}
 			for _, e := range db.GetEntitiesInRoom(to_room.Id) {
 				if e != nil {
-					e.Send("\r\n&P%s&d opens the door to the %s.\r\n", entity.GetCharData().Name, reverse_direction)
+					e.Send("\r\nThe door to the %s opens.\r\n", reverse_direction)
 				}
 			}
+			return
 		}
+		entity.Send("\r\nIt's already open.\r\n")
 	} else {
 		entity.Send("\r\nYou can't close a door that doesn't exist.\r\n")
 	}
@@ -395,7 +398,7 @@ func do_close(entity Entity, args ...string) {
 	db := DB()
 	room := db.GetRoom(entity.RoomId())
 	if len(args) == 0 {
-		entity.Send("\r\n&ROpen what?&d\r\n")
+		entity.Send("\r\n&RClose what?&d\r\n")
 		return
 	}
 	// TODO if args[0] is 'hatch' close the spaceship hatch/ramp.
@@ -403,11 +406,15 @@ func do_close(entity Entity, args ...string) {
 	direction := get_direction_string(strings.ToLower(args[0]))
 	if !room.HasExit(direction) {
 		entity.Send("\r\n&RClose what?&d.\r\n")
+		return
 	}
 	if flags, ok := room.ExitFlags[direction]; ok {
 		if flags.Locked {
-			// TODO: Search users inventory for the key.
-			entity.Send("\r\n&RYou don't have the key.&d\r\n")
+			entity.Send("\r\n&RIt's closed and locked already.&d\r\n")
+			return
+		}
+		if flags.Closed {
+			entity.Send("\r\nIt's already closed.\r\n")
 			return
 		}
 		if !flags.Closed && !flags.Locked {
@@ -423,17 +430,22 @@ func do_close(entity Entity, args ...string) {
 			for _, e := range db.GetEntitiesInRoom(entity.RoomId()) {
 				if e != nil {
 					if e != entity {
-						e.Send("\r\n&P%s&d closes the door to the %s.\r\n", entity.GetCharData().Name, direction)
+						e.Send("\r\nThe door to the %s closes.\r\n", direction)
 					}
 				}
 			}
 			for _, e := range db.GetEntitiesInRoom(to_room.Id) {
 				if e != nil {
-					e.Send("\r\n&P%s&d closes the door to the %s.\r\n", entity.GetCharData().Name, reverse_direction)
+					e.Send("\r\nThe door to the %s closes.\r\n", reverse_direction)
 				}
 			}
+			return
 		}
+	} else {
+		entity.Send("\r\n&RClose what? There's no door here.&d\r\n")
+		return
 	}
+	entity.Send("\r\nHuh?.\r\n")
 }
 
 func do_get(entity Entity, args ...string) {
@@ -564,7 +576,9 @@ func do_drop(entity Entity, args ...string) {
 		}
 		if e != entity {
 			e.Send("\r\n&P%s&d drops &Y%s&d.\r\n", ch.Name, item.GetData().Name)
-			e.GetCharData().AI.OnDrop(entity, item)
+			if e.GetCharData().AI != nil {
+				e.GetCharData().AI.OnDrop(entity, item)
+			}
 		}
 	}
 }

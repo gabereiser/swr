@@ -51,7 +51,7 @@ type ItemData struct {
 	Id         uint     `yaml:"id"`
 	Name       string   `yaml:"name"`
 	Desc       string   `yaml:"desc"`
-	Keywords   []string `yaml:"keywords"`
+	Keywords   []string `yaml:"keywords,flow"`
 	Type       string   `yaml:"type"`
 	Value      int      `yaml:"value"`
 	Weight     int      `yaml:"weight"`
@@ -112,6 +112,9 @@ func item_clone(item Item) Item {
 	}
 	for idx := range i.Items {
 		con_item := i.Items[idx]
+		if con_item == nil {
+			continue
+		}
 		c.Items = append(c.Items, item_clone(con_item))
 	}
 	for idx := range i.Keywords {

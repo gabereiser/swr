@@ -79,32 +79,32 @@ type Entity interface {
 }
 
 type CharData struct {
-	Id        uint            `yaml:"id"`
-	Room      uint            `yaml:"room,omitempty"`
-	Name      string          `yaml:"name"`
-	Keywords  []string        `yaml:"keywords,flow,omitempty"`
-	Title     string          `yaml:"title,omitempty"`
-	Desc      string          `yaml:"desc"`
-	Race      string          `yaml:"race,omitempty"`
-	Gender    string          `yaml:"gender,omitempty"`
-	Level     uint            `yaml:"level,omitempty"`
-	XP        uint            `yaml:"xp,omitempty"`
-	Gold      uint            `yaml:"gold,omitempty"`
-	Bank      uint            `yaml:"bank,omitempty"`
-	Hp        []int           `yaml:"hp,flow"`    // Hit Points [0] Current [1] Max : len = 2
-	Mp        []int           `yaml:"mp,flow"`    // Magic Points [0] Current [1] Max : len = 2
-	Mv        []int           `yaml:"mv,flow"`    // Move Points [0] Current [1] Max : len = 2
-	Stats     []int           `yaml:"stats,flow"` // str, int, dex, wis, con, cha
-	Skills    map[string]int  `yaml:"skills,flow,omitempty"`
-	Languages map[string]int  `yaml:"languages,flow,omitempty"`
-	Speaking  string          `yaml:"speaking,omitempty"`
-	Equipment map[string]Item `yaml:"equipment,flow,omitempty"` // Key is a EQUIPMENT_WEAR_LOC_* const, Value is an item.
-	Inventory []Item          `yaml:"inventory,omitempty"`
-	State     string          `yaml:"state,omitempty"`
-	Brain     string          `yaml:"brain,omitempty"`
-	Flags     []string        `yaml:"flags,omitempty"`
-	AI        Brain           `yaml:"-"`
-	Attacker  Entity          `yaml:"-"`
+	Id        uint                 `yaml:"id"`
+	Room      uint                 `yaml:"room,omitempty"`
+	Name      string               `yaml:"name"`
+	Keywords  []string             `yaml:"keywords,flow,omitempty"`
+	Title     string               `yaml:"title,omitempty"`
+	Desc      string               `yaml:"desc"`
+	Race      string               `yaml:"race,omitempty"`
+	Gender    string               `yaml:"gender,omitempty"`
+	Level     uint                 `yaml:"level,omitempty"`
+	XP        uint                 `yaml:"xp,omitempty"`
+	Gold      uint                 `yaml:"gold,omitempty"`
+	Bank      uint                 `yaml:"bank,omitempty"`
+	Hp        []int                `yaml:"hp,flow"`    // Hit Points [0] Current [1] Max : len = 2
+	Mp        []int                `yaml:"mp,flow"`    // Magic Points [0] Current [1] Max : len = 2
+	Mv        []int                `yaml:"mv,flow"`    // Move Points [0] Current [1] Max : len = 2
+	Stats     []int                `yaml:"stats,flow"` // str, int, dex, wis, con, cha
+	Skills    map[string]int       `yaml:"skills,flow,omitempty"`
+	Languages map[string]int       `yaml:"languages,flow,omitempty"`
+	Speaking  string               `yaml:"speaking,omitempty"`
+	Equipment map[string]*ItemData `yaml:"equipment,flow,omitempty"` // Key is a EQUIPMENT_WEAR_LOC_* const, Value is an item.
+	Inventory []*ItemData          `yaml:"inventory,omitempty"`
+	State     string               `yaml:"state,omitempty"`
+	Brain     string               `yaml:"brain,omitempty"`
+	Flags     []string             `yaml:"flags,omitempty"`
+	AI        Brain                `yaml:"-"`
+	Attacker  Entity               `yaml:"-"`
 }
 
 func (*CharData) IsPlayer() bool {
@@ -162,6 +162,9 @@ func (c *CharData) base_weight() int {
 func (c *CharData) CurrentWeight() int {
 	weight := c.base_weight()
 	for _, item := range c.Inventory {
+		if item == nil {
+			continue
+		}
 		weight += item.GetWeight()
 	}
 	return weight
@@ -242,6 +245,9 @@ func (c *CharData) Weapon() Item {
 func (c *CharData) FindItem(keyword string) Item {
 	for i := range c.Inventory {
 		item := c.Inventory[i]
+		if item == nil {
+			continue
+		}
 		keys := item.GetKeywords()
 		for k := range keys {
 			key := keys[k]
@@ -257,6 +263,9 @@ func (c *CharData) RemoveItem(item Item) {
 	idx := -1
 	for id := range c.Inventory {
 		i := c.Inventory[id]
+		if i == nil {
+			continue
+		}
 		if i == item {
 			idx = id
 		} else if i.IsContainer() {
@@ -264,7 +273,7 @@ func (c *CharData) RemoveItem(item Item) {
 		}
 	}
 	if idx > -1 {
-		ret := make([]Item, len(c.Inventory)-1)
+		ret := make([]*ItemData, len(c.Inventory)-1)
 		ret = append(ret, c.Inventory[:idx]...)
 		ret = append(ret, c.Inventory[idx+1:]...)
 		c.Inventory = ret
@@ -411,8 +420,8 @@ func entity_clone(entity Entity) Entity {
 		Mv:        make([]int, 2),
 		Stats:     make([]int, 6),
 		Skills:    make(map[string]int),
-		Equipment: make(map[string]Item),
-		Inventory: make([]Item, 0),
+		Equipment: make(map[string]*ItemData),
+		Inventory: make([]*ItemData, 0),
 		Languages: make(map[string]int),
 		AI:        ch.AI,
 		State:     ch.State,
@@ -438,13 +447,16 @@ func entity_clone(entity Entity) Entity {
 		c.Stats[i] = s
 	}
 	for wearLoc, item := range ch.Equipment {
-		c.Equipment[wearLoc] = item_clone(item)
+		c.Equipment[wearLoc] = item_clone(item).GetData()
 	}
 	for language, level := range ch.Languages {
 		c.Languages[language] = level
 	}
 	for i := range ch.Inventory {
 		item := ch.Inventory[i]
+		if item == nil {
+			continue
+		}
 		c.Inventory = append(c.Inventory, item)
 	}
 	for s, v := range ch.Skills {
@@ -547,6 +559,9 @@ func processHealing(entity Entity) {
 }
 
 func entity_add_xp(entity Entity, xp int) {
+	if !entity.IsPlayer() {
+		return
+	}
 	ch := entity.GetCharData()
 	level := ch.Level
 	x := int(ch.XP)
@@ -555,7 +570,7 @@ func entity_add_xp(entity Entity, xp int) {
 		x = 0
 	}
 	ch.XP = uint(x)
-	ch.Level = get_level_for_xp(ch.XP)
+	ch.Level = get_level_for_xp(ch.XP) + 1
 	if ch.Level != level {
 		entity.Send("\r\n}YYou have gained a level!&d\r\n")
 		entity.Send("\r\n&YYou are now level &W%d&d.\r\n", ch.Level)
@@ -567,6 +582,9 @@ func entity_add_xp(entity Entity, xp int) {
 	entity.Send("\r\n&dYou gained &w%d&d xp.\r\n", xp)
 }
 func entity_lose_xp(entity Entity, xp int) {
+	if !entity.IsPlayer() {
+		return
+	}
 	ch := entity.GetCharData()
 	level := ch.Level
 	x := int(ch.XP)
@@ -575,7 +593,7 @@ func entity_lose_xp(entity Entity, xp int) {
 		x = 0
 	}
 	ch.XP = uint(x)
-	ch.Level = get_level_for_xp(ch.XP)
+	ch.Level = get_level_for_xp(ch.XP) + 1
 	entity.Send("\r\n&dYou lost &w%d&d xp.\r\n", xp)
 	if ch.Level != level {
 		entity.Send("\r\n}RYou have lost a level!&d\r\n")
@@ -629,6 +647,6 @@ func entity_pickup_item(entity Entity, item Item) bool {
 		entity.Send("\r\n&RYou can't carry any more items!&d\r\n")
 		return false
 	}
-	ch.Inventory = append(ch.Inventory, item)
+	ch.Inventory = append(ch.Inventory, item.GetData())
 	return true
 }

@@ -35,6 +35,9 @@ func do_say(entity Entity, args ...string) {
 	}
 	entities := DB().GetEntitiesInRoom(speaker.RoomId())
 	for _, ex := range entities {
+		if ex == nil {
+			continue
+		}
 		if entity_unspeakable_state(ex) {
 			continue
 		}
@@ -60,6 +63,9 @@ func do_say_comlink(entity Entity, args ...string) {
 	}
 	db := DB()
 	for _, ex := range db.entities {
+		if ex == nil {
+			continue
+		}
 		if entity_unspeakable_state(ex) {
 			continue
 		}

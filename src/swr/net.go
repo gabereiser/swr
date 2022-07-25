@@ -79,7 +79,7 @@ func (c *MudClient) Read() string {
 			if strings.HasSuffix(buf, "\n") {
 				buf = strings.TrimSuffix(buf, "\r\n")
 				buf = strings.TrimSuffix(buf, "\n")
-				return buf
+				return strings.TrimSpace(buf)
 			}
 		}
 	}

@@ -2,16 +2,16 @@
 id: 1
 room: 0
 name: a practice droid
-keywords: [ "droid", "practice" ]
-flags: [ npc, sentinel, droid ]
+keywords: [ "droid" ]
+flags: [ npc, sentinel, droid, nofight ]
 desc: |
   A simple, practice droid floats here ready to train you in combat.
 race: Droid
 gender: n
 level: 10
-xp: 50000
+xp: 41000
 gold: 0
-hp: [20, 20]
+hp: [10, 10]
 mp: [0, 0]
 mv: [10, 10]
 stats: [ 5, 0, 0, 0, 0, 1 ]

@@ -124,6 +124,11 @@ func do_combat(attacker Entity, defender Entity) {
 	ach := attacker.GetCharData()
 	dch := defender.GetCharData()
 
+	for _, flag := range ach.Flags {
+		if flag == "nofight" {
+			return
+		}
+	}
 	hit_chance := roll_dice("1d20")
 	damage := uint(0)
 	ach_weapon := "fists"
@@ -155,6 +160,13 @@ func do_combat(attacker Entity, defender Entity) {
 		defender.ApplyDamage(damage)
 	}
 	xp_base := 1
+	lvl := int(dch.Level-ach.Level) / 5
+	if lvl < 1 {
+		lvl = 1
+	}
+	if lvl > 5 {
+		lvl = 5
+	}
 	attacker.Send(get_damage_string(damage, "You", dch.Name, fmt.Sprintf("your %s", ach_weapon)))
 	defender.Send(get_damage_string(damage, ach.Name, "you", fmt.Sprintf("their %s", ach_weapon)))
 	if attacker.GetCharData().State == ENTITY_STATE_DEAD {
@@ -162,7 +174,7 @@ func do_combat(attacker Entity, defender Entity) {
 		defender.Send("\r\n&RYou have killed &W%s&d\r\n", ach.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(ach.Level) * 500
+		xp_base = lvl * 500
 		make_corpse(attacker)
 		entity_add_xp(defender, xp_base)
 		entity_lose_xp(attacker, xp_base)
@@ -173,7 +185,7 @@ func do_combat(attacker Entity, defender Entity) {
 		defender.Send("\r\n&RYou have knocked out &W%s&d\r\n", ach.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(ach.Level) * 200
+		xp_base = lvl * 200
 		entity_add_xp(defender, xp_base)
 		entity_lose_xp(attacker, xp_base)
 		return
@@ -183,7 +195,7 @@ func do_combat(attacker Entity, defender Entity) {
 		attacker.Send("\r\n&RYou have killed &W%s&d\r\n", dch.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(ach.Level) * 500
+		xp_base = lvl * 500
 		make_corpse(defender)
 		entity_lose_xp(defender, xp_base)
 		entity_add_xp(attacker, xp_base)
@@ -194,7 +206,7 @@ func do_combat(attacker Entity, defender Entity) {
 		attacker.Send("\r\n&RYou have knocked out &W%s&d\r\n", dch.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(ach.Level) * 200
+		xp_base = lvl * 200
 		entity_lose_xp(defender, xp_base)
 		entity_add_xp(attacker, xp_base)
 		return
@@ -202,7 +214,7 @@ func do_combat(attacker Entity, defender Entity) {
 	if roll_dice("1d10") == 10 {
 		add_skill_value(attacker, get_weapon_skill(ach.Weapon()), 1)
 	}
-	xp := (rand.Intn(int(damage + 1)))
+	xp := (rand.Intn(int(damage + 1))) * 2
 	entity_add_xp(attacker, int(dch.Level)*xp)
 }
 

@@ -10,25 +10,26 @@ desc: |
   &GGround&w
   -------------------------------------------------------------------------------------------
   &GMartial-Arts&w  - Hand to hand combat, without weapons. The default. It's hard to master
-                      but mastering it will make you more powerful than you can possibly
-                      imagine &y(STR/DEX primary stat)&w
+                  but mastering it will make you more powerful than you can possibly
+                  imagine &y(STR/DEX primary stat)&w
   &GVibro-Blades&w  - When you need a little extra stabbing action. &y(DEX primary stat)&w
+
   &GForce-Pikes&w   - Larger than a vibro-blade, these weapons are heavy hitters for the up
-                      close and personal. &y(STR primary stat)&w
+                  close and personal. &y(STR primary stat)&w
   &GBlasters&w      - Small arms, pistols, the sidearm of choice throughout the galaxy &y(DEX
-                      primary stat)&w
+                  primary stat)&w
   &GRifles&w        - Larger rifles, more firepower, heavier hitting and to carry. Unable to
-                      hide and smuggle through checkpoints. &y(STR primary stat)&w
+                  hide and smuggle through checkpoints. &y(STR primary stat)&w
   &GRepeaters&w     - Even larger guns that require a huge amount of strength to carry. Best
-                      if mounted. Small turrets are considered repeaters. &y(STR primary stat)&w
-  &GBowcasters&w    - Bowcasters/Sniper rifles, the finesse guns. Slower to fire but longer
-                      range. &y(DEX primary stat)&w
-  &GGrenades&w      - Throwables, thermal detonators, and pipebombs - oh my. &y(STR primary
-                      stat)&w
-  &GMines&w         - Plant in the ground and will detonate when stepped on. &y(STR primary
-                      stat)&w
-  &GClaymore&w      - Like a mine, but only kills the person who triggers it. &y(DEX primary
-                      stat)&w
+                  if mounted. Small turrets are considered repeaters. &y(STR primary stat)&w
+  &GBowcasters&w    - Bowcasters/Sniper rifles, the finesse guns. Slower to fire but longer range.
+                  &y(DEX primary stat)&w
+  &GGrenades&w      - Throwables, thermal detonators, and pipebombs - oh my. &y(STR primary stat)&w
+
+  &GMines&w         - Plant in the ground and will detonate when stepped on. &y(STR primary stat)&w
+
+  &GClaymore&w      - Like a mine, but only kills the person who triggers it. &y(DEX primary stat)&w
+  
   &GLightsaber&w    - A laser sword used only by the &cForce Sensitive&w. &y(DEX primary stat)&w
 
 

@@ -3,7 +3,7 @@ name: newbie
 desc: Newbie Area
 author: Admin
 levels: [1, 10]
-reset: 300
+reset: 60
 reset_msg: You hear a loud *thud* as the spaceship lurches slightly.
 rooms: 
   -
