@@ -1,6 +1,6 @@
 
 build:
-	$(eval GIT_COMMIT=0.0.1-$(shell git rev-parse --short head))
+	$(eval GIT_COMMIT=0.0.2-$(shell git rev-parse --short head))
 	@echo 'Building version $(GIT_COMMIT)'
 	@cd src; \
 	sed 's/$$VERSION/$(GIT_COMMIT)/g' ./swr/version.go.inc > ./swr/version.go; \
