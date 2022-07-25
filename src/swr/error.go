@@ -17,10 +17,17 @@
  */
 package swr
 
-import "log"
+import (
+	"fmt"
+	"log"
+)
 
 func ErrorCheck(err error) {
 	if err != nil {
 		log.Printf("Error %+v", err)
 	}
+}
+
+func Err(format string, any ...interface{}) error {
+	return fmt.Errorf(format, any...)
 }

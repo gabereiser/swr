@@ -25,7 +25,7 @@ type Brain interface {
 	OnKill(entity Entity)
 	OnDeath()
 	OnDrop(entity Entity, item Item)
-	OnHeal(entity Entity, item Item)
+	OnHeal(entity Entity)
 	OnGive(entity Entity, item Item)
 	OnSay(entity Entity, words string)
 	Update()
@@ -39,4 +39,38 @@ func MakeGenericBrain(entity Entity) *GenericBrain {
 	brain := new(GenericBrain)
 	brain.Entity = entity
 	return brain
+}
+
+func (b *GenericBrain) OnSpawn() {
+
+}
+func (b *GenericBrain) OnDeath() {
+
+}
+func (b *GenericBrain) OnKill(entity Entity) {
+
+}
+func (b *GenericBrain) OnMove() {
+
+}
+func (b *GenericBrain) OnEnter(entity Entity) {
+
+}
+func (b *GenericBrain) OnGreet(entity Entity) {
+
+}
+func (b *GenericBrain) OnDrop(entity Entity, item Item) {
+
+}
+func (b *GenericBrain) OnGive(entity Entity, item Item) {
+
+}
+func (b *GenericBrain) OnHeal(entity Entity) {
+
+}
+func (b *GenericBrain) OnSay(entity Entity, words string) {
+
+}
+func (b *GenericBrain) Update() {
+
 }

@@ -1,0 +1,8 @@
+---
+id: 1001
+name: a copper ingot
+desc: |
+  A copper ingot forged from 99.99% pure Cu.
+type: material
+weight: 3
+value: 6

@@ -1,0 +1,8 @@
+---
+id: 1002
+name: a silicon crystal
+desc: |
+  A silicon crystal forged from pure 99.99% Si.
+type: material
+weight: 1
+value: 40

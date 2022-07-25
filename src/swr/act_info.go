@@ -57,7 +57,7 @@ func do_score(entity Entity, args ...string) {
 	if entity.IsPlayer() {
 		player := entity.(*PlayerProfile)
 		char := player.Char
-		player.Send("\r\n&c╒════════════════( &W%16s&c )══════╕&d\r\n", char.Name)
+		player.Send("\r\n&c╒═══( &W%-16s&c )═══════════════════╕&d\r\n", char.Name)
 		player.Send("&c│ Title: &G%-25s&c         │&d▒\r\n", char.Title)
 		player.Send("&c│  Race: &G%-25s&c         │&d▒\r\n", char.Race)
 		player.Send("&c│ Level: &G%-25d&c         │&d▒\r\n", char.Level)
@@ -90,7 +90,19 @@ func do_score(entity Entity, args ...string) {
 			player.Send("&c│ &w%-25s&c          &w%3d&c   │&d▒\r\n", s, v)
 		}
 		player.Send("&c│   &cSpeaking: &w%-20s&c         │&d▒\r\n", char.Speaking)
-		player.Send("&c└──────────────────────────────────────────┘▒&d\r\n")
+		player.Send("&c└──────────────────────────────────────────┘&d▒\r\n")
 		player.Send(" ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒\r\n")
 	}
+}
+
+func do_inventory(entity Entity, args ...string) {
+	player := entity.(*PlayerProfile)
+	ch := entity.GetCharData()
+	player.Send("\r\n&c╒═══( Inventory )═══════════════════╕\r\n")
+	player.Send("&c├───────────────────────────────────┤&d▒\r\n")
+	for _, item := range ch.Inventory {
+		player.Send("&c│ %-34s│&d▒\r\n", item.GetData().Name)
+	}
+	player.Send("&c└───────────────────────────────────┘&d▒\r\n")
+	player.Send(" ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒&d\r\n")
 }

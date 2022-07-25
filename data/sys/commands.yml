@@ -145,6 +145,26 @@
   keywords: [ "close" ]
   level: 1
   func: do_close
+-
+  name: get
+  keywords: [ "get" ]
+  level: 1
+  func: do_get
+-
+  name: drop
+  keywords: [ "drop" ]
+  level: 1
+  func: do_drop
+-
+  name: put
+  keywords: [ "put" ]
+  level: 1
+  func: do_put
+-
+  name: inventory
+  keywords: [ "inventory" ]
+  level: 1
+  func: do_inventory
 
 # Wiz Commands
 -

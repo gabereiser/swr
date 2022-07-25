@@ -61,7 +61,7 @@ func do_look(entity Entity, args ...string) {
 				for dir, to_room_id := range room.Exits {
 					to_room := DB().GetRoom(to_room_id)
 					if k, ok := room.ExitFlags[dir]; ok {
-						exit_flags := k.(map[string]interface{})
+						exit_flags := k
 						ext := room_get_exit_status(exit_flags)
 						entity.Send(fmt.Sprintf(" - %s %s %s\r\n", dir, to_room.Name, ext))
 					} else {
@@ -71,6 +71,9 @@ func do_look(entity Entity, args ...string) {
 				entity.Send("\r\n")
 				for i := range room.Items {
 					item := room.Items[i]
+					if item == nil {
+						continue
+					}
 					entity.Send("&Y%s&d\r\n", item.GetData().Name)
 				}
 
@@ -79,6 +82,7 @@ func do_look(entity Entity, args ...string) {
 						entity.Send("&P%s&d\r\n", e.GetCharData().Name)
 					}
 				}
+				return
 			} else {
 				log.Fatalf("Entity %s is in room %d, only it doesn't exist and crashed the server.", entity.GetCharData().Name, entity.RoomId())
 			}
@@ -95,9 +99,26 @@ func do_look(entity Entity, args ...string) {
 					}
 				}
 			}
+			room := DB().GetRoom(entity.RoomId())
+			item := room.FindItem(args[0])
+			if item != nil {
+				entity.Send("You look at %s and see...\r\n%s\r\n", item.GetData().Name, item.GetData().Desc)
+				if item.IsCorpse() {
+					entity.Send("&YOn Corpse:&d\r\n")
+					for _, item := range item.GetData().Items {
+						entity.Send("&Y%s&d\r\n", item.GetData().Name)
+					}
+				}
+				return
+			}
+			item = entity.FindItem(args[0])
+			if item != nil {
+				entity.Send("You look at %s and see...\r\n%s\r\n", item.GetData().Name, item.GetData().Desc)
+				return
+			}
 		}
 	}
-
+	entity.Send("\r\n&dCan't find that here.\r\n")
 }
 
 func do_north(entity Entity, args ...string) {
@@ -154,7 +175,7 @@ func do_direction(entity Entity, direction string) {
 			locked := false
 			closed := false
 			if flags, ok := room.ExitFlags[direction]; ok {
-				locked, closed = room_get_blocked_exit_flags(flags.(map[string]interface{}))
+				locked, closed = room_get_blocked_exit_flags(flags)
 			}
 			if locked {
 				entity.Send("\r\nIt's locked.\r\n")
@@ -217,7 +238,7 @@ func do_stand(entity Entity, args ...string) {
 				continue
 			}
 			if e != entity {
-				e.Send("\r\n&d%s stands to their feet.\r\n", ch.Name)
+				e.Send("\r\n&d%s stands up.\r\n", ch.Name)
 			}
 		}
 		entity.Send("\r\n&dYou spring to your feet.\r\n")
@@ -303,25 +324,45 @@ func do_open(entity Entity, args ...string) {
 		entity.Send("\r\n&ROpen what?&d\r\n")
 		return
 	}
-	direction := strings.ToLower(args[0])
+	direction := get_direction_string(strings.ToLower(args[0]))
 	if !room.HasExit(direction) {
 		entity.Send("\r\n&ROpen what?&d.\r\n")
 	}
 	if flags, ok := room.ExitFlags[direction]; ok {
-		locked, closed := room_get_blocked_exit_flags(flags.(map[string]interface{}))
-		if locked {
-			// TODO: Search users inventory for the key.
-			entity.Send("\r\n&RYou don't have the key.&d\r\n")
+		if flags.Locked {
+			key_id := flags.Key
+			key := entity.GetCharData().GetItem(key_id)
+			if key == nil {
+				entity.Send("\r\n&RYou don't have the key.&d\r\n")
+			} else {
+				entity.Send("\r\n&YYou unlock the door.&d\r\n")
+				room.ExitFlags[direction].Locked = false
+				to_room := db.GetRoom(room.Exits[direction])
+				to_flags := to_room.GetExitFlags(direction_reverse(direction))
+				to_flags.Locked = false
+				for _, e := range db.GetEntitiesInRoom(entity.RoomId()) {
+					if e != nil {
+						if e != entity {
+							e.Send("\r\n&P%s&d unlocks the door to the %s.\r\n", entity.GetCharData().Name, direction)
+						}
+					}
+				}
+				for _, e := range db.GetEntitiesInRoom(to_room.Id) {
+					if e != nil {
+						e.Send("\r\n&P%s&d unlocks the door to the %s.\r\n", entity.GetCharData().Name, direction_reverse(direction))
+					}
+				}
+			}
 			return
 		}
-		if closed {
+		if flags.Closed {
 			entity.Send("\r\n&GYou open the door.&d\r\n")
-			room.ExitFlags[direction].(map[string]interface{})["closed"] = false
+			room.ExitFlags[direction].Closed = false
 			to_room := db.GetRoom(room.Exits[direction])
 			reverse_direction := direction_reverse(direction)
 			if room.Id == to_room.Exits[reverse_direction] {
 				if _, ok := to_room.ExitFlags[reverse_direction]; ok {
-					to_room.ExitFlags[reverse_direction].(map[string]interface{})["closed"] = false
+					to_room.ExitFlags[reverse_direction].Closed = false
 				}
 			}
 			for _, e := range db.GetEntitiesInRoom(entity.RoomId()) {
@@ -359,25 +400,24 @@ func do_close(entity Entity, args ...string) {
 	}
 	// TODO if args[0] is 'hatch' close the spaceship hatch/ramp.
 	// For now we'll assume it's a direction door.
-	direction := strings.ToLower(args[0])
+	direction := get_direction_string(strings.ToLower(args[0]))
 	if !room.HasExit(direction) {
-		entity.Send("\r\n&ROpen what?&d.\r\n")
+		entity.Send("\r\n&RClose what?&d.\r\n")
 	}
 	if flags, ok := room.ExitFlags[direction]; ok {
-		locked, closed := room_get_blocked_exit_flags(flags.(map[string]interface{}))
-		if locked {
+		if flags.Locked {
 			// TODO: Search users inventory for the key.
 			entity.Send("\r\n&RYou don't have the key.&d\r\n")
 			return
 		}
-		if !closed && !locked {
+		if !flags.Closed && !flags.Locked {
 			entity.Send("\r\n&GYou close the door.&d\r\n")
-			room.ExitFlags[direction].(map[string]interface{})["closed"] = true
+			room.ExitFlags[direction].Closed = true
 			to_room := db.GetRoom(room.Exits[direction])
 			reverse_direction := direction_reverse(direction)
 			if room.Id == to_room.Exits[reverse_direction] {
 				if _, ok := to_room.ExitFlags[reverse_direction]; ok {
-					to_room.ExitFlags[reverse_direction].(map[string]interface{})["closed"] = true
+					to_room.ExitFlags[reverse_direction].Closed = true
 				}
 			}
 			for _, e := range db.GetEntitiesInRoom(entity.RoomId()) {
@@ -392,6 +432,139 @@ func do_close(entity Entity, args ...string) {
 					e.Send("\r\n&P%s&d closes the door to the %s.\r\n", entity.GetCharData().Name, reverse_direction)
 				}
 			}
+		}
+	}
+}
+
+func do_get(entity Entity, args ...string) {
+	if len(args) == 0 {
+		entity.Send("\r\n&RGet what?&d\r\n")
+		return
+	}
+	db := DB()
+	ch := entity.GetCharData()
+	if len(args) == 1 {
+		// fetch an item from the room
+		room := db.GetRoom(ch.Room)
+		item := room.FindItem(args[0])
+		if item == nil {
+			entity.Send("\r\n&dCan't seem to find that.\r\n")
+		} else {
+			if !entity_pickup_item(entity, item) {
+				return
+			}
+			room.RemoveItem(item)
+			for _, e := range room.GetEntities() {
+				if e == nil {
+					continue
+				}
+				if e != entity {
+					e.Send("\r\n&P%s&d picks up &Y%s&d.\r\n", ch.Name, item.GetData().Name)
+				}
+			}
+			entity.Send("\r\n&dYou pick up &Y%s&d.\r\n", item.GetData().Name)
+			return
+		}
+	}
+	// get <item> from
+	if len(args) == 2 {
+		entity.Send("\r\n&RGet &Y%s&W from &Rwhere?&d\r\n")
+	}
+	// get <item> from <item>
+	if len(args) == 3 {
+
+		from_container := args[2]
+		item_name := args[0]
+		ch := entity.GetCharData()
+		room := db.GetRoom(ch.Room)
+		//on your person (backpack, bag)
+		item := entity.FindItem(from_container)
+		if item == nil {
+			// in the room (corpse, continer)
+			item = room.FindItem(from_container)
+		}
+		if item == nil {
+			entity.Send("\r\nCan't seem to find that.\r\n")
+			return
+		} else {
+			if item.IsContainer() || item.IsCorpse() {
+				i := item.GetData().FindItemInContainer(item_name)
+				if i == nil {
+					entity.Send("\r\nCan't seem to find that in %s.\r\n", item.GetData().Name)
+					return
+				} else {
+					if !entity_pickup_item(entity, i) {
+						return
+					}
+					item.GetData().RemoveItem(i)
+					for _, e := range room.GetEntities() {
+						if e == nil {
+							continue
+						}
+						if e != entity {
+							e.Send("\r\n&P%s&d picks up &Y%s&d.\r\n", ch.Name, i.GetData().Name)
+						}
+					}
+					entity.Send("\r\n&dYou pick up &Y%s&d.\r\n", i.GetData().Name)
+					return
+				}
+			}
+		}
+	}
+	if len(args) > 3 {
+		entity.Send("\r\n&CSyntax: &dget <item> | from <container>\r\n")
+	}
+
+}
+func do_put(entity Entity, args ...string) {
+	if len(args) == 0 {
+		entity.Send("\r\n&RPut what in what?&d\r\n")
+		return
+	}
+	if len(args) == 3 {
+		item_name := args[0]
+		container_name := args[2]
+		db := DB()
+		room := db.GetRoom(entity.RoomId())
+		item := entity.FindItem(item_name)
+		if item == nil {
+			entity.Send("\r\n&RCan't seem to find that.&d\r\n")
+			return
+		}
+		container := entity.FindItem(container_name)
+		if container == nil {
+			container = room.FindItem(container_name)
+		}
+		if container == nil {
+			entity.Send("\r\nCan't seem to find that container.\r\n")
+			return
+		}
+		container.GetData().AddItem(item)
+
+	} else {
+		entity.Send("\r\n&CSyntax: put <item> in <container>.&d\r\n")
+	}
+}
+func do_drop(entity Entity, args ...string) {
+	if len(args) == 0 {
+		entity.Send("\r\n&RDrop what?&d\r\n")
+		return
+	}
+	db := DB()
+	item_name := args[0]
+	item := entity.FindItem(item_name)
+	room := db.GetRoom(entity.RoomId())
+	room.AddItem(item)
+	entity.GetCharData().RemoveItem(item)
+	entity.Send("\r\n&YYou drop &W%s&Y.&d\r\n", item.GetData().Name)
+	ch := entity.GetCharData()
+	for _, e := range room.GetEntities() {
+		if e == nil {
+			continue
+		}
+		if e != entity {
+			e.Send("\r\n&P%s&d drops &Y%s&d.\r\n", ch.Name, item.GetData().Name)
+			e.GetCharData().AI.OnDrop(entity, item)
 		}
 	}
 }

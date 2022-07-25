@@ -1,0 +1,8 @@
+---
+id: 1004
+name: a titanium plate
+desc: |
+  A titanium plate. Useful in crafting blades and starship frames.
+type: material
+weight: 10
+value: 190

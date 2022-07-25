@@ -1,0 +1,8 @@
+---
+id: 1000
+name: an iron ingot
+desc: |
+  An iron ingot forged from 99.99% pure Fe.
+type: material
+weight: 4
+value: 15

@@ -38,9 +38,11 @@ func Main() {
 	log.Printf("Starting version %s\n", version)
 
 	DB().Load()
+	DB().ResetAll()
 	CommandsLoad()
 	LanguageLoad()
 	StartBackup()
+	EditorStart()
 	ServerStart(Config().Addr)
 
 	DB().Save()

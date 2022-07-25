@@ -20,6 +20,7 @@ package swr
 import (
 	"fmt"
 	"math"
+	"strings"
 	"time"
 )
 
@@ -74,6 +75,7 @@ type Entity interface {
 	ApplyDamage(damage uint)
 	GetCharData() *CharData
 	Weapon() Item
+	FindItem(keyword string) Item
 }
 
 type CharData struct {
@@ -89,10 +91,10 @@ type CharData struct {
 	XP        uint            `yaml:"xp,omitempty"`
 	Gold      uint            `yaml:"gold,omitempty"`
 	Bank      uint            `yaml:"bank,omitempty"`
-	Hp        []int           `yaml:"hp,flow"`           // Hit Points [0] Current [1] Max : len = 2
-	Mp        []int           `yaml:"mp,flow"`           // Magic Points [0] Current [1] Max : len = 2
-	Mv        []int           `yaml:"mv,flow,omitempty"` // Move Points [0] Current [1] Max : len = 2
-	Stats     []int           `yaml:"stats,flow"`        // str, int, dex, wis, con, cha
+	Hp        []int           `yaml:"hp,flow"`    // Hit Points [0] Current [1] Max : len = 2
+	Mp        []int           `yaml:"mp,flow"`    // Magic Points [0] Current [1] Max : len = 2
+	Mv        []int           `yaml:"mv,flow"`    // Move Points [0] Current [1] Max : len = 2
+	Stats     []int           `yaml:"stats,flow"` // str, int, dex, wis, con, cha
 	Skills    map[string]int  `yaml:"skills,flow,omitempty"`
 	Languages map[string]int  `yaml:"languages,flow,omitempty"`
 	Speaking  string          `yaml:"speaking,omitempty"`
@@ -100,6 +102,7 @@ type CharData struct {
 	Inventory []Item          `yaml:"inventory,omitempty"`
 	State     string          `yaml:"state,omitempty"`
 	Brain     string          `yaml:"brain,omitempty"`
+	Flags     []string        `yaml:"flags,omitempty"`
 	AI        Brain           `yaml:"-"`
 	Attacker  Entity          `yaml:"-"`
 }
@@ -159,7 +162,7 @@ func (c *CharData) base_weight() int {
 func (c *CharData) CurrentWeight() int {
 	weight := c.base_weight()
 	for _, item := range c.Inventory {
-		weight += item.GetData().Weight
+		weight += item.GetWeight()
 	}
 	return weight
 }
@@ -208,23 +211,72 @@ func (c *CharData) ArmorAC() int {
 	return ac_armor + (dex / 10) + (str / 10)
 }
 
-func (c *CharData) DamageRoll() uint {
+func (c *CharData) DamageRoll(skillName string) uint {
+	skill := uint(c.Skills[skillName])
 	str := uint(c.Stats[ENTITY_STAT_STR])
 	dex := uint(c.Stats[ENTITY_STAT_DEX])
-
-	dmg := uint(0)
-	if i, ok := c.Equipment["weapon"]; ok {
+	d := "1d4"
+	i := c.Weapon()
+	if i != nil {
 		item := i.GetData()
-		d := *item.Dmg
-		dmg = uint(roll_dice(d))
+		d = *item.Dmg
+		skill += get_weapon_skill_stat(*item.WeaponType, str, dex)
+	} else {
+		skill += get_weapon_skill_stat("martial-arts", str, dex)
 	}
-	return dmg + (str / 10) + (dex / 10)
+	if skill == 0 {
+		skill = 1
+	}
+	dmg := uint(roll_dice(d)) + uint(roll_dice(fmt.Sprintf("1d%d", skill)))
+	return dmg
 }
 
 func (c *CharData) Weapon() Item {
 	if i, ok := c.Equipment["weapon"]; ok {
 		item := i
 		return item
+	}
+	return nil
+}
+
+func (c *CharData) FindItem(keyword string) Item {
+	for i := range c.Inventory {
+		item := c.Inventory[i]
+		keys := item.GetKeywords()
+		for k := range keys {
+			key := keys[k]
+			if strings.HasPrefix(key, keyword) {
+				return item
+			}
+		}
+	}
+	return nil
+}
+
+func (c *CharData) RemoveItem(item Item) {
+	idx := -1
+	for id := range c.Inventory {
+		i := c.Inventory[id]
+		if i == item {
+			idx = id
+		} else if i.IsContainer() {
+			i.GetData().RemoveItem(item)
+		}
+	}
+	if idx > -1 {
+		ret := make([]Item, len(c.Inventory)-1)
+		ret = append(ret, c.Inventory[:idx]...)
+		ret = append(ret, c.Inventory[idx+1:]...)
+		c.Inventory = ret
+	}
+}
+
+func (c *CharData) GetItem(item_id uint) Item {
+	for id := range c.Inventory {
+		i := c.Inventory[id]
+		if i.GetId() == item_id {
+			return i
+		}
 	}
 	return nil
 }
@@ -312,12 +364,11 @@ func (p *PlayerProfile) GetCharData() *CharData {
 	return &p.Char
 }
 func (p *PlayerProfile) ApplyDamage(damage uint) {
-	c := p.GetCharData()
-	c.Hp[0] -= int(damage)
-	if c.Hp[0] <= 0 {
-		c.State = ENTITY_STATE_UNCONSCIOUS
-		if c.Hp[0] <= -(c.Hp[1]) {
-			c.State = ENTITY_STATE_DEAD
+	p.Char.Hp[0] -= int(damage)
+	if p.Char.Hp[0] <= 0 {
+		p.Char.State = ENTITY_STATE_UNCONSCIOUS
+		if p.Char.Hp[0] <= -(p.Char.Hp[1]) {
+			p.Char.State = ENTITY_STATE_DEAD
 			p.Send("\r\n&RYou have died.&d\r\n")
 			return
 		}
@@ -334,6 +385,10 @@ func (p *PlayerProfile) Weapon() Item {
 	return nil
 }
 
+func (p *PlayerProfile) FindItem(keyword string) Item {
+	return p.Char.FindItem(keyword)
+}
+
 func entity_clone(entity Entity) Entity {
 	ch := entity.GetCharData()
 	c := &CharData{
@@ -341,6 +396,7 @@ func entity_clone(entity Entity) Entity {
 		Room:      ch.Room,
 		Name:      ch.Name,
 		Keywords:  make([]string, 0),
+		Flags:     make([]string, 0),
 		Title:     ch.Title,
 		Desc:      ch.Desc,
 		Race:      ch.Race,
@@ -354,6 +410,7 @@ func entity_clone(entity Entity) Entity {
 		Mp:        make([]int, 2),
 		Mv:        make([]int, 2),
 		Stats:     make([]int, 6),
+		Skills:    make(map[string]int),
 		Equipment: make(map[string]Item),
 		Inventory: make([]Item, 0),
 		Languages: make(map[string]int),
@@ -365,6 +422,10 @@ func entity_clone(entity Entity) Entity {
 	for i := range ch.Keywords {
 		k := ch.Keywords[i]
 		c.Keywords = append(c.Keywords, k)
+	}
+	for f := range ch.Flags {
+		k := ch.Flags[f]
+		c.Flags = append(c.Flags, k)
 	}
 	c.Hp[0] = ch.Hp[0]
 	c.Hp[1] = ch.Hp[1]
@@ -385,6 +446,9 @@ func entity_clone(entity Entity) Entity {
 	for i := range ch.Inventory {
 		item := ch.Inventory[i]
 		c.Inventory = append(c.Inventory, item)
+	}
+	for s, v := range ch.Skills {
+		c.Skills[s] = v
 	}
 	return c
 }
@@ -411,8 +475,6 @@ func player_prompt(player *PlayerProfile) string {
 
 func processEntities() {
 	db := DB()
-	db.Lock()
-	defer db.Unlock()
 
 	for i := range db.entities {
 		e := db.entities[i]
@@ -484,10 +546,15 @@ func processHealing(entity Entity) {
 	entity.Prompt()
 }
 
-func entity_add_xp(entity Entity, xp uint) {
+func entity_add_xp(entity Entity, xp int) {
 	ch := entity.GetCharData()
 	level := ch.Level
-	ch.XP += xp
+	x := int(ch.XP)
+	x += xp
+	if x <= 0 {
+		x = 0
+	}
+	ch.XP = uint(x)
 	ch.Level = get_level_for_xp(ch.XP)
 	if ch.Level != level {
 		entity.Send("\r\n}YYou have gained a level!&d\r\n")
@@ -498,6 +565,22 @@ func entity_add_xp(entity Entity, xp uint) {
 		ch.Mv[0] = ch.Mv[1]
 	}
 	entity.Send("\r\n&dYou gained &w%d&d xp.\r\n", xp)
+}
+func entity_lose_xp(entity Entity, xp int) {
+	ch := entity.GetCharData()
+	level := ch.Level
+	x := int(ch.XP)
+	x -= xp
+	if x <= 0 {
+		x = 0
+	}
+	ch.XP = uint(x)
+	ch.Level = get_level_for_xp(ch.XP)
+	entity.Send("\r\n&dYou lost &w%d&d xp.\r\n", xp)
+	if ch.Level != level {
+		entity.Send("\r\n}RYou have lost a level!&d\r\n")
+		entity.Send("\r\n&RYou are now level &W%d&d.\r\n", ch.Level)
+	}
 }
 
 func get_level_for_xp(xp uint) uint {
@@ -530,4 +613,22 @@ func entity_unspeakable_reason(entity Entity) string {
 		return "sleeping"
 	}
 	return "none"
+}
+
+func entity_pickup_item(entity Entity, item Item) bool {
+	ch := entity.GetCharData()
+	if item.IsCorpse() {
+		entity.Send("\r\n&RYou can't carry a corpse.&d\r\n")
+		return false
+	}
+	if item.GetData().Weight+ch.CurrentWeight() > ch.MaxWeight() {
+		entity.Send("\r\n&RYou can't carry any more weight!&d\r\n")
+		return false
+	}
+	if ch.CurrentInventoryCount() >= ch.MaxInventoryCount() {
+		entity.Send("\r\n&RYou can't carry any more items!&d\r\n")
+		return false
+	}
+	ch.Inventory = append(ch.Inventory, item)
+	return true
 }

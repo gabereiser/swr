@@ -1,0 +1,10 @@
+---
+id: 101
+name: stormtrooper chest armor
+desc: |
+  A stormtrooper chest armor set. It has a few blaster holes in it from it's previous owner.
+type: armor
+weight: 6
+value: 350
+ac: 7
+wearLoc: torso

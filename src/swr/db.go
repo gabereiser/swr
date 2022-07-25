@@ -117,8 +117,6 @@ func (d *GameDatabase) RemoveClient(client *MudClient) {
 }
 
 func (d *GameDatabase) RemoveEntity(entity Entity) {
-	d.Lock()
-	defer d.Unlock()
 	index := -1
 	for i, e := range d.entities {
 		if e == nil {
@@ -133,6 +131,8 @@ func (d *GameDatabase) RemoveEntity(entity Entity) {
 		ret = append(ret, d.entities[:index]...)
 		ret = append(ret, d.entities[index+1:]...)
 		d.entities = ret
+	} else {
+		ErrorCheck(Err(fmt.Sprintf("Can't find entity %s", entity.GetCharData().Name)))
 	}
 }
 
@@ -158,6 +158,7 @@ func (d *GameDatabase) Load() {
 
 	// Load Progs
 	d.LoadMudProgs()
+
 }
 
 func (d *GameDatabase) LoadHelps() {
@@ -345,15 +346,13 @@ func (d *GameDatabase) AddEntity(entity Entity) {
 	d.entities = append(d.entities, entity)
 }
 
-func (d *GameDatabase) SpawnEntity(mobName string) Entity {
-	e := entity_clone(d.mobs[mobName])
+func (d *GameDatabase) SpawnEntity(entity Entity) Entity {
+	e := entity_clone(entity)
 	d.AddEntity(e)
 	return e
 }
 
 func (d *GameDatabase) GetEntitiesInRoom(roomId uint) []Entity {
-	d.Lock()
-	defer d.Unlock()
 	ret := make([]Entity, 0)
 	for _, entity := range d.entities {
 		if entity == nil {
@@ -374,6 +373,37 @@ func (d *GameDatabase) GetRoom(roomId uint) *RoomData {
 		if r.Id == roomId {
 			return r
 		}
+	}
+	return nil
+}
+
+func (d *GameDatabase) GetItem(itemId uint) Item {
+	for _, i := range d.items {
+		if i == nil {
+			continue
+		}
+		if i.GetId() == itemId {
+			return i
+		}
+	}
+	return nil
+}
+
+func (d *GameDatabase) GetMob(mobId uint) Entity {
+	for _, m := range d.mobs {
+		if m == nil {
+			continue
+		}
+		if m.Id == mobId {
+			return m
+		}
+	}
+	return nil
+}
+
+func (d *GameDatabase) GetMobByName(mobName string) Entity {
+	if m, ok := d.mobs[mobName]; ok {
+		return m
 	}
 	return nil
 }
@@ -412,4 +442,11 @@ func (d *GameDatabase) GetHelp(help string) []*HelpData {
 		}
 	}
 	return ret
+}
+
+func (d *GameDatabase) ResetAll() {
+	for area_name, area := range d.areas {
+		log.Printf("Resetting Area %s", area_name)
+		area_reset(area)
+	}
 }

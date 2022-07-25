@@ -157,6 +157,7 @@ func processServerPump() {
 		processEntities()
 		time.Sleep(1 * time.Second)
 	}
+	log.Printf("Server Pump has exited!\n")
 }
 func acceptClient(con *net.TCPConn) {
 	db := DB()

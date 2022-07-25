@@ -3,8 +3,8 @@ name: newbie
 desc: Newbie Area
 author: Admin
 levels: [1, 10]
-reset: 3600
-reset_msg: You hear a loud thud as the spaceship lurches slightly.
+reset: 300
+reset_msg: You hear a loud *thud* as the spaceship lurches slightly.
 rooms: 
   -
     id: 100
@@ -19,8 +19,9 @@ rooms:
       east: 101
     exflags:
       east:
-        locked: True
-        key: 100
+        closed: true
+        locked: true
+        key: 1
     roomProgs: {}
   -
     id: 101
@@ -33,4 +34,18 @@ rooms:
     flags: []
     exits:
       west: 100
+    exflags:
+      west:
+        closed: true
+        locked: true
+        key: 1
     roomProgs: {}
+
+items:
+  - 
+    item: 1
+    room: 100
+mobs:
+  -
+    mob: 1
+    room: 101
