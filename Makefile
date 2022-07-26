@@ -1,4 +1,4 @@
-VERSION=v0.0.5-alpha
+VERSION=v0.0.6-alpha
 
 build:
 	@echo 'Building server'
