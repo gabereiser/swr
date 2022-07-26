@@ -88,6 +88,7 @@ var GMCommandFuncs = map[string]func(Entity, ...string){
 	"do_item_find":   do_item_find,
 	"do_item_remove": do_item_remove,
 	"do_item_set":    do_item_set,
+	"do_transfer":    do_transfer,
 }
 
 var Commands []*Command = make([]*Command, 0)

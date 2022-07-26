@@ -307,3 +307,8 @@
   keywords: [ "mstat" ]
   level: 100
   func: do_mob_stat
+-
+  name: transfer
+  keywords: [ "mtransfer" ]
+  level: 100
+  func: do_transfer
