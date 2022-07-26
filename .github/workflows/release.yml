@@ -18,10 +18,9 @@ jobs:
     - name: Build
       run: |
         make all VERSION=${{ github.ref_name }}
+        tar -cJf swr-release-${{ github.ref_name }}.tar.xz data docs bin web LICENSE
         
     - name: Upload Release
-      run: |
-        tar -cJf swr-release-${{ github.ref_name }}.tar.xz data docs bin web LICENSE
       uses: actions/upload-artifact@v3
       with:
         name: swr-release-${{ github.ref_name }}.tar.xz
