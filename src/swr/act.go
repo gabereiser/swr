@@ -56,7 +56,7 @@ func do_look(entity Entity, args ...string) {
 					MakeTitle(room.Name,
 						ANSI_TITLE_STYLE_NORMAL,
 						ANSI_TITLE_ALIGNMENT_CENTER)))
-				entity.Send(room.Desc)
+				entity.Send(telnet_encode(room.Desc))
 				entity.Send("\r\nExits:\r\n")
 				for dir, to_room_id := range room.Exits {
 					to_room := DB().GetRoom(to_room_id)

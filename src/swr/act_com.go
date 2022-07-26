@@ -44,22 +44,43 @@ func do_say(entity Entity, args ...string) {
 		if ex != entity {
 			if ex.IsPlayer() {
 				listener := ex.GetCharData()
-				ex.Send(fmt.Sprintf("%s says \"%s\"\n", speaker.Name, language_spoken(speaker, listener, words)))
+				ex.Send("%s says \"%s\"\n", speaker.Name, language_spoken(speaker, listener, words))
 			} else {
-				ex.Send(fmt.Sprintf("%s says \"%s\"\n", speaker.Name, words))
+				ex.Send("%s says \"%s\"\n", speaker.Name, words)
 			}
+		}
+	}
+}
+func do_emote(entity Entity, args ...string) {
+	emote := strings.Join(args, " ")
+	speaker := entity.GetCharData()
+	if entity_unspeakable_state(entity) {
+		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
+		return
+	}
+	entities := DB().GetEntitiesInRoom(speaker.RoomId())
+	for _, ex := range entities {
+		if ex == nil {
+			continue
+		}
+		if entity_unspeakable_state(ex) {
+			continue
+		}
+		if ex.IsPlayer() {
+			ex.Send("&d%s %s&d\r\n", speaker.Name, emote)
 		}
 	}
 }
 func do_say_comlink(entity Entity, args ...string) {
 	words := strings.Join(args, " ")
 	speaker := entity.GetCharData()
+	speaker_freq := entity.(*PlayerProfile).Frequency
 	if entity_unspeakable_state(entity) {
 		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
 		return
 	}
 	if entity.IsPlayer() {
-		entity.Send(fmt.Sprintf("You're comlink hums after you say &W\"%s\"&d\r\n", words))
+		entity.Send("You're comlink hums after you say &W\"%s\"&d\r\n", words)
 	}
 	db := DB()
 	for _, ex := range db.entities {
@@ -72,7 +93,10 @@ func do_say_comlink(entity Entity, args ...string) {
 		if ex != entity {
 			if ex.IsPlayer() {
 				listener := ex.GetCharData()
-				ex.Send(fmt.Sprintf("&CYou're comlink crackles to life with a voice that says...&d\r\n\"&W%s&Y:&d %s\"\r\n", speaker.Name, language_spoken(speaker, listener, words)))
+				listener_freq := ex.(*PlayerProfile).Frequency
+				if listener_freq == speaker_freq {
+					ex.Send("&CYou're comlink crackles to life with a voice that says...&d\r\n\"&W%s&Y:&d %s\"\r\n", speaker.Name, language_spoken(speaker, listener, words))
+				}
 			}
 		}
 	}

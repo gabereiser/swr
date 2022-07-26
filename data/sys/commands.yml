@@ -165,6 +165,16 @@
   keywords: [ "inventory" ]
   level: 1
   func: do_inventory
+-
+  name: description
+  keywords: [ "description" ]
+  level: 1
+  func: do_description
+-
+  name: examine
+  keywords: [ "ex", "examine" ]
+  level: 1
+  func: do_examine
 
 # Wiz Commands
 -

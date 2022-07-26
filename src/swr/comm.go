@@ -30,6 +30,7 @@ var CommandFuncs = map[string]func(Entity, ...string){
 	"do_quit":           do_quit,
 	"do_qui":            do_qui,
 	"do_say":            do_say,
+	"do_emote":          do_emote,
 	"do_speak":          do_speak,
 	"do_look":           do_look,
 	"do_who":            do_who,
@@ -60,6 +61,8 @@ var CommandFuncs = map[string]func(Entity, ...string){
 	"do_put":            do_put,
 	"do_drop":           do_drop,
 	"do_inventory":      do_inventory,
+	"do_description":    do_description,
+	"do_examine":        do_examine,
 }
 var GMCommandFuncs = map[string]func(Entity, ...string){
 	"do_area_create": do_area_create,
@@ -144,6 +147,10 @@ func do_command(entity Entity, input string) {
 	} else if strings.HasPrefix(args[0], "\"") {
 		args[0] = strings.TrimPrefix(args[0], "\"")
 		do_say_comlink(entity, args...)
+		entity.Prompt()
+	} else if strings.HasPrefix(args[0], ".") {
+		args[0] = strings.TrimPrefix(args[0], ".")
+		do_emote(entity, args...)
 		entity.Prompt()
 	} else {
 		commands := command_fuzzy_match(args[0])

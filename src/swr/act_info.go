@@ -17,7 +17,10 @@
  */
 package swr
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func do_quit(entity Entity, args ...string) {
 	if entity.IsPlayer() {
@@ -111,4 +114,41 @@ func do_inventory(entity Entity, args ...string) {
 	}
 	player.Send("&c└───────────────────────────────────┘&d▒\r\n")
 	player.Send(" ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒&d\r\n")
+}
+
+func do_description(entity Entity, args ...string) {
+	if len(args) == 0 {
+		entity.Send("\r\n&CSyntax: description <string>.&d\r\n")
+		return
+	}
+	ch := entity.GetCharData()
+	ch.Desc = args[0]
+	entity.Send("\r\n&YDescription set.&d\r\n")
+}
+
+func do_examine(entity Entity, args ...string) {
+	if len(args) == 0 {
+		entity.Send("\r\n&RExamine what?&d\r\n")
+		return
+	}
+	object_name := args[0]
+	room := DB().GetRoom(entity.RoomId())
+	object := entity.FindItem(object_name)
+	if object == nil {
+		object = room.FindItem(object_name)
+	}
+	if object == nil {
+		for _, e := range room.GetEntities() {
+			if strings.HasPrefix(e.GetCharData().Name, object_name) {
+				entity.Send("You look at %s and see...\r\n%s\r\n", e.GetCharData().Name, e.GetCharData().Desc)
+				return
+			}
+		}
+		entity.Send("\r\nCan't find that here.\r\n")
+		return
+	} else {
+		entity.Send("You look at %s and see...\r\n%s\r\n", object.GetData().Name, object.GetData().Desc)
+		return
+	}
+
 }

@@ -23,6 +23,11 @@ import (
 	"strings"
 )
 
+// Replaces line endings to enforce CR+LF instead of just LF
+func telnet_encode(input string) string {
+	return strings.ReplaceAll(strings.ReplaceAll(input, "\r\n", "\n"), "\n", "\r\n")
+}
+
 func roll_dice(d20 string) int {
 	p := strings.Split(strings.ToLower(d20), "d")
 	num_dice, _ := strconv.Atoi(p[0])
