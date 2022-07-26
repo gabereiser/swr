@@ -19,6 +19,7 @@ package swr
 
 import (
 	"fmt"
+	"log"
 	"strings"
 )
 
@@ -30,6 +31,7 @@ func do_quit(entity Entity, args ...string) {
 		}
 		entity.GetCharData().State = ENTITY_STATE_SLEEPING
 		player := entity.(*PlayerProfile)
+		DB().SavePlayerData(player)
 		player.Client.Close()
 		entity.Send("\r\n&CThe world slowly fades away as you close your eyes and leave the game...&d\r\n\r\n")
 	}
@@ -78,12 +80,12 @@ func do_score(entity Entity, args ...string) {
 		player.Send("&c│ Weight: &G%3d kg&p(%3d kg)&c                   │&d▒\r\n", char.CurrentWeight(), char.MaxWeight())
 		player.Send("&c│ Inventory: &G%3d&p(%3d)&c                      │&d▒\r\n", char.CurrentInventoryCount(), char.MaxInventoryCount())
 		player.Send("&c├─( Equipment )────────────────────────────┤▒&d\r\n")
-		player.Send("&c│       Head: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│      Torso: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│      Waist: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│       Legs: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│       Feet: &d%-20s&c         │&d▒\r\n", "None")
-		player.Send("&c│      Hands: &d%-20s&c         │&d▒\r\n", "None")
+		player.Send("&c│       Head: &d%-20s&c         │&d▒\r\n", entity_get_equipment_for_slot(player, "head"))
+		player.Send("&c│      Torso: &d%-20s&c         │&d▒\r\n", entity_get_equipment_for_slot(player, "torso"))
+		player.Send("&c│      Waist: &d%-20s&c         │&d▒\r\n", entity_get_equipment_for_slot(player, "waist"))
+		player.Send("&c│       Legs: &d%-20s&c         │&d▒\r\n", entity_get_equipment_for_slot(player, "legs"))
+		player.Send("&c│       Feet: &d%-20s&c         │&d▒\r\n", entity_get_equipment_for_slot(player, "feet"))
+		player.Send("&c│      Hands: &d%-20s&c         │&d▒\r\n", entity_get_equipment_for_slot(player, "hands"))
 		player.Send("&c│                                          │&d▒\r\n")
 		player.Send("&c│     &RWeapon: &d%-20s&c         │&d▒\r\n", "None")
 		player.Send("&c│                                          │&d▒\r\n")
@@ -141,6 +143,19 @@ func do_examine(entity Entity, args ...string) {
 		for _, e := range room.GetEntities() {
 			if strings.HasPrefix(e.GetCharData().Name, object_name) {
 				entity.Send("You look at %s and see...\r\n%s\r\n", e.GetCharData().Name, e.GetCharData().Desc)
+				entity.Send("&YEquipment:\r\n-------------------------------------&d\r\n")
+				if len(e.GetCharData().Equipment) == 0 {
+					entity.Send("Nothing\r\n")
+				} else {
+					entity.Send("&YHead: &d%-26s\r\n", entity_get_equipment_for_slot(entity, "head"))
+					entity.Send("&YTorso: &d%-26s\r\n", entity_get_equipment_for_slot(entity, "torso"))
+					entity.Send("&YWaist: &d%-26s\r\n", entity_get_equipment_for_slot(entity, "waist"))
+					entity.Send("&YLegs: &d%-26s\r\n", entity_get_equipment_for_slot(entity, "legs"))
+					entity.Send("&YFeet: &d%-26s\r\n", entity_get_equipment_for_slot(entity, "feet"))
+					entity.Send("&YHands: &d%-26s\r\n", entity_get_equipment_for_slot(entity, "hands"))
+					entity.Send("&Y--------------------------------------&d\r\n")
+					entity.Send("&RWeapon: &d%-26s\r\n", entity_get_equipment_for_slot(entity, "weapon"))
+				}
 				return
 			}
 		}
@@ -148,7 +163,88 @@ func do_examine(entity Entity, args ...string) {
 		return
 	} else {
 		entity.Send("You look at %s and see...\r\n%s\r\n", object.GetData().Name, object.GetData().Desc)
+		if object.IsContainer() {
+			entity.Send("&YContents:\r\n-------------------------------------&d\r\n")
+			for _, o := range object.GetData().Items {
+				if o == nil {
+					continue
+				}
+				entity.Send("&Y%-26s&d\r\n", o.GetData().Name)
+			}
+		}
 		return
 	}
 
+}
+
+func do_equip(entity Entity, args ...string) {
+	if len(args) == 0 {
+		entity.Send("\r\n&REquip what?&d\r\n")
+		return
+	}
+	item_name := args[0]
+	item := entity.FindItem(item_name)
+	if item == nil {
+		entity.Send("\r\n&RYou don't have that item!&d\r\n")
+		return
+	}
+	if !item.IsWeapon() || !item.IsWearable() {
+		entity.Send("\r\n&RYou can't equip that item!&d\r\n")
+		return
+	}
+	data := item.GetData()
+
+	if data.WearLoc == nil {
+		entity.Send("\r\n&RBUG: Unable to determine wear location!&d\r\n")
+		log.Printf("BUG: Unable to determine wear location for %s\r\n", data.Name)
+	}
+	wearLoc := *data.WearLoc
+	entity.GetCharData().Equipment[wearLoc] = data
+	entity.Send("\r\n&YYou equip %s&d\r\n", data.Name)
+	others := DB().GetEntitiesInRoom(entity.RoomId())
+	for _, e := range others {
+		if e == nil {
+			continue
+		}
+		if e != entity {
+			e.Send("%s equips %s&d\r\n", entity.GetCharData().Name, data.Name)
+		}
+	}
+}
+
+func do_remove(entity Entity, args ...string) {
+	if len(args) == 0 {
+		entity.Send("\r\n&RRemove what?&d\r\n")
+		return
+	}
+	ch := entity.GetCharData()
+	var item Item = nil
+	for wearLoc, i := range ch.Equipment {
+		if strings.HasPrefix(wearLoc, args[0]) {
+			item = i
+			break
+		}
+		if strings.HasPrefix(i.Name, args[0]) {
+			item = i
+			break
+		}
+	}
+	if item != nil {
+		if !entity_pickup_item(entity, item) {
+			entity.Send("\r\n&RYou can't carry anymore!&d\r\n")
+			return
+		}
+		delete(ch.Equipment, *item.GetData().WearLoc)
+	}
+	data := item.GetData()
+	others := DB().GetEntitiesInRoom(entity.RoomId())
+	for _, e := range others {
+		if e == nil {
+			continue
+		}
+		if e != entity {
+			e.Send("%s removes %s&d\r\n", entity.GetCharData().Name, data.Name)
+		}
+	}
+	entity.Send("\r\n&YYou remove %s&d\r\n", data.Name)
 }

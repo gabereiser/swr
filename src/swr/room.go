@@ -115,6 +115,15 @@ func (r *RoomData) FindItem(keyword string) Item {
 func (r *RoomData) GetExitFlags(direction string) *RoomExitFlag {
 	return r.ExitFlags[direction]
 }
+
+func (r *RoomData) SendToRoom(message string) {
+	for _, e := range r.GetEntities() {
+		if e == nil {
+			continue
+		}
+		e.Send(message)
+	}
+}
 func room_get_blocked_exit_flags(exitFlags *RoomExitFlag) (locked bool, closed bool) {
 	locked = false
 	closed = false

@@ -17,6 +17,8 @@
  */
 package swr
 
+import "strconv"
+
 func do_area_create(entity Entity, args ...string) {
 
 }
@@ -99,4 +101,42 @@ func do_mob_stat(entity Entity, args ...string) {
 
 func do_mob_find(entity Entity, args ...string) {
 
+}
+
+func do_transfer(entity Entity, args ...string) {
+	if len(args) < 2 {
+		entity.Send("\r\n&RTransfer who, where?&d\r\nSyntax: transfer <entity_name> <room_id>\r\n")
+		return
+	}
+	entity_name := args[0]
+	target := DB().GetPlayerEntityByName(entity_name)
+	if target == nil {
+		entity.Send("\r\n&RCouldn't find target entity to transfer!&d\r\n")
+		return
+	}
+	room_id, err := strconv.Atoi(args[1])
+	if err != nil {
+		entity.Send("\r\n&RUnable to parse room_id!&d\r\n")
+		return
+	}
+	room := DB().GetRoom(target.RoomId())
+	for _, e := range room.GetEntities() {
+		if e == nil {
+			continue
+		}
+		if e != target {
+			e.Send("\r\n&C%s&d has left.\r\n")
+		}
+	}
+	target.GetCharData().Room = uint(room_id)
+	room = DB().GetRoom(uint(room_id))
+	for _, e := range room.GetEntities() {
+		if e == nil {
+			continue
+		}
+		if e != target {
+			e.Send("\r\n&C%s&d has appeared.\r\n")
+		}
+	}
+	entity.Send("\r\n&YOk.&d\r\n")
 }

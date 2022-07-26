@@ -168,9 +168,10 @@ func acceptClient(con *net.TCPConn) {
 	client.Idle = 0
 
 	auth_do_welcome(client)
-	if !client.Closed {
-		db.AddClient(client)
+	if client.Closed {
+		return
 	}
+	db.AddClient(client)
 	entity := db.GetEntityForClient(client)
 	if entity != nil {
 		for {
@@ -193,6 +194,8 @@ func acceptClient(con *net.TCPConn) {
 	}
 	db.RemoveEntity(entity)
 	db.RemoveClient(client)
+	room := DB().GetRoom(entity.RoomId())
+	room.SendToRoom(fmt.Sprintf("\r\n&P%s&d has left.\r\n", entity.GetCharData().Name))
 	con.Close()
 }
 

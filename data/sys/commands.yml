@@ -175,6 +175,16 @@
   keywords: [ "ex", "examine" ]
   level: 1
   func: do_examine
+-
+  name: equip
+  keywords: [ "equip", "wield" ]
+  level: 1
+  func: do_equip
+-
+  name: remove
+  keywords: [ "remove", "unwield", "unequip" ]
+  level: 1
+  func: do_remove
 
 # Wiz Commands
 -

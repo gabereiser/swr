@@ -69,6 +69,8 @@ Login:
 			player.LastSeen = time.Now()
 			player.Client = client
 			DB().SavePlayerData(player)
+			room := DB().GetRoom(player.Char.Room)
+			room.SendToRoom(fmt.Sprintf("\r\n&P%s&d has arrived.\r\n", player.Char.Name))
 			DB().AddEntity(player)
 
 			ServerQueue <- MudClientCommand{
@@ -234,6 +236,8 @@ Stats:
 	}
 	DB().SavePlayerData(player)
 	player.Client = client
+	room := DB().GetRoom(player.Char.Room)
+	room.SendToRoom(fmt.Sprintf("\r\n&P%s&d has arrived.\r\n", player.Char.Name))
 	DB().AddEntity(player)
 	client.Send(Color().ClearScreen())
 	client.Send("\r\nEntering game world...\r\n")

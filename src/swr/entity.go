@@ -102,6 +102,7 @@ type CharData struct {
 	Inventory []*ItemData          `yaml:"inventory,omitempty"`
 	State     string               `yaml:"state,omitempty"`
 	Brain     string               `yaml:"brain,omitempty"`
+	Progs     map[string]string    `yaml:"progs,omitempty"`
 	Flags     []string             `yaml:"flags,omitempty"`
 	AI        Brain                `yaml:"-"`
 	Attacker  Entity               `yaml:"-"`
@@ -678,4 +679,11 @@ func entity_add_skill_value(entity Entity, skill string, value int) {
 		entity.Send("\r\n&CYou gain some knowledge of %s.&d\r\n", skill)
 	}
 
+}
+
+func entity_get_equipment_for_slot(entity Entity, wearLoc string) string {
+	if o, ok := entity.GetCharData().Equipment[wearLoc]; ok {
+		return o.Name
+	}
+	return "None"
 }

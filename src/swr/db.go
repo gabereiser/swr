@@ -325,6 +325,21 @@ func (d *GameDatabase) SavePlayerData(player *PlayerProfile) {
 	err = ioutil.WriteFile(filename, buf, 0755)
 	ErrorCheck(err)
 }
+
+func (d *GameDatabase) GetPlayerEntityByName(name string) Entity {
+	for _, e := range d.entities {
+		if e == nil {
+			continue
+		}
+		if e.IsPlayer() {
+			p := e.(*PlayerProfile)
+			if p.Char.Name == name {
+				return p
+			}
+		}
+	}
+	return nil
+}
 func (d *GameDatabase) ReadCharData(filename string) *CharData {
 	fp, err := ioutil.ReadFile(filename)
 	ErrorCheck(err)
