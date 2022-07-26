@@ -31,11 +31,11 @@ that is more flexible and robust than the C mud engines of old.
 - Abstract command system makes it easy to add commands.
 
 ## Planned
-- [ ] Area Resets / Mob Resets
+- [x] Area Resets / Mob Resets
 - [ ] Browser based area editor
 - [ ] Spaceships
 - [ ] Crafting
-- [ ] Combat
+- [x] Combat
 - [ ] Starting Newbie Area
 - [ ] Training Skills
 - [ ] Skill Tree
