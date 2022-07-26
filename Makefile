@@ -1,7 +1,9 @@
+VERSION=v0.0.5-alpha
 
 build:
 	@echo 'Building server'
-	go build -o ../bin/server;
+	@cd src; \
+	go build -ldflags="-X 'github.com/gabereiser/swr.version=$(VERSION)'" -o ../bin/server;
 	@echo 'Done'
 clean:
 	@echo 'Cleaning build'
