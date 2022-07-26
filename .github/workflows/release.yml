@@ -1,29 +1,45 @@
 name: Release
 
 on:
-  release:
-    branches: [ "main" ]
+  push:
+    tags:
+      - "v*"
 
 jobs:
-  build:
+  publish:
 
-    runs-on: ubuntu-latest
+    name: Publish for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: server
+            asset_name: swr-release-linux-amd64
+          - os: windows-latest
+            artifact_name: server.exe
+            asset_name: swr-release-windows-amd64
+          - os: macos-latest
+            artifact_name: server
+            asset_name: swr-release-macos-amd64
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
     
     - name: Install dependencies
       run: make dependencies
       
     - name: Build
       run: |
-        make all VERSION=${{ github.ref_name }}
-        tar -cJf swr-release-${{ github.ref_name }}.tar.xz data docs bin web LICENSE
+        make VERSION=${{ github.ref_name }}
+        tar -cJf ${{ matrix.asset_name }}${{ github.ref_name }}.tar.xz data docs bin web LICENSE
         
-    - name: Upload Release
-      uses: actions/upload-artifact@v3
+    - name: Publish
+      uses: svenstaro/upload-release-action@v2
       with:
-        name: swr-release-${{ github.ref_name }}.tar.xz
-        path: swr-release-${{ github.ref_name }}.tar.xz
-
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{ matrix.asset_name }}${{ github.ref_name }}.tar.xz
+        asset_name: ${{ matrix.asset_name }}
+        tag: ${{ github.ref }}
     
