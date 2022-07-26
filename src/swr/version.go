@@ -17,4 +17,4 @@
  */
 package swr
 
-var version string = "$VERSION"
+var version string = "0.0.5"
