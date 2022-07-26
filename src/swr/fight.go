@@ -20,7 +20,6 @@ package swr
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"strings"
 )
 
@@ -151,22 +150,20 @@ func do_combat(attacker Entity, defender Entity) {
 			ach.State = ENTITY_STATE_NORMAL
 			return
 		}
-		ach.Mv[0]--
+		if roll_dice("1d20") <= 10-(entity_get_skill_value(ach, "aerobics")/10) {
+			ach.Mv[0]--
+			if roll_dice("1d20") == 20 {
+				entity_add_skill_value(attacker, "aerobics", 1)
+			}
+		}
 		skill := "martial-arts"
 		if ach.Weapon() != nil {
-			skill = get_weapon_skill(ach.Weapon())
+			skill = item_get_weapon_skill(ach.Weapon())
 		}
 		damage = ach.DamageRoll(skill)
 		defender.ApplyDamage(damage)
 	}
 	xp_base := 1
-	lvl := int(dch.Level-ach.Level) / 5
-	if lvl < 1 {
-		lvl = 1
-	}
-	if lvl > 5 {
-		lvl = 5
-	}
 	attacker.Send(get_damage_string(damage, "You", dch.Name, fmt.Sprintf("your %s", ach_weapon)))
 	defender.Send(get_damage_string(damage, ach.Name, "you", fmt.Sprintf("their %s", ach_weapon)))
 	if attacker.GetCharData().State == ENTITY_STATE_DEAD {
@@ -174,7 +171,7 @@ func do_combat(attacker Entity, defender Entity) {
 		defender.Send("\r\n&RYou have killed &W%s&d\r\n", ach.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = lvl * 500
+		xp_base = int(dch.Level) * 250
 		make_corpse(attacker)
 		entity_add_xp(defender, xp_base)
 		entity_lose_xp(attacker, xp_base)
@@ -185,7 +182,7 @@ func do_combat(attacker Entity, defender Entity) {
 		defender.Send("\r\n&RYou have knocked out &W%s&d\r\n", ach.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = lvl * 200
+		xp_base = int(dch.Level) * 100
 		entity_add_xp(defender, xp_base)
 		entity_lose_xp(attacker, xp_base)
 		return
@@ -195,7 +192,7 @@ func do_combat(attacker Entity, defender Entity) {
 		attacker.Send("\r\n&RYou have killed &W%s&d\r\n", dch.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = lvl * 500
+		xp_base = int(ach.Level) * 250
 		make_corpse(defender)
 		entity_lose_xp(defender, xp_base)
 		entity_add_xp(attacker, xp_base)
@@ -206,15 +203,15 @@ func do_combat(attacker Entity, defender Entity) {
 		attacker.Send("\r\n&RYou have knocked out &W%s&d\r\n", dch.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = lvl * 200
+		xp_base = int(ach.Level) * 100
 		entity_lose_xp(defender, xp_base)
 		entity_add_xp(attacker, xp_base)
 		return
 	}
 	if roll_dice("1d10") == 10 {
-		add_skill_value(attacker, get_weapon_skill(ach.Weapon()), 1)
+		entity_add_skill_value(attacker, item_get_weapon_skill(ach.Weapon()), 1)
 	}
-	xp := (rand.Intn(int(damage + 1))) * 2
+	xp := rand_min_max(1, 5) * int(ach.Level)
 	entity_add_xp(attacker, int(dch.Level)*xp)
 }
 

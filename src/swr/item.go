@@ -181,7 +181,7 @@ func (i *ItemData) AddItem(item Item) {
 	i.Items = append(i.Items, item)
 }
 
-func get_weapon_skill(item Item) string {
+func item_get_weapon_skill(item Item) string {
 	if item == nil {
 		return "martial-arts"
 	}

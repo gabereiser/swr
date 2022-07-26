@@ -507,11 +507,11 @@ func processEntities() {
 		ch := e.GetCharData()
 		switch ch.State {
 		case ENTITY_STATE_NORMAL:
-			if roll_dice("1d10") >= 10-get_skill_value(ch, "healing") {
+			if roll_dice("1d10") >= 10-entity_get_skill_value(ch, "healing") {
 				processHealing(e)
 			}
 		case ENTITY_STATE_SITTING:
-			if roll_dice("1d10") >= 8-get_skill_value(ch, "healing") {
+			if roll_dice("1d10") >= 8-entity_get_skill_value(ch, "healing") {
 				processHealing(e)
 				processHealing(e)
 
@@ -519,7 +519,7 @@ func processEntities() {
 		case ENTITY_STATE_SLEEPING:
 			processHealing(e)
 		case ENTITY_STATE_UNCONSCIOUS:
-			if roll_dice("1d10") >= 5-get_skill_value(ch, "healing") {
+			if roll_dice("1d10") >= 5-entity_get_skill_value(ch, "healing") {
 				processHealing(e)
 			}
 		case ENTITY_STATE_SEDATED:
@@ -660,4 +660,22 @@ func entity_pickup_item(entity Entity, item Item) bool {
 	}
 	ch.Inventory = append(ch.Inventory, item.GetData())
 	return true
+}
+
+func entity_get_skill_value(ch *CharData, skill string) int {
+	if v, ok := ch.Skills[strings.ToLower(skill)]; ok {
+		return v
+	}
+	return 0
+}
+
+func entity_add_skill_value(entity Entity, skill string, value int) {
+	ch := entity.GetCharData()
+	ch.Skills[skill] += value
+	if ch.Skills[skill] >= 100 {
+		ch.Skills[skill] = 100
+	} else {
+		entity.Send("\r\n&CYou gain some knowledge of %s.&d\r\n", skill)
+	}
+
 }

@@ -93,7 +93,7 @@ func do_look(entity Entity, args ...string) {
 					ch := e.GetCharData()
 					for _, keyword := range ch.Keywords {
 						if strings.HasPrefix(strings.ToLower(keyword), strings.ToLower(args[0])) {
-							entity.Send("You look at %s and see...\r\n%s\r\n", ch.Title, ch.Desc)
+							entity.Send("You look at %s and see...\r\n%s\r\n", ch.Name, ch.Desc)
 							return
 						}
 					}

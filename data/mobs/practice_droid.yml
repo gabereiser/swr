@@ -8,10 +8,10 @@ desc: |
   A simple, practice droid floats here ready to train you in combat.
 race: Droid
 gender: n
-level: 10
-xp: 41000
+level: 1
+xp: 100
 gold: 0
-hp: [10, 10]
+hp: [200, 200]
 mp: [0, 0]
 mv: [10, 10]
 stats: [ 5, 0, 0, 0, 0, 1 ]

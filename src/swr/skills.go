@@ -17,37 +17,50 @@
  */
 package swr
 
-import (
-	"fmt"
-	"log"
-	"os"
-)
+var skill_list []string = []string{
+	"aerobics",
+	"astrophysics",
+	"astronomy",
+	"bartering",
+	"blasters",
+	"bowcasters",
+	"business",
+	"chemical-analysis",
+	"chemical-synthesis",
+	"claymores",
+	"cloning",
+	"defusing",
+	"engineering",
+	"electronics",
+	"first-aid",
+	"force",
+	"force-pikes",
+	"grenades",
+	"gunnery",
+	"healing",
+	"hunting",
+	"hyperdrives",
+	"lightsabers",
+	"lore",
+	"martial-arts",
+	"mines",
+	"missiles",
+	"piloting",
+	"production",
+	"rifles",
+	"repeaters",
+	"targeting",
+	"telekinesis",
+	"tracking",
+	"vibro-blades",
+	"xenosciences",
+}
 
-func Init() {
-	// Ensure that the player directories exists
-	for _, p := range "abcdefghijklmnopqrstuvwxyz" {
-		_ = os.MkdirAll(fmt.Sprintf("data/accounts/%s", string(p)), 0755)
+func is_skill(s string) bool {
+	for _, skill := range skill_list {
+		if skill == s {
+			return true
+		}
 	}
-	_ = os.MkdirAll("backup", 0755)
-	// Start the scheduler
-	Scheduler()
-}
-
-func Main() {
-
-	log.Printf("Starting version %s\n", version)
-	is_skill("martial-arts")
-	DB().Load()
-	DB().ResetAll()
-	CommandsLoad()
-	LanguageLoad()
-	StartBackup()
-	EditorStart()
-	ServerStart(Config().Addr)
-
-	DB().Save()
-}
-
-func GetVersion() string {
-	return version
+	return false
 }
