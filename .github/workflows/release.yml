@@ -37,6 +37,6 @@ jobs:
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: ${{ matrix.asset_name }}${{ github.ref_name }}.tar.xz
-        asset_name: ${{ matrix.asset_name }}
+        asset_name: ${{ matrix.asset_name }}${{ github.ref_name }}.tar.xz
         tag: ${{ github.ref }}
     
