@@ -28,8 +28,8 @@ desc: |
 
   &GMines&w         - Plant in the ground and will detonate when stepped on. &y(STR primary stat)&w
 
-  &GClaymore&w      - Like a mine, but only kills the person who triggers it. &y(DEX primary stat)&w
-  
+  &GClaymores&w     - Like a mine, but only kills the person who triggers it. &y(DEX primary stat)&w
+
   &GLightsaber&w    - A laser sword used only by the &cForce Sensitive&w. &y(DEX primary stat)&w
 
 

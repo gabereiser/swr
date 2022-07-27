@@ -20,8 +20,11 @@ package swr
 import (
 	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
+	"os"
+	"os/exec"
 	"strings"
 	"time"
 )
@@ -33,6 +36,7 @@ const (
 	NET_DO   = byte(253)
 	NET_DONT = byte(254)
 	NET_ECHO = byte(1)
+	NET_GA   = byte(3)
 )
 
 var ServerRunning bool = false
@@ -44,10 +48,18 @@ type MudClientCommand struct {
 }
 
 type MudClient struct {
-	Id     string
-	Con    *net.TCPConn
-	Closed bool
-	Idle   int
+	Id      string
+	Con     *net.TCPConn
+	Closed  bool
+	Idle    int
+	Editing bool
+	EditPtr *string
+	Queue   chan string
+}
+
+func (c *MudClient) Raw(str string) {
+	_, err := c.Con.Write([]byte(str))
+	ErrorCheck(err)
 }
 
 func (c *MudClient) Send(str string) {
@@ -91,23 +103,18 @@ func (c *MudClient) Close() {
 	c.Con.CloseRead()
 }
 
-func (c *MudClient) Echo(enabled bool) {
-	if enabled {
-		b := []byte{NET_IAC, NET_WONT, NET_ECHO}
-		c.Con.Write(b)
-		c.Con.Read(b)
-	} else {
-		b := []byte{NET_IAC, NET_WILL, NET_ECHO}
-		c.Con.Write(b)
-		c.Con.Read(b)
+func (c *MudClient) BufferEditor(str *string) {
+	if !c.Editing {
+		c.EditPtr = str
+		c.Editing = true
 	}
 }
 
 type Client interface {
-	Echo(enabled bool)
 	Send(str string)
 	Sendf(format string, any ...interface{})
 	Read() string
+	BufferEditor(buf *string)
 	Close()
 }
 
@@ -160,6 +167,7 @@ func processServerPump() {
 	log.Printf("Server Pump has exited!\n")
 }
 func acceptClient(con *net.TCPConn) {
+	telnet_suppress_ga(con)
 	db := DB()
 	client := new(MudClient)
 	client.Id = hex.EncodeToString([]byte(con.RemoteAddr().String()))
@@ -180,6 +188,10 @@ func acceptClient(con *net.TCPConn) {
 			}
 			if client.Closed {
 				break
+			}
+			if client.Editing {
+				run_editor(client, client.EditPtr)
+				continue
 			}
 			input := client.Read()
 			if len(input) > 0 {
@@ -223,5 +235,52 @@ func processIdleClients() {
 			}
 		}
 
+	}
+}
+
+func run_editor(client *MudClient, buffer *string) {
+	telnet_disable_local_echo(client.Con)
+
+	player := DB().GetEntityForClient(client)
+
+	file := sprintf("/tmp/%s-buffer", player.GetCharData().Name)
+	err := os.WriteFile(file, []byte(*buffer), 0755)
+	ErrorCheck(err)
+	cmd := exec.Command("vim", file)
+	cmd.Stdin = client.Con
+	cmd.Stdout = client.Con
+	err = cmd.Run()
+	ErrorCheck(err)
+
+	buf, _ := ioutil.ReadFile(file)
+
+	*buffer = string(buf)
+	telnet_enable_local_echo(client.Con)
+}
+
+func telnet_suppress_ga(con *net.TCPConn) {
+	con.Write([]byte{NET_IAC, NET_WILL, NET_GA})
+	resp := make([]byte, 3)
+	con.Read(resp)
+	if resp[0] != NET_IAC || resp[1] != NET_DO || resp[2] != NET_GA {
+		panic(resp)
+	}
+}
+
+func telnet_disable_local_echo(con *net.TCPConn) {
+	con.Write([]byte{NET_IAC, NET_WILL, NET_ECHO})
+	resp := make([]byte, 3)
+	con.Read(resp)
+	if resp[0] != NET_IAC || resp[1] != NET_DO || resp[2] != NET_ECHO {
+		panic(resp)
+	}
+}
+
+func telnet_enable_local_echo(con *net.TCPConn) {
+	con.Write([]byte{NET_IAC, NET_WONT, NET_ECHO})
+	resp := make([]byte, 3)
+	con.Read(resp)
+	if resp[0] != NET_IAC || resp[1] != NET_DONT || resp[2] != NET_ECHO {
+		panic(resp)
 	}
 }

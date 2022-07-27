@@ -54,9 +54,9 @@ Login:
 	if FileExists(path) {
 		player := DB().ReadPlayerData(path)
 		client.Send("\r\n&GPassword:&d ")
-		client.Echo(false)
+		telnet_disable_local_echo(client.(*MudClient).Con)
 		password := client.Read()
-		client.Echo(true)
+		telnet_enable_local_echo(client.(*MudClient).Con)
 		if encrypt_string(password) != player.Password {
 			fmt.Printf("%s\n", password)
 			client.Send("\r\n}RInvalid password!&d\r\n")
@@ -71,8 +71,16 @@ Login:
 			DB().SavePlayerData(player)
 			room := DB().GetRoom(player.Char.Room)
 			room.SendToRoom(fmt.Sprintf("\r\n&P%s&d has arrived.\r\n", player.Char.Name))
-			DB().AddEntity(player)
-
+			// see if player is already in the game...
+			p := DB().GetPlayerEntityByName(player.Char.Name)
+			if p == nil {
+				DB().AddEntity(player)
+			} else {
+				client.Send("\r\nReconnecting to player...\r\n")
+				player = p.(*PlayerProfile)
+				player.Client = client
+				player.LastSeen = time.Now()
+			}
 			ServerQueue <- MudClientCommand{
 				Entity:  player,
 				Command: "look",
@@ -110,11 +118,11 @@ Name:
 	}
 Password:
 	client.Sendf("\r\n&GWelcome &W%s&G.\r\n&GPlease enter a &Wpassword&G:&d ", name)
-	client.Echo(false)
+	telnet_disable_local_echo(client.(*MudClient).Con)
 	password := client.Read()
 	client.Send("\r\n&GRepeat your &Wpassword&G:&d ")
 	password2 := client.Read()
-	client.Echo(true)
+	telnet_enable_local_echo(client.(*MudClient).Con)
 	if password != password2 {
 		client.Send("\r\n}RError! Password mismatch!&d\r\n")
 		goto Password
@@ -211,7 +219,7 @@ Stats:
 	player.Char.Keywords = []string{name, race}
 	player.Char.Bank = 0
 	player.Char.Brain = "client"
-	if race == "human" {
+	if race == "Human" {
 		player.Char.Speaking = "basic"
 	} else {
 		player.Char.Speaking = strings.ToLower(race)

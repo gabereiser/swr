@@ -63,10 +63,10 @@ func DoBackup(t time.Time) {
 	defer db.Unlock()
 
 	if runtime.GOOS == "windows" {
-		_, err := exec.Command("tar", "-cJf", fmt.Sprintf("backup\\%s.tar.xz", t.Format("2006_01_02_15_04_05")), "data", "docs", "bin", "web").Output()
+		_, err := exec.Command("tar", "-cJf", fmt.Sprintf("backup\\%s.tar.xz", t.Format("2006_01_02_15_04_05")), "data").Output()
 		ErrorCheck(err)
 	} else {
-		_, err := exec.Command("tar", "-cJf", fmt.Sprintf("backup/%s.tar.xz", t.Format("2006_01_02_15_04_05")), "data", "docs", "bin", "web").Output()
+		_, err := exec.Command("tar", "-cJf", fmt.Sprintf("backup/%s.tar.xz", t.Format("2006_01_02_15_04_05")), "data").Output()
 		ErrorCheck(err)
 	}
 

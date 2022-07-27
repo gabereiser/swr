@@ -333,7 +333,7 @@ func (d *GameDatabase) GetPlayerEntityByName(name string) Entity {
 		}
 		if e.IsPlayer() {
 			p := e.(*PlayerProfile)
-			if p.Char.Name == name {
+			if strings.EqualFold(p.Char.Name, name) {
 				return p
 			}
 		}

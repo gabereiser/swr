@@ -18,6 +18,7 @@
 package swr
 
 import (
+	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
@@ -26,6 +27,10 @@ import (
 // Replaces line endings to enforce CR+LF instead of just LF
 func telnet_encode(input string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(input, "\r\n", "\n"), "\n", "\r\n")
+}
+
+func sprintf(format string, any ...interface{}) string {
+	return fmt.Sprintf(format, any...)
 }
 
 func roll_dice(d20 string) int {
