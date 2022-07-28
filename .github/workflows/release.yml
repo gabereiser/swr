@@ -30,25 +30,18 @@ jobs:
     - name: Install dependencies
       run: make dependencies
       
-    - name: Build
-    - if: matrix.os == 'windows-latest'
-        run: |
-          make VERSION=${{ github.ref_name }}
-          tar -cJf ${{ matrix.asset_name }} data docs bin web LICENSE
-          cd bin
-          tar -cJf ${{ matrix.client_name }} client
-    - if: matrix.os == 'ubuntu-latest'
-        run: |
-          make VERSION=${{ github.ref_name }}
-          tar -cJf ${{ matrix.asset_name }} data docs bin web LICENSE
-          cd bin
-          tar -cJf ${{ matrix.client_name }} client
-    - if: matrix.os == 'macos-latest'
-        run: |
-          make VERSION=${{ github.ref_name }}
-          tar -czf ${{ matrix.asset_name }} data docs bin web LICENSE
-          cd bin
-          tar -czf ${{ matrix.client_name }} client.exe
+    - name: Build Windows
+      if: startsWith(matrix.os, 'windows')
+      run: |
+        make all VERSION=${{ github.ref_name }}
+        tar -cJf ${{ matrix.asset_name }} data docs bin web LICENSE
+        tar -czf ${{ matrix.client_name }} bin\\client
+    - name: Build BSD
+      if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macos')
+      run: |
+        make all VERSION=${{ github.ref_name }}
+        tar -cJf ${{ matrix.asset_name }} data docs bin web LICENSE
+        tar -cJf ${{ matrix.client_name }} bin/client
         
     - name: Publish Server Archive
       uses: svenstaro/upload-release-action@v2
