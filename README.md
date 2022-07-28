@@ -1,6 +1,6 @@
 # SWR
 
-[![Build](https://github.com/gabereiser/swr/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/gabereiser/swr/actions/workflows/build.yml)
+[![Build](https://github.com/gabereiser/swr/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/gabereiser/swr/actions/workflows/build.yml)[![](https://dcbadge.vercel.app/api/server/ueGYHwf4S3)](https://discord.gg/ueGYHwf4S3)
 
 ## Building
 After cloning the repository, `make all` will download dependencies and build the server.
