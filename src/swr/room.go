@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -132,7 +132,7 @@ func room_get_blocked_exit_flags(exitFlags *RoomExitFlag) (locked bool, closed b
 	return locked, closed
 }
 func room_get_exit_status(exitFlags *RoomExitFlag) string {
-	ret := " "
+	ret := ""
 	locked, closed := room_get_blocked_exit_flags(exitFlags)
 	if closed {
 		ret += "(closed) "
@@ -185,7 +185,7 @@ func area_reset(area *AreaData) {
 		exists := false
 		for _, i := range room.Items {
 			if i != nil {
-				if i.GetId() == item.GetId() {
+				if i.GetData().Name == item.GetData().Name {
 					exists = true
 				}
 			}
@@ -204,7 +204,7 @@ func area_reset(area *AreaData) {
 			if e.IsPlayer() {
 				continue
 			}
-			if e.GetCharData().Name == mob.GetCharData().Name {
+			if e.GetCharData().Id == mob.GetCharData().Id || e.GetCharData().OId == mob.GetCharData().Id {
 				exists = true
 			}
 		}

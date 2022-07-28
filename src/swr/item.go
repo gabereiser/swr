@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -49,6 +49,7 @@ const (
 
 type ItemData struct {
 	Id         uint     `yaml:"id"`
+	OId        uint     `yaml:"itemId,omitempty"`
 	Name       string   `yaml:"name"`
 	Desc       string   `yaml:"desc"`
 	Keywords   []string `yaml:"keywords,flow"`
@@ -98,17 +99,19 @@ func (i *ItemData) GetWeight() int {
 func item_clone(item Item) Item {
 	i := item.GetData()
 	c := &ItemData{
-		Id:       i.Id,
-		Name:     i.Name,
-		Desc:     i.Desc,
-		Keywords: make([]string, 0),
-		Type:     i.Type,
-		Value:    i.Value,
-		Weight:   i.Weight,
-		AC:       i.AC,
-		WearLoc:  i.WearLoc,
-		Dmg:      i.Dmg,
-		Items:    make([]Item, 0),
+		Id:         gen_item_id(),
+		OId:        i.Id,
+		Name:       i.Name,
+		Desc:       i.Desc,
+		Keywords:   make([]string, 0),
+		Type:       i.Type,
+		Value:      i.Value,
+		Weight:     i.Weight,
+		AC:         i.AC,
+		WearLoc:    i.WearLoc,
+		WeaponType: i.WeaponType,
+		Dmg:        i.Dmg,
+		Items:      make([]Item, 0),
 	}
 	for idx := range i.Items {
 		con_item := i.Items[idx]
@@ -133,7 +136,7 @@ func (i *ItemData) IsWearable() bool {
 }
 
 func (i *ItemData) IsContainer() bool {
-	return i.Type == ITEM_TYPE_CONTAINER || i.Type == ITEM_TYPE_CORPSE
+	return i.Type == ITEM_TYPE_CONTAINER || i.IsCorpse()
 }
 
 func (i *ItemData) IsCorpse() bool {
@@ -187,7 +190,10 @@ func item_get_weapon_skill(item Item) string {
 	}
 	data := item.GetData()
 	if data.Type == ITEM_TYPE_1H_WEAPON || data.Type == ITEM_TYPE_2H_WEAPON {
-		weaponType := *data.WeaponType
+		weaponType := "vibro-blades"
+		if data.WeaponType != nil {
+			weaponType = *data.WeaponType
+		}
 		return weaponType
 	} else {
 		return "martial-arts"

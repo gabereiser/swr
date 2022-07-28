@@ -76,6 +76,11 @@
   level: 1
   func: do_speak
 - 
+  name: shout
+  keywords: [ "shout" ]
+  level: 1
+  func: do_shout
+- 
   name: look
   keywords: [ "look" ]
   level: 1

@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -345,7 +345,8 @@ const (
 )
 
 const (
-	ANSI_TITLE_STYLE_NORMAL = iota
+	ANSI_TITLE_STYLE_SYSTEM = iota
+	ANSI_TITLE_STYLE_NORMAL
 	ANSI_TITLE_STYLE_BLOCK
 	ANSI_TITLE_STYLE_ELEGANT
 	ANSI_TITLE_STYLE_HACKED
@@ -389,7 +390,7 @@ func MakeTitle(title string, style int, alignment int) string {
 		cap_left = "["
 		cap_right = "]"
 	default:
-		t = strings.Repeat("──", 38) + "─"
+		t = strings.Repeat("══", 38) + "═"
 		cap_left = "("
 		cap_right = ")"
 	}

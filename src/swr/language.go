@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -59,6 +59,9 @@ func LanguageLoad() {
 	ScheduleFunc(language_decay, true, 60*60)
 }
 func language_get_by_name(name string) *Language {
+	if name == "Human" || name == "human" {
+		name = "basic"
+	}
 	for i := range Languages {
 		l := Languages[i]
 		if l.Name == name {

@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -18,10 +18,11 @@
 package swr
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"log"
 	"runtime"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Configuration struct {
@@ -34,13 +35,13 @@ var _config *Configuration
 
 func Config() *Configuration {
 	if _config == nil {
-		path := "data/sys/config.json"
+		path := "data/sys/config.yml"
 		if runtime.GOOS == "windows" {
-			path = "data\\sys\\config.json"
+			path = "data\\sys\\config.yml"
 		}
 		fp, err := ioutil.ReadFile(path)
 		ErrorCheck(err)
-		err = json.Unmarshal(fp, &_config)
+		err = yaml.Unmarshal(fp, &_config)
 		ErrorCheck(err)
 		log.Printf("Configuration loaded.")
 	}

@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -80,6 +80,7 @@ type Entity interface {
 
 type CharData struct {
 	Id        uint                 `yaml:"id"`
+	OId       uint                 `yaml:"mobId,omitempty"`
 	Room      uint                 `yaml:"room,omitempty"`
 	Name      string               `yaml:"name"`
 	Keywords  []string             `yaml:"keywords,flow,omitempty"`
@@ -295,7 +296,7 @@ func (c *CharData) RemoveItem(item Item) {
 func (c *CharData) GetItem(item_id uint) Item {
 	for id := range c.Inventory {
 		i := c.Inventory[id]
-		if i.GetId() == item_id {
+		if i.GetId() == item_id || i.GetData().OId == item_id {
 			return i
 		}
 	}
@@ -306,6 +307,9 @@ func (c *CharData) ApplyDamage(damage uint) {
 	c.Hp[0] -= int(damage)
 	if c.Hp[0] <= 0 {
 		c.State = ENTITY_STATE_DEAD
+		if c.AI != nil {
+			c.AI.OnDeath()
+		}
 	}
 }
 
@@ -390,7 +394,7 @@ func (p *PlayerProfile) ApplyDamage(damage uint) {
 		p.Char.State = ENTITY_STATE_UNCONSCIOUS
 		if p.Char.Hp[0] <= -(p.Char.Hp[1]) {
 			p.Char.State = ENTITY_STATE_DEAD
-			p.Send("\r\n&RYou have died.&d\r\n")
+			p.Send(sprintf("\r\n&RYou have died.&d %s\r\n", EMOJI_SKULL))
 			return
 		}
 		p.Send("\r\n&YYou have been knocked unconscious...&d\r\n")
@@ -414,6 +418,7 @@ func entity_clone(entity Entity) Entity {
 	ch := entity.GetCharData()
 	c := &CharData{
 		Id:        gen_npc_char_id(),
+		OId:       ch.Id,
 		Room:      ch.Room,
 		Name:      ch.Name,
 		Keywords:  make([]string, 0),
@@ -478,6 +483,13 @@ func entity_clone(entity Entity) Entity {
 }
 
 func player_prompt(player *PlayerProfile) string {
+	mc := player.Client.(*MudClient)
+	if mc.Closed {
+		return sprintf("Thank you for playing! %s\r\n", EMOJI_ALERT)
+	}
+	if player.Char.State == ENTITY_STATE_DEAD {
+		return "&R*DEAD&d\r\n"
+	}
 	prompt := "\r\n"
 	prompt += fmt.Sprintf("&Y[&GHp:&W%d&Y/&G%d&Y]&d ", player.CurrentHp(), player.MaxHp())
 	prompt += fmt.Sprintf("&Y[&GMv:&W%d&Y/&G%d&Y]&d ", player.CurrentMv(), player.MaxMv())
@@ -487,14 +499,14 @@ func player_prompt(player *PlayerProfile) string {
 		chp := attacker.CurrentHp()
 		third := hp / 3
 		if chp < third {
-			prompt += fmt.Sprintf("&w[&R%s&w]&d\n", MakeProgressBar(int(chp), int(hp), 15))
+			prompt += fmt.Sprintf("&w[&R%s&w]&d", MakeProgressBar(int(chp), int(hp), 15))
 		} else if chp < third*2 {
-			prompt += fmt.Sprintf("&w[&Y%s&w]&d\n", MakeProgressBar(int(chp), int(hp), 15))
+			prompt += fmt.Sprintf("&w[&Y%s&w]&d", MakeProgressBar(int(chp), int(hp), 15))
 		} else {
-			prompt += fmt.Sprintf("&w[&G%s&w]&d\n", MakeProgressBar(int(chp), int(hp), 15))
+			prompt += fmt.Sprintf("&w[&G%s&w]&d", MakeProgressBar(int(chp), int(hp), 15))
 		}
 	}
-	return prompt
+	return sprintf("%s\r\n", prompt)
 }
 
 func processEntities() {
@@ -571,6 +583,7 @@ func processHealing(entity Entity) {
 }
 
 func entity_add_xp(entity Entity, xp int) {
+	// mobs don't earn xp
 	if !entity.IsPlayer() {
 		return
 	}
@@ -586,7 +599,12 @@ func entity_add_xp(entity Entity, xp int) {
 	if ch.Level != level {
 		entity.Send("\r\n}YYou have gained a level!&d\r\n")
 		entity.Send("\r\n&YYou are now level &W%d&d.\r\n", ch.Level)
-		// reset current life stats as a reward.
+		// reset current life stats as a reward and gain a little extra
+		ch.Hp[1] = 10 + (int(ch.Level) / 2)
+		ch.Mv[1] = 10 + (int(ch.Level) / 2)
+		if ch.Mp[1] > 0 { // you don't get force unless you got force
+			ch.Mp[1] = 10 + (int(ch.Level) / 2)
+		}
 		ch.Hp[0] = ch.Hp[1]
 		ch.Mp[0] = ch.Mp[1]
 		ch.Mv[0] = ch.Mv[1]
@@ -622,6 +640,9 @@ func get_xp_for_level(level uint) uint {
 }
 
 func entity_unspeakable_state(entity Entity) bool {
+	if entity == nil {
+		return true
+	}
 	state := entity.GetCharData().State
 	switch state {
 	case ENTITY_STATE_DEAD:

@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -66,6 +66,7 @@ type GameDatabase struct {
 
 func DB() *GameDatabase {
 	if _db == nil {
+		log.Printf("Starting Database.")
 		_db = new(GameDatabase)
 		_db.m = &sync.Mutex{}
 		_db.clients = make([]*MudClient, 0, 64)
@@ -78,6 +79,7 @@ func DB() *GameDatabase {
 		_db.ship_prototypes = make(map[string]*ShipData)
 		_db.starsystems = make([]Starsystem, 0)
 		_db.helps = make([]*HelpData, 0)
+		log.Printf("Database Started.")
 	}
 	return _db
 }
@@ -155,9 +157,6 @@ func (d *GameDatabase) Load() {
 
 	// Load Mobs
 	d.LoadMobs()
-
-	// Load Progs
-	d.LoadMudProgs()
 
 }
 
@@ -259,10 +258,6 @@ func (d *GameDatabase) LoadMobs() {
 	log.Printf("%d mobs loaded.", len(d.mobs))
 }
 
-func (d *GameDatabase) LoadMudProgs() {
-
-}
-
 // The Mother of all save functions
 func (d *GameDatabase) Save() {
 	d.Lock()
@@ -313,6 +308,12 @@ func (d *GameDatabase) ReadPlayerData(filename string) *PlayerProfile {
 	if err != nil {
 		ErrorCheck(err)
 		return nil
+	}
+	if p_data.Char.Equipment == nil {
+		p_data.Char.Equipment = make(map[string]*ItemData)
+	}
+	if p_data.Char.Inventory == nil {
+		p_data.Char.Inventory = make([]*ItemData, 0)
 	}
 	return p_data
 }

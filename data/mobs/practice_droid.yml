@@ -11,10 +11,10 @@ gender: n
 level: 1
 xp: 100
 gold: 0
-hp: [200, 200]
+hp: [100, 100]
 mp: [0, 0]
 mv: [10, 10]
-stats: [ 5, 0, 0, 0, 0, 1 ]
+stats: [ 10, 10, 10, 10, 10, 10 ]
 skills: {}
 languages: {basic: 100, binary: 100, droid: 100}
 speaking: binary
@@ -22,3 +22,12 @@ state: normal
 brain: generic
 equipment: {}
 inventory: []
+mob_progs:
+  greet: |
+    say("Hello there!");
+    delay(1);
+    say("How are you?");
+    delay(1);
+    say("Want to play?");
+  death: |
+    say("Oh no! You got me!")

@@ -14,11 +14,14 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            artifact_name: server
-            asset_name: swr-release-linux-
+            asset_name: swr-release-linux-${{ github.ref_name }}.tar.xz
+            client_name: client-${{ github.ref_name }}.tar.xz
           - os: macos-latest
-            artifact_name: server
-            asset_name: swr-release-macos-
+            asset_name: swr-release-macos-${{ github.ref_name }}.tar.xz
+            client_name: client-${{ github.ref_name }}.tar.xz
+          - os: windows-latest
+            asset_name: swr-release-win64-${{ github.ref_name }}.zip
+            client_name: client-${{ github.ref_name }}.zip
 
     steps:
     - name: Checkout
@@ -28,15 +31,38 @@ jobs:
       run: make dependencies
       
     - name: Build
-      run: |
-        make VERSION=${{ github.ref_name }}
-        tar -cJf ${{ matrix.asset_name }}${{ github.ref_name }}.tar.xz data docs bin web LICENSE
+    - if: matrix.os == 'windows-latest'
+        run: |
+          make VERSION=${{ github.ref_name }}
+          tar -cJf ${{ matrix.asset_name }} data docs bin web LICENSE
+          cd bin
+          tar -cJf ${{ matrix.client_name }} client
+    - if: matrix.os == 'ubuntu-latest'
+        run: |
+          make VERSION=${{ github.ref_name }}
+          tar -cJf ${{ matrix.asset_name }} data docs bin web LICENSE
+          cd bin
+          tar -cJf ${{ matrix.client_name }} client
+    - if: matrix.os == 'macos-latest'
+        run: |
+          make VERSION=${{ github.ref_name }}
+          tar -czf ${{ matrix.asset_name }} data docs bin web LICENSE
+          cd bin
+          tar -czf ${{ matrix.client_name }} client.exe
         
-    - name: Publish
+    - name: Publish Server Archive
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ matrix.asset_name }}${{ github.ref_name }}.tar.xz
-        asset_name: ${{ matrix.asset_name }}${{ github.ref_name }}.tar.xz
+        file: ${{ matrix.asset_name }}
+        asset_name: ${{ matrix.asset_name }}
+        tag: ${{ github.ref }}
+
+    - name: Publish Client Archive
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: ${{ matrix.client_name }}
+        asset_name: ${{ matrix.client_name }}
         tag: ${{ github.ref }}
     

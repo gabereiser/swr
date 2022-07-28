@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@ func do_say(entity Entity, args ...string) {
 		return
 	}
 	if entity.IsPlayer() {
-		entity.Send(fmt.Sprintf("You say \"%s\"\n", words))
+		entity.Send("You say \"%s\"\n", words)
 	}
 	entities := DB().GetEntitiesInRoom(speaker.RoomId())
 	for _, ex := range entities {
@@ -51,6 +51,47 @@ func do_say(entity Entity, args ...string) {
 		}
 	}
 }
+
+func do_shout(entity Entity, args ...string) {
+	words := strings.Join(args, " ")
+	speaker := entity.GetCharData()
+	if entity_unspeakable_state(entity) {
+		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
+		return
+	}
+	if entity.IsPlayer() {
+		entity.Send("You shout \"%s\"!\n", words)
+	}
+	yell(entity, words, speaker.RoomId(), 0)
+}
+
+func yell(entity Entity, words string, roomId uint, dist uint) {
+	if dist > 3 {
+		return
+	}
+	speaker := entity.GetCharData()
+	room := DB().GetRoom(roomId)
+	for _, ex := range room.GetEntities() {
+		if ex == nil {
+			continue
+		}
+		if entity_unspeakable_state(ex) {
+			continue
+		}
+		if ex != entity {
+			if ex.IsPlayer() {
+				listener := ex.GetCharData()
+				ex.Send("Someone shouts \"%s\"!\n", language_spoken(speaker, listener, words))
+			} else {
+				ex.Send("Someone shouts \"%s\"!\n", words)
+			}
+		}
+	}
+	for _, e := range room.Exits {
+		yell(entity, words, e, dist+1)
+	}
+}
+
 func do_emote(entity Entity, args ...string) {
 	emote := strings.Join(args, " ")
 	speaker := entity.GetCharData()
@@ -120,6 +161,12 @@ func do_tune_frequency(entity Entity, args ...string) {
 				return
 			}
 			freq_str := fmt.Sprintf("%3.3f", freq)
+			freq_parts := strings.Split(freq_str, ".")
+			if freq_parts[1] != "000" && freq_parts[1] != "250" && freq_parts[1] != "500" && freq_parts[1] != "750" {
+				entity.Send("\r\n&RInvalid frequency. Frequencies are 250hz increment on the mhz interstellar bands.&d")
+				entity.Send("example: 150.000 425.250 320.750 200.500\r\n")
+				return
+			}
 			player.Frequency = freq_str
 		} else {
 			player.Frequency = tune_random_frequency()

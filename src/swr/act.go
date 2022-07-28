@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -56,16 +56,15 @@ func do_look(entity Entity, args ...string) {
 					MakeTitle(room.Name,
 						ANSI_TITLE_STYLE_NORMAL,
 						ANSI_TITLE_ALIGNMENT_CENTER)))
-				entity.Send(telnet_encode(room.Desc))
-				entity.Send("\r\nExits:\r\n")
+				entity.Send(sprintf("&W%s&d", telnet_encode(room.Desc)))
 				for dir, to_room_id := range room.Exits {
 					to_room := DB().GetRoom(to_room_id)
 					if k, ok := room.ExitFlags[dir]; ok {
 						exit_flags := k
 						ext := room_get_exit_status(exit_flags)
-						entity.Send(fmt.Sprintf(" - %s %s %s\r\n", dir, to_room.Name, ext))
+						entity.Send(sprintf("&G%s&W - &Y(&W%s&Y) &C%s&d\r\n", dir, to_room.Name, ext))
 					} else {
-						entity.Send(fmt.Sprintf(" - %s %s\r\n", dir, to_room.Name))
+						entity.Send(sprintf("&G%s&W - &Y(&W%s&Y)&d\r\n", dir, to_room.Name))
 					}
 				}
 				entity.Send("\r\n")
@@ -74,7 +73,12 @@ func do_look(entity Entity, args ...string) {
 					if item == nil {
 						continue
 					}
-					entity.Send("&Y%s&d\r\n", item.GetData().Name)
+					if item.IsCorpse() {
+						entity.Send("%s   &w%s %s&d\r\n", EMOJI_TOMBSTONE, get_preface_for_name(item.GetData().Name), item.GetData().Name)
+					} else {
+						entity.Send("&w%s %s&d\r\n", get_preface_for_name(item.GetData().Name), item.GetData().Name)
+					}
+
 				}
 
 				for _, e := range DB().GetEntitiesInRoom(room.Id) {
@@ -103,12 +107,6 @@ func do_look(entity Entity, args ...string) {
 			item := room.FindItem(args[0])
 			if item != nil {
 				entity.Send("You look at %s and see...\r\n%s\r\n", item.GetData().Name, item.GetData().Desc)
-				if item.IsCorpse() {
-					entity.Send("&YOn Corpse:&d\r\n")
-					for _, item := range item.GetData().Items {
-						entity.Send("&Y%s&d\r\n", item.GetData().Name)
-					}
-				}
 				return
 			}
 			item = entity.FindItem(args[0])
@@ -260,6 +258,9 @@ func do_sit(entity Entity, args ...string) {
 	} else if ch.State == ENTITY_STATE_NORMAL {
 		ch.State = ENTITY_STATE_SITTING
 		for _, e := range DB().GetEntitiesInRoom(entity.RoomId()) {
+			if e == nil {
+				continue
+			}
 			if entity_unspeakable_state(e) {
 				continue
 			}
@@ -471,10 +472,10 @@ func do_get(entity Entity, args ...string) {
 					continue
 				}
 				if e != entity {
-					e.Send("\r\n&P%s&d picks up &Y%s&d.\r\n", ch.Name, item.GetData().Name)
+					e.Send("\r\n&P%s&d picks up %s &Y%s&d.\r\n", ch.Name, get_preface_for_name(item.GetData().Name), item.GetData().Name)
 				}
 			}
-			entity.Send("\r\n&dYou pick up &Y%s&d.\r\n", item.GetData().Name)
+			entity.Send("\r\n&dYou pick up %s &Y%s&d.\r\n", get_preface_for_name(item.GetData().Name), item.GetData().Name)
 			return
 		}
 	}
@@ -514,10 +515,10 @@ func do_get(entity Entity, args ...string) {
 							continue
 						}
 						if e != entity {
-							e.Send("\r\n&P%s&d picks up &Y%s&d.\r\n", ch.Name, i.GetData().Name)
+							e.Send("\r\n&P%s&d picks up %s &Y%s&d.\r\n", ch.Name, get_preface_for_name(i.GetData().Name), i.GetData().Name)
 						}
 					}
-					entity.Send("\r\n&dYou pick up &Y%s&d.\r\n", i.GetData().Name)
+					entity.Send("\r\n&dYou pick up %s &Y%s&d.\r\n", get_preface_for_name(i.GetData().Name), i.GetData().Name)
 					return
 				}
 			}
@@ -572,14 +573,14 @@ func do_drop(entity Entity, args ...string) {
 	room := db.GetRoom(entity.RoomId())
 	room.AddItem(item)
 	entity.GetCharData().RemoveItem(item)
-	entity.Send("\r\n&YYou drop &W%s&Y.&d\r\n", item.GetData().Name)
+	entity.Send("\r\n&YYou drop %s &W%s&Y.&d\r\n", get_preface_for_name(item.GetData().Name), item.GetData().Name)
 	ch := entity.GetCharData()
 	for _, e := range room.GetEntities() {
 		if e == nil {
 			continue
 		}
 		if e != entity {
-			e.Send("\r\n&P%s&d drops &Y%s&d.\r\n", ch.Name, item.GetData().Name)
+			e.Send("\r\n&P%s&d drops %s &Y%s&d.\r\n", ch.Name, get_preface_for_name(item.GetData().Name), item.GetData().Name)
 			if e.GetCharData().AI != nil {
 				e.GetCharData().AI.OnDrop(entity, item)
 			}

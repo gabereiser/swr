@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -58,14 +58,17 @@ type MudClient struct {
 }
 
 func (c *MudClient) Raw(str string) {
+	c.Con.SetWriteDeadline(time.Now().Add(10 * time.Second))
 	_, err := c.Con.Write([]byte(str))
-	ErrorCheck(err)
+	if err != nil {
+		c.Con.Close()
+		c.Closed = true
+	}
 }
 
 func (c *MudClient) Send(str string) {
 	str = Color().Colorize(str)
-	_, err := c.Con.Write([]byte(str))
-	ErrorCheck(err)
+	c.Raw(str)
 }
 
 func (c *MudClient) Sendf(format string, any ...interface{}) {
@@ -167,7 +170,7 @@ func processServerPump() {
 	log.Printf("Server Pump has exited!\n")
 }
 func acceptClient(con *net.TCPConn) {
-	telnet_suppress_ga(con)
+	//telnet_suppress_ga(con)
 	db := DB()
 	client := new(MudClient)
 	client.Id = hex.EncodeToString([]byte(con.RemoteAddr().String()))
@@ -205,7 +208,9 @@ func acceptClient(con *net.TCPConn) {
 		}
 	}
 	db.RemoveEntity(entity)
+	log.Printf("Entity %s has left the game.", entity.GetCharData().Name)
 	db.RemoveClient(client)
+	log.Printf("Client %s has disconnected.", client.Id)
 	room := DB().GetRoom(entity.RoomId())
 	room.SendToRoom(fmt.Sprintf("\r\n&P%s&d has left.\r\n", entity.GetCharData().Name))
 	con.Close()
@@ -240,7 +245,7 @@ func processIdleClients() {
 
 func run_editor(client *MudClient, buffer *string) {
 	telnet_disable_local_echo(client.Con)
-
+	telnet_suppress_ga(client.Con)
 	player := DB().GetEntityForClient(client)
 
 	file := sprintf("/tmp/%s-buffer", player.GetCharData().Name)
@@ -255,32 +260,53 @@ func run_editor(client *MudClient, buffer *string) {
 	buf, _ := ioutil.ReadFile(file)
 
 	*buffer = string(buf)
+	telnet_unsuppress_ga(client.Con)
 	telnet_enable_local_echo(client.Con)
 }
 
 func telnet_suppress_ga(con *net.TCPConn) {
-	con.Write([]byte{NET_IAC, NET_WILL, NET_GA})
+	_, err := con.Write([]byte{NET_IAC, NET_WILL, NET_GA})
+	if err != nil {
+		con.Close()
+	}
 	resp := make([]byte, 3)
 	con.Read(resp)
 	if resp[0] != NET_IAC || resp[1] != NET_DO || resp[2] != NET_GA {
-		panic(resp)
+		panic(fmt.Sprintf("%v", resp))
+	}
+}
+func telnet_unsuppress_ga(con *net.TCPConn) {
+	_, err := con.Write([]byte{NET_IAC, NET_WONT, NET_GA})
+	if err != nil {
+		con.Close()
+	}
+	resp := make([]byte, 3)
+	con.Read(resp)
+	if resp[0] != NET_IAC || resp[1] != NET_DONT || resp[2] != NET_GA {
+		panic(fmt.Sprintf("%v", resp))
 	}
 }
 
 func telnet_disable_local_echo(con *net.TCPConn) {
-	con.Write([]byte{NET_IAC, NET_WILL, NET_ECHO})
+	_, err := con.Write([]byte{NET_IAC, NET_WILL, NET_ECHO})
+	if err != nil {
+		con.Close()
+	}
 	resp := make([]byte, 3)
 	con.Read(resp)
 	if resp[0] != NET_IAC || resp[1] != NET_DO || resp[2] != NET_ECHO {
-		panic(resp)
+		panic(fmt.Sprintf("%v", resp))
 	}
 }
 
 func telnet_enable_local_echo(con *net.TCPConn) {
-	con.Write([]byte{NET_IAC, NET_WONT, NET_ECHO})
+	_, err := con.Write([]byte{NET_IAC, NET_WONT, NET_ECHO})
+	if err != nil {
+		con.Close()
+	}
 	resp := make([]byte, 3)
 	con.Read(resp)
 	if resp[0] != NET_IAC || resp[1] != NET_DONT || resp[2] != NET_ECHO {
-		panic(resp)
+		panic(fmt.Sprintf("%v", resp))
 	}
 }

@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -29,8 +29,7 @@ func init() {
 This program comes with ABSOLUTELY NO WARRANTY.
 This is free software, and you are welcome to redistribute it
 under certain conditions; see LICENSE for details.
-
-[------------------------------------------------------------------]`)
+ `)
 
 	time.Sleep(1 * time.Second)
 	swr.Init()

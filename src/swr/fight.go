@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -167,8 +167,8 @@ func do_combat(attacker Entity, defender Entity) {
 	attacker.Send(get_damage_string(damage, "You", dch.Name, fmt.Sprintf("your %s", ach_weapon)))
 	defender.Send(get_damage_string(damage, ach.Name, "you", fmt.Sprintf("their %s", ach_weapon)))
 	if attacker.GetCharData().State == ENTITY_STATE_DEAD {
-		attacker.Send("\r\n&W%s &Rhas killed you.&d\r\n", dch.Name)
-		defender.Send("\r\n&RYou have killed &W%s&d\r\n", ach.Name)
+		attacker.Send("\r\n&W%s &Rhas killed you.&d %s\r\n", dch.Name, EMOJI_SKULL)
+		defender.Send("\r\n%s &RYou have killed &W%s&d\r\n", EMOJI_SKULL, ach.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
 		xp_base = int(dch.Level) * 250
@@ -188,8 +188,8 @@ func do_combat(attacker Entity, defender Entity) {
 		return
 	}
 	if defender.GetCharData().State == ENTITY_STATE_DEAD {
-		defender.Send("\r\n&R%s has killed you.&d\r\n", ach.Name)
-		attacker.Send("\r\n&RYou have killed &W%s&d\r\n", dch.Name)
+		defender.Send("\r\n%s &R%s has killed you.&d\r\n", EMOJI_SKULL, ach.Name)
+		attacker.Send("\r\n&RYou have killed &W%s&d %s\r\n", dch.Name, EMOJI_SKULL)
 		attacker.StopFighting()
 		defender.StopFighting()
 		xp_base = int(ach.Level) * 250
@@ -234,11 +234,15 @@ func get_damage_string(damage uint, attacker string, defender string, weapon str
 func make_corpse(entity Entity) {
 	ch := entity.GetCharData()
 	if ch.State == ENTITY_STATE_DEAD {
+		death_fmt := "A bloody corpse of a %s %s lies here rotting away."
+		if strings.Contains(ch.Race, "Droid") {
+			death_fmt = "A busted %s %s lies here as scrap materials."
+		}
 		corpse := &ItemData{
 			Id:       gen_item_id(),
-			Name:     fmt.Sprintf("a corpse of a %s %s", get_gender_for_code(ch.Gender), strings.ToLower(ch.Race)),
+			Name:     fmt.Sprintf("corpse of a %s %s", get_gender_for_code(ch.Gender), strings.ToLower(ch.Race)),
 			Keywords: make([]string, 0),
-			Desc:     fmt.Sprintf("A bloody corpse of a %s %s lies here in rot.", get_gender_for_code(ch.Gender), strings.ToLower(ch.Race)),
+			Desc:     fmt.Sprintf(death_fmt, get_gender_for_code(ch.Gender), strings.ToLower(ch.Race)),
 			Type:     ITEM_TYPE_CORPSE,
 			Value:    int(ch.Gold),
 			Weight:   ch.base_weight(),
@@ -246,7 +250,7 @@ func make_corpse(entity Entity) {
 			Items:    make([]Item, 0),
 		}
 		if !entity.IsPlayer() {
-			corpse.Name = fmt.Sprintf("a corpse of %s", entity.GetCharData().Name)
+			corpse.Name = fmt.Sprintf("corpse of %s", entity.GetCharData().Name)
 		}
 		items := make([]Item, 0)
 		for _, item := range ch.Equipment {

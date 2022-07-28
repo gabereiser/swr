@@ -1,11 +1,12 @@
 ---
 id: 200
-name: a vibro-blade
+name: vibro-blade
 desc: |
   A basic looking vibro-blade.
 keywords: [blade,vibro,vibro-blade]
 type: weapon
-weaponType: vibro-blade
+weaponType: vibro-blades
+wearLoc: weapon
 dmgRoll: 1d6
 value: 100
 weight: 3

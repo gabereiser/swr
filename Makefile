@@ -1,4 +1,4 @@
-VERSION=v0.0.8-alpha
+VERSION=develop
 
 build:
 	@echo 'Building server'
@@ -11,6 +11,11 @@ clean:
 	go clean; \
 	rm -rf ../bin/*
 	@echo 'Done'
+client:
+	@echo 'Building client'
+	@cd src/client; \
+	go build -ldflags="-X 'main.version=$(VERSION)'" -o ../../bin/client;
+	@echo 'Done'
 dependencies:
 	@echo 'Downloading dependencies'
 	@cd src; \
@@ -18,4 +23,4 @@ dependencies:
 	go mod download
 	@echo 'Done'
 
-all: clean dependencies build
+all: clean dependencies build client

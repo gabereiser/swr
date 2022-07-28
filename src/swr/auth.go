@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -44,19 +44,15 @@ Login:
 	if username == "" {
 		goto Login
 	}
-	sanitized := strings.ToLower(username)
-	if strings.Contains(sanitized, " ") {
-		client.Send("\r\n}RInvalid login!&d &RSpace aren't allowed.&d\r\n")
-		goto Login
-	}
+	sanitized := strings.TrimSpace(strings.ToLower(username))
 	path := fmt.Sprintf("data/accounts/%s/%s.yml", sanitized[0:1], sanitized)
 	log.Printf("Loading player %s", sanitized)
 	if FileExists(path) {
 		player := DB().ReadPlayerData(path)
 		client.Send("\r\n&GPassword:&d ")
-		telnet_disable_local_echo(client.(*MudClient).Con)
+		//telnet_disable_local_echo(client.(*MudClient).Con)
 		password := client.Read()
-		telnet_enable_local_echo(client.(*MudClient).Con)
+		//telnet_enable_local_echo(client.(*MudClient).Con)
 		if encrypt_string(password) != player.Password {
 			fmt.Printf("%s\n", password)
 			client.Send("\r\n}RInvalid password!&d\r\n")
@@ -107,8 +103,8 @@ func auth_do_new_player(client Client, player *PlayerProfile) {
 Name:
 	client.Send("\r\n&GCharacter Name:&d ")
 	name := client.Read()
-	if strings.ContainsAny(name, " `~,./?<>;:'\"[]}{\\|+_-=!@#$%^&*()") {
-		client.Send("}RSpaces and special characters are not allowed.&d\r\n\r\n")
+	if strings.ContainsAny(name, "`~,./?<>;:'\"[]}{\\|+_-=!@#$%^&*()") {
+		client.Send("}RSpecial characters are not allowed.&d\r\n\r\n")
 		goto Name
 	}
 	client.Sendf("\r\n&GYou will be known as &W%s&G. Is that ok? [&Wy&G/&Wn&G] &d", name)
@@ -118,11 +114,11 @@ Name:
 	}
 Password:
 	client.Sendf("\r\n&GWelcome &W%s&G.\r\n&GPlease enter a &Wpassword&G:&d ", name)
-	telnet_disable_local_echo(client.(*MudClient).Con)
+	//telnet_disable_local_echo(client.(*MudClient).Con)
 	password := client.Read()
 	client.Send("\r\n&GRepeat your &Wpassword&G:&d ")
 	password2 := client.Read()
-	telnet_enable_local_echo(client.(*MudClient).Con)
+	//telnet_enable_local_echo(client.(*MudClient).Con)
 	if password != password2 {
 		client.Send("\r\n}RError! Password mismatch!&d\r\n")
 		goto Password
@@ -196,12 +192,9 @@ Stats:
 	if !strings.HasPrefix(strings.ToLower(client.Read()), "y") {
 		goto Stats
 	}
-	name = strings.ToLower(name)
-	name_t := strings.ToUpper(name[0:1])
-	name = name_t + name[1:]
 	player.Char = CharData{}
 	player.Char.Id = gen_player_char_id()
-	player.Char.Name = name
+	player.Char.Name = capitalize(name)
 	player.Char.Room = 100
 	player.Char.Race = race
 	player.Char.Gender = gender
@@ -210,7 +203,7 @@ Stats:
 	player.Char.XP = 0
 	player.Char.Gold = 0
 	player.Char.Stats = stats
-	player.Char.Skills = map[string]int{"kick": 1, "beg": 1, "search": 1}
+	player.Char.Skills = map[string]int{}
 	player.Char.Hp = []int{10, 10}
 	player.Char.Mp = []int{0, 0}
 	player.Char.Mv = []int{10, 10}

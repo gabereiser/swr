@@ -9,7 +9,20 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            asset_name: swr-release-linux-${{ github.ref_name }}.tar.xz
+            client_name: client-${{ github.ref_name }}.tar.xz
+          - os: macos-latest
+            asset_name: swr-release-macos-${{ github.ref_name }}.tar.xz
+            client_name: client-${{ github.ref_name }}.tar.xz
+          - os: windows-latest
+            asset_name: swr-release-win64-${{ github.ref_name }}.zip
+            client_name: client-${{ github.ref_name }}.zip
 
     steps:
     - uses: actions/checkout@v3
@@ -18,5 +31,22 @@ jobs:
       run: make dependencies
       
     - name: Build
-      run: make all VERSION=${{ github.ref_name }}
+    - if: matrix.os == 'windows-latest'
+        run: |
+          make VERSION=${{ github.ref_name }}
+          tar -cJf ${{ matrix.asset_name }} data docs bin web LICENSE
+          cd bin
+          tar -cJf ${{ matrix.client_name }} client
+    - if: matrix.os == 'ubuntu-latest'
+        run: |
+          make VERSION=${{ github.ref_name }}
+          tar -cJf ${{ matrix.asset_name }} data docs bin web LICENSE
+          cd bin
+          tar -cJf ${{ matrix.client_name }} client
+    - if: matrix.os == 'macos-latest'
+        run: |
+          make VERSION=${{ github.ref_name }}
+          tar -czf ${{ matrix.asset_name }} data docs bin web LICENSE
+          cd bin
+          tar -czf ${{ matrix.client_name }} client.exe
     

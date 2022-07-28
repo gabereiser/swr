@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -32,6 +32,7 @@ var CommandFuncs = map[string]func(Entity, ...string){
 	"do_say":            do_say,
 	"do_emote":          do_emote,
 	"do_speak":          do_speak,
+	"do_shout":          do_shout,
 	"do_look":           do_look,
 	"do_who":            do_who,
 	"do_save":           do_save,
@@ -106,7 +107,7 @@ func CommandsLoad() {
 	ErrorCheck(err)
 	err = yaml.Unmarshal(fp, &Commands)
 	ErrorCheck(err)
-	log.Printf("Commands successfully loaded.")
+	log.Printf("%d commands successfully loaded.", len(Commands))
 }
 func command_map_to_func(name string) func(Entity, ...string) {
 	if k, ok := CommandFuncs[name]; ok {

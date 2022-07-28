@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -86,7 +86,14 @@ func tune_random_frequency() string {
 	}
 	return buf
 }
-
+func capitalize(str string) string {
+	parts := strings.Split(str, " ")
+	ret := ""
+	for _, p := range parts {
+		ret += sprintf("%s%s ", strings.ToUpper(p[0:1]), strings.ToLower(p[1:]))
+	}
+	return strings.TrimSpace(ret)
+}
 func direction_reverse(direction string) string {
 	switch direction {
 	case "north":
@@ -126,6 +133,21 @@ func get_gender_for_code(gender string) string {
 		return "Neuter"
 	}
 	return "Male"
+}
+
+func get_preface_for_name(name string) string {
+	sanitized := strings.ToLower(name)
+	switch sanitized[0:1] {
+	case "a":
+	case "e":
+	case "i":
+	case "o":
+	case "u":
+		return "an"
+	default:
+		return "a"
+	}
+	return "a"
 }
 
 func distance_between_points(origin []float32, dest []float32) float32 {

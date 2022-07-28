@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,6 @@
 package swr
 
 import (
-	"fmt"
 	"log"
 	"strings"
 )
@@ -52,12 +51,12 @@ func do_who(entity Entity, args ...string) {
 		}
 		if e.IsPlayer() {
 			player := e.(*PlayerProfile)
-			entity.Send(fmt.Sprintf("&W%-54s&G [ &WLevel %2d&G ]\r\n", player.Char.Title, player.Char.Level))
+			entity.Send(sprintf("&W%-67s&G [ &WLevel %2d&G ]\r\n", player.Char.Title, player.Char.Level))
 			total++
 		}
 	}
 	entity.Send("\r\n")
-	entity.Send(MakeTitle(fmt.Sprintf("%d Online", total), ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_RIGHT))
+	entity.Send(MakeTitle(sprintf("%d Online", total), ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_RIGHT))
 	entity.Send("\r\n")
 }
 
@@ -87,7 +86,7 @@ func do_score(entity Entity, args ...string) {
 		player.Send("&c│       Feet: &d%-20s&c         │&d▒\r\n", entity_get_equipment_for_slot(player, "feet"))
 		player.Send("&c│      Hands: &d%-20s&c         │&d▒\r\n", entity_get_equipment_for_slot(player, "hands"))
 		player.Send("&c│                                          │&d▒\r\n")
-		player.Send("&c│     &RWeapon: &d%-20s&c         │&d▒\r\n", "None")
+		player.Send("&c│     &RWeapon: &d%-20s&c         │&d▒\r\n", entity_get_equipment_for_slot(player, "weapon"))
 		player.Send("&c│                                          │&d▒\r\n")
 		player.Send("&c├──( Skills )──────────────────────────────┤&d▒\r\n")
 		for s, v := range char.Skills {
@@ -188,19 +187,25 @@ func do_equip(entity Entity, args ...string) {
 		entity.Send("\r\n&RYou don't have that item!&d\r\n")
 		return
 	}
-	if !item.IsWeapon() || !item.IsWearable() {
+	if !item.IsWeapon() && !item.IsWearable() {
 		entity.Send("\r\n&RYou can't equip that item!&d\r\n")
 		return
 	}
 	data := item.GetData()
 
-	if data.WearLoc == nil {
+	if data.WearLoc == nil && !item.IsWeapon() {
 		entity.Send("\r\n&RBUG: Unable to determine wear location!&d\r\n")
 		log.Printf("BUG: Unable to determine wear location for %s\r\n", data.Name)
+		return
 	}
-	wearLoc := *data.WearLoc
+	wearLoc := "weapon"
+	if !item.IsWeapon() {
+		wearLoc = *data.WearLoc
+	}
+
 	entity.GetCharData().Equipment[wearLoc] = data
-	entity.Send("\r\n&YYou equip %s&d\r\n", data.Name)
+	entity.Send("\r\n&YYou equip %s %s&d\r\n", get_preface_for_name(data.Name), data.Name)
+	entity.GetCharData().RemoveItem(item)
 	others := DB().GetEntitiesInRoom(entity.RoomId())
 	for _, e := range others {
 		if e == nil {
@@ -224,9 +229,11 @@ func do_remove(entity Entity, args ...string) {
 			item = i
 			break
 		}
-		if strings.HasPrefix(i.Name, args[0]) {
-			item = i
-			break
+		for _, keyword := range i.Keywords {
+			if strings.HasPrefix(keyword, args[0]) {
+				item = i
+				break
+			}
 		}
 	}
 	if item != nil {

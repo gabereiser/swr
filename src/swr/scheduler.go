@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -50,7 +50,10 @@ var _scheduler *SchedulerService
 
 func Scheduler() *SchedulerService {
 	if _scheduler == nil {
-		log.Println("Starting Scheduler Service.")
+		log.Println("Starting Scheduler.")
+		now := time.Now().UTC()
+		delta := now.Sub(now.Truncate(time.Second))
+		time.Sleep(time.Second - delta)
 		_scheduler = &SchedulerService{
 			t:     time.NewTicker(time.Duration(1) * time.Second),
 			m:     &sync.Mutex{},
@@ -58,11 +61,14 @@ func Scheduler() *SchedulerService {
 		}
 		go func() {
 			for {
-				t := <-_scheduler.t.C
-				_scheduler.tick(t)
+				<-_scheduler.t.C
+				now := time.Now().UTC()
+				delta := now.Sub(now.Truncate(time.Second))
+				time.Sleep(time.Second - delta)
+				_scheduler.tick(time.Now().UTC())
 			}
 		}()
-		log.Println("Scheduler Service started.")
+		log.Println("Scheduler Started.")
 	}
 	return _scheduler
 }
@@ -98,6 +104,7 @@ func (s *SchedulerService) remove(function *ScheduledFunction) {
 
 }
 func (s *SchedulerService) tick(t time.Time) {
+
 	removal := []*ScheduledFunction{}
 
 	for _, fn := range s.funcs {

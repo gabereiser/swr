@@ -1,4 +1,4 @@
-/*  Space Wars Rebellion Mud
+/*  Star Wars Role-Playing Mud
  *  Copyright (C) 2022 @{See Authors}
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -18,6 +18,7 @@
 package swr
 
 import (
+	"math/rand"
 	"strconv"
 	"time"
 
@@ -133,6 +134,35 @@ func mud_prog_init(entity Entity) *otto.Otto {
 		t, _ := call.Argument(0).ToInteger()
 		time.Sleep(time.Duration(t) * time.Second)
 		return otto.Value{}
+	})
+	vm.Set("random", func(call otto.FunctionCall) otto.Value {
+		arg, _ := call.Argument(0).ToInteger()
+		value, _ := otto.ToValue(rand.Intn(int(arg)))
+		return value
+	})
+	vm.Set("sprintf", func(call otto.FunctionCall) otto.Value {
+		format, _ := call.Argument(0).ToString()
+		vm_args_list := call.ArgumentList[1:]
+		var args []interface{} = make([]interface{}, 0)
+		for _, arg := range vm_args_list {
+			if arg.IsBoolean() {
+				a, _ := arg.ToBoolean()
+				args = append(args, a)
+				continue
+			}
+			if arg.IsNumber() {
+				a, _ := arg.ToInteger()
+				args = append(args, a)
+				continue
+			}
+			if arg.IsString() {
+				a, _ := arg.ToString()
+				args = append(args, a)
+				continue
+			}
+		}
+		value, _ := otto.ToValue(sprintf(format, args...))
+		return value
 	})
 	return vm
 }
