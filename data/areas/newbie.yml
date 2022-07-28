@@ -27,19 +27,73 @@ rooms:
     id: 101
     name: Outside a jail cell
     desc: |
-      You are standing outside of a jail cell in an imperial jail.
-      Alarms are going off around you. The room keeps flashing 
-      }Rred&d and }Wwhite&d. You feel a slight thud
-      coming from outside the ship.
+      You are standing outside of a jail cell in an imperial jail. Jail cells line the walls.
+      Alarms are going off around you. The room keeps flashing }Rred&d&W and }Wwhite&d&W. To the
+      &Gnorth&W you can see a turbolift.
     flags: []
     exits:
       west: 100
+      north: 102
     exflags:
       west:
         closed: true
         locked: true
         key: 1
     roomProgs: {}
+  -
+    id: 102
+    name: A turbolift
+    desc: |
+      You are standing inside a turbo lift. It's a pretty basic imperial lift suited for
+      transporting only a few people at a time. Clearly intended to keep morale low. On
+      the wall you can see a plate with floors listed.
+         2 - &R*Restricted*&W
+         1 - &YAdmissions&W
+        B1 - &YCommissary&W
+        B2 - &YMaintenance&W
+        B3 - &YJail Cells&W
+    flags: []
+    roomProgs:
+       say: |
+          if ($s == '1') {
+            transfer($me, 103);
+            look();
+          } else if ($s == 'B1') {
+            transfer($me, 104);
+            look();
+          } else if ($s == 'B2') {
+            transfer($me, 105);
+            look();
+          } else if ($s == 'B3') {
+            transfer($me, 101);
+            look();
+          } else if ($s == '2') {
+            echo("&RAccess is restricted.&d");
+          }
+  -
+    id: 103
+    name: Jail Admissions
+    desc: |
+      You're in the jail admissions and reception area.
+    flags: []
+    exits:
+      west: 102
+  -
+    id: 104
+    name: Jail Commissary
+    desc: |
+      You're in the jail commissary.
+    flags: []
+    exits:
+      south: 102
+  -
+    id: 105
+    name: Maintenance Level
+    desc: |
+      You're in the jail maintence level.
+    flags: []
+    exits:
+      southwest: 102
 
 items:
   - 

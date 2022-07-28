@@ -255,3 +255,13 @@ func get_direction_string(direction string) string {
 	}
 	return direction
 }
+
+func room_prog_exec(entity Entity, evt string, any ...interface{}) {
+	room := DB().GetRoom(entity.RoomId())
+	if pg, ok := room.RoomProgs[evt]; ok {
+		vm := mud_prog_init(entity)
+		mud_prog_bind(vm, any...)
+		_, err := vm.Run(pg)
+		ErrorCheck(err)
+	}
+}

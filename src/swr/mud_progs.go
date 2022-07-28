@@ -87,25 +87,29 @@ func mud_prog_exec(prog string, entity Entity, any ...interface{}) error {
 	ch := entity.GetCharData()
 	if pg, ok := ch.Progs[prog]; ok {
 		vm := mud_prog_init(entity)
-		any_len := len(any)
-		if any_len > 0 {
-			err := vm.Set("$n", any[0].(Entity))
-			ErrorCheck(err)
-			if any_len > 1 {
-				if _, ok := any[1].(string); ok {
-					err = vm.Set("$s", any[1].(string))
-					ErrorCheck(err)
-				} else {
-					err = vm.Set("$i", any[1].(Item))
-					ErrorCheck(err)
-				}
-			}
-		}
+		mud_prog_bind(vm, any...)
 		_, err := vm.Run(pg)
 		ErrorCheck(err)
 		return err
 	}
 	return Err("%s is not a program of [%d]%s", prog, ch.Id, ch.Name)
+}
+func mud_prog_bind(vm *otto.Otto, any ...interface{}) {
+	any_len := len(any)
+	if any_len > 0 {
+		for i := 0; i < any_len; i++ {
+			if _, ok := any[i].(Entity); ok {
+				err := vm.Set("$n", any[i].(Entity))
+				ErrorCheck(err)
+			} else if _, ok := any[i].(string); ok {
+				err := vm.Set("$s", any[i].(string))
+				ErrorCheck(err)
+			} else if _, ok := any[i].(Item); ok {
+				err := vm.Set("$i", any[i].(Item))
+				ErrorCheck(err)
+			}
+		}
+	}
 }
 func mud_prog_init(entity Entity) *otto.Otto {
 	vm := otto.New()
@@ -121,6 +125,10 @@ func mud_prog_init(entity Entity) *otto.Otto {
 	// emote("sits down");
 	vm.Set("emote", func(call otto.FunctionCall) otto.Value {
 		do_emote(entity, call.Argument(0).String())
+		return otto.Value{}
+	})
+	vm.Set("echo", func(call otto.FunctionCall) otto.Value {
+		entity.Send(call.Argument(0).String())
 		return otto.Value{}
 	})
 	// transfer($n, 100);  - $n is the player, 100 is the room_id
@@ -163,6 +171,10 @@ func mud_prog_init(entity Entity) *otto.Otto {
 		}
 		value, _ := otto.ToValue(sprintf(format, args...))
 		return value
+	})
+	vm.Set("look", func(call otto.FunctionCall) otto.Value {
+		do_look(entity)
+		return otto.Value{}
 	})
 	return vm
 }

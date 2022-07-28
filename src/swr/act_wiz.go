@@ -138,5 +138,4 @@ func do_transfer(entity Entity, args ...string) {
 			e.Send("\r\n&C%s&d has appeared.\r\n")
 		}
 	}
-	entity.Send("\r\n&YOk.&d\r\n")
 }

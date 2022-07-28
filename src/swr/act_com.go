@@ -50,6 +50,7 @@ func do_say(entity Entity, args ...string) {
 			}
 		}
 	}
+	room_prog_exec(entity, "say", words)
 }
 
 func do_shout(entity Entity, args ...string) {
