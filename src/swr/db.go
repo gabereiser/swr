@@ -56,7 +56,7 @@ type GameDatabase struct {
 	entities        []Entity
 	areas           map[string]*AreaData // pointers to the [AreaData] of the game.
 	rooms           map[uint]*RoomData   // pointers to the room structs in [AreaData]
-	mobs            map[string]*CharData // used as templates for spawning [entities]
+	mobs            map[uint]*CharData   // used as templates for spawning [entities]
 	items           map[uint]*ItemData   // used as templates for spawning [items]
 	ships           []Ship
 	ship_prototypes map[string]*ShipData // used as templates for spawning [ships]
@@ -73,7 +73,7 @@ func DB() *GameDatabase {
 		_db.entities = make([]Entity, 0)
 		_db.areas = make(map[string]*AreaData)
 		_db.rooms = make(map[uint]*RoomData)
-		_db.mobs = make(map[string]*CharData)
+		_db.mobs = make(map[uint]*CharData)
 		_db.items = make(map[uint]*ItemData)
 		_db.ships = make([]Ship, 0)
 		_db.ship_prototypes = make(map[string]*ShipData)
@@ -250,7 +250,7 @@ func (d *GameDatabase) LoadMobs() {
 				ch := new(CharData)
 				err = yaml.Unmarshal(fp, ch)
 				ErrorCheck(err)
-				d.mobs[ch.Name] = ch
+				d.mobs[ch.Id] = ch
 			}
 			return nil
 		})
@@ -406,19 +406,7 @@ func (d *GameDatabase) GetItem(itemId uint) Item {
 }
 
 func (d *GameDatabase) GetMob(mobId uint) Entity {
-	for _, m := range d.mobs {
-		if m == nil {
-			continue
-		}
-		if m.Id == mobId {
-			return m
-		}
-	}
-	return nil
-}
-
-func (d *GameDatabase) GetMobByName(mobName string) Entity {
-	if m, ok := d.mobs[mobName]; ok {
+	if m, ok := d.mobs[mobId]; ok {
 		return m
 	}
 	return nil

@@ -23,8 +23,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"text/template"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Editor struct {
@@ -35,6 +38,7 @@ func EditorStart() {
 		fs := http.FileServer(http.Dir("./web/public"))
 		http.Handle("/static/", http.StripPrefix("/static/", fs))
 		http.HandleFunc("/", serveTemplate)
+		http.HandleFunc("/data", dataHandler)
 		http.ListenAndServe(":8080", nil)
 		log.Println("Editor now accepting connections on 0.0.0.0:8080")
 	}()
@@ -81,4 +85,104 @@ func serveTemplate(w http.ResponseWriter, r *http.Request) {
 		log.Print(err.Error())
 		http.Error(w, http.StatusText(500), 500)
 	}
+}
+
+func dataHandler(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		dataGet(w, r)
+	case "PUT":
+		dataPut(w, r)
+	case "POST":
+		dataPost(w, r)
+	case "DELETE":
+		dataDelete(w, r)
+	}
+}
+
+func writeError(w http.ResponseWriter, err error) {
+	if err != nil {
+		w.WriteHeader(500)
+		w.Header().Add("Content-Type", "application/yaml")
+		w.Write([]byte("---\nstatus: 500\n"))
+	}
+}
+
+func writeData(w http.ResponseWriter, obj interface{}) {
+	buf, err := yaml.Marshal(obj)
+	ErrorCheck(err)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	w.Header().Add("Content-Type", "application/yaml")
+	w.Write(buf)
+}
+func dataGet(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query()
+	if query.Has("type") {
+		t := query.Get("type")
+		switch t {
+		case "area":
+			area := DB().areas[query.Get("name")]
+			if area != nil {
+				writeData(w, area)
+				return
+			}
+		case "room":
+			sid := query.Get("id")
+			id, err := strconv.Atoi(sid)
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+			room := DB().rooms[uint(id)]
+			if room != nil {
+				writeData(w, room)
+				return
+			}
+		case "item":
+			sid := query.Get("id")
+			id, err := strconv.Atoi(sid)
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+			item := DB().items[uint(id)]
+			if item != nil {
+				writeData(w, item)
+				return
+			}
+		case "entity":
+			sid := query.Get("id")
+			id, err := strconv.Atoi(sid)
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+			mob := DB().mobs[uint(id)]
+			if mob != nil {
+				writeData(w, mob)
+				return
+			}
+		case "ship":
+		}
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("{ \"status\": 404 }"))
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("{ \"status\": 404 }"))
+	}
+}
+
+func dataPut(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func dataPost(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func dataDelete(w http.ResponseWriter, r *http.Request) {
+
 }
