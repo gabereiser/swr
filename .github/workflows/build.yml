@@ -35,13 +35,11 @@ jobs:
       run: |
         make VERSION=${{ github.ref_name }}
         tar -czf ${{ matrix.asset_name }} data docs bin web LICENSE
-        cd bin
-        tar -czf ${{ matrix.client_name }} client
+        tar -czf ${{ matrix.client_name }} bin/client.exe
     - name: Build BSD
       if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macos')
       run: |
         make VERSION=${{ github.ref_name }}
         tar -cJf ${{ matrix.asset_name }} data docs bin web LICENSE
-        cd bin
-        tar -cJf ${{ matrix.client_name }} client
+        tar -cJf ${{ matrix.client_name }} bin/client
     
