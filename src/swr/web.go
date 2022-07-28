@@ -25,16 +25,9 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
-
-	"github.com/gorilla/websocket"
 )
 
 type Editor struct {
-}
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
 }
 
 func EditorStart() {
@@ -42,28 +35,9 @@ func EditorStart() {
 		fs := http.FileServer(http.Dir("./web/public"))
 		http.Handle("/static/", http.StripPrefix("/static/", fs))
 		http.HandleFunc("/", serveTemplate)
-		http.HandleFunc("/ws", wsHandler)
 		http.ListenAndServe(":8080", nil)
+		log.Println("Editor now accepting connections on 0.0.0.0:8080")
 	}()
-}
-func wsHandler(w http.ResponseWriter, r *http.Request) {
-	conn, _ := upgrader.Upgrade(w, r, nil) // error ignored for sake of simplicity
-
-	for {
-		// Read message from browser
-		msgType, msg, err := conn.ReadMessage()
-		if err != nil {
-			return
-		}
-
-		// Print the message to the console
-		fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), string(msg))
-
-		// Write message back to browser
-		if err = conn.WriteMessage(msgType, msg); err != nil {
-			return
-		}
-	}
 }
 
 func serveTemplate(w http.ResponseWriter, r *http.Request) {
