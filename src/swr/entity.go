@@ -99,7 +99,7 @@ type CharData struct {
 	Skills    map[string]int       `yaml:"skills,flow,omitempty"`
 	Languages map[string]int       `yaml:"languages,flow,omitempty"`
 	Speaking  string               `yaml:"speaking,omitempty"`
-	Equipment map[string]*ItemData `yaml:"equipment,flow,omitempty"` // Key is a EQUIPMENT_WEAR_LOC_* const, Value is an item.
+	Equipment map[string]*ItemData `yaml:"equipment,omitempty"` // Key is a EQUIPMENT_WEAR_LOC_* const, Value is an item.
 	Inventory []*ItemData          `yaml:"inventory,omitempty"`
 	State     string               `yaml:"state,omitempty"`
 	Brain     string               `yaml:"brain,omitempty"`
@@ -604,10 +604,10 @@ func entity_add_xp(entity Entity, xp int) {
 		entity.Send("\r\n}YYou have gained a level!&d\r\n")
 		entity.Send("\r\n&YYou are now level &W%d&d.\r\n", ch.Level)
 		// reset current life stats as a reward and gain a little extra
-		ch.Hp[1] = 10 + (int(ch.Level) / 2)
-		ch.Mv[1] = 10 + (int(ch.Level) / 2)
+		ch.Hp[1] = 50 + (int(ch.Level) / 2)
+		ch.Mv[1] = 50 + (int(ch.Level) / 2)
 		if ch.Mp[1] > 0 { // you don't get force unless you got force
-			ch.Mp[1] = 10 + (int(ch.Level) / 2)
+			ch.Mp[1] = 50 + (int(ch.Level) / 2)
 		}
 		ch.Hp[0] = ch.Hp[1]
 		ch.Mp[0] = ch.Mp[1]

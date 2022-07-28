@@ -150,7 +150,7 @@ func do_combat(attacker Entity, defender Entity) {
 			ach.State = ENTITY_STATE_NORMAL
 			return
 		}
-		if roll_dice("1d20") <= 10-(entity_get_skill_value(ach, "aerobics")/10) {
+		if roll_dice("1d20") <= 20-(entity_get_skill_value(ach, "aerobics")/5) {
 			ach.Mv[0]--
 			if roll_dice("1d20") == 20 {
 				entity_add_skill_value(attacker, "aerobics", 1)
@@ -161,6 +161,9 @@ func do_combat(attacker Entity, defender Entity) {
 			skill = item_get_weapon_skill(ach.Weapon())
 		}
 		damage = ach.DamageRoll(skill)
+		if hit_chance == 20 {
+			damage *= 2
+		}
 		defender.ApplyDamage(damage)
 	}
 	xp_base := 1
@@ -171,7 +174,7 @@ func do_combat(attacker Entity, defender Entity) {
 		defender.Send("\r\n%s &RYou have killed &W%s&d\r\n", EMOJI_SKULL, ach.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(dch.Level) * 150
+		xp_base = int(dch.Level) * 75
 		make_corpse(attacker)
 		entity_add_xp(defender, xp_base)
 		entity_lose_xp(attacker, xp_base)
@@ -182,7 +185,7 @@ func do_combat(attacker Entity, defender Entity) {
 		defender.Send("\r\n&RYou have knocked out &W%s&d\r\n", ach.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(dch.Level) * 50
+		xp_base = int(dch.Level) * 40
 		entity_add_xp(defender, xp_base)
 		entity_lose_xp(attacker, xp_base)
 		return
@@ -192,7 +195,7 @@ func do_combat(attacker Entity, defender Entity) {
 		attacker.Send("\r\n&RYou have killed &W%s&d %s\r\n", dch.Name, EMOJI_SKULL)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(ach.Level) * 150
+		xp_base = int(ach.Level) * 75
 		make_corpse(defender)
 		entity_lose_xp(defender, xp_base)
 		entity_add_xp(attacker, xp_base)
@@ -203,7 +206,7 @@ func do_combat(attacker Entity, defender Entity) {
 		attacker.Send("\r\n&RYou have knocked out &W%s&d\r\n", dch.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(ach.Level) * 50
+		xp_base = int(ach.Level) * 40
 		entity_lose_xp(defender, xp_base)
 		entity_add_xp(attacker, xp_base)
 		return

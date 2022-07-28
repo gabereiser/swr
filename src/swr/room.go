@@ -45,15 +45,15 @@ type AreaData struct {
 }
 
 type RoomData struct {
-	Id        uint                    `yaml:"id"`
-	Name      string                  `yaml:"name"`
-	Desc      string                  `yaml:"desc,flow"`
-	Exits     map[string]uint         `yaml:"exits,flow"`
-	ExitFlags map[string]RoomExitFlag `yaml:"exflags,flow,omitempty"`
-	Flags     []string                `yaml:"flags,flow,omitempty"`
-	RoomProgs map[string]string       `yaml:"roomProgs,flow,omitempty"`
-	Area      *AreaData               `yaml:"-"`
-	Items     []Item                  `yaml:"-"`
+	Id        uint                     `yaml:"id"`
+	Name      string                   `yaml:"name"`
+	Desc      string                   `yaml:"desc,flow"`
+	Exits     map[string]uint          `yaml:"exits,flow"`
+	ExitFlags map[string]*RoomExitFlag `yaml:"exflags,flow,omitempty"`
+	Flags     []string                 `yaml:"flags,flow,omitempty"`
+	RoomProgs map[string]string        `yaml:"roomProgs,flow,omitempty"`
+	Area      *AreaData                `yaml:"-"`
+	Items     []Item                   `yaml:"-"`
 }
 
 type RoomExitFlag struct {
@@ -112,8 +112,125 @@ func (r *RoomData) FindItem(keyword string) Item {
 	return nil
 }
 
-func (r *RoomData) GetExitFlags(direction string) RoomExitFlag {
-	return r.ExitFlags[direction]
+func (r *RoomData) GetExitFlags(direction string) *RoomExitFlag {
+	if _, ok := r.ExitFlags[direction]; ok {
+		return r.ExitFlags[direction]
+	}
+	return nil
+}
+
+func (r *RoomData) GetExitRoom(direction string) *RoomData {
+	if _, ok := r.Exits[direction]; ok {
+		return DB().GetRoom(r.Exits[direction])
+	}
+	return nil
+}
+
+func (r *RoomData) OpenDoor(entity Entity, direction string) {
+	flags := r.GetExitFlags(direction)
+	to_room := r.GetExitRoom(direction)
+	if to_room == nil {
+		return
+	}
+	if flags == nil {
+		return
+	}
+	if flags.Closed {
+		if flags.Locked && entity != nil {
+			if !r.UnlockDoor(entity, direction) {
+				entity.Send("\r\n&YIt's locked.&d\r\n")
+			}
+			return // make them call open again after it's unlocked.
+		}
+		flags.Closed = false
+		flags.Locked = false // just in-case this is called with a nil entity, the system wants to open the door.
+		if entity != nil {
+			entity.Send("\r\n&GYou open the door.&d\r\n")
+		}
+		// schedule a closing of the door 15 seconds from now
+		ScheduleFunc(func() {
+			// nil Entity because no one closes it, the system does.
+			r.CloseDoor(nil, direction)
+		}, false, 15)
+
+		// tell others the door is open
+		for _, e := range r.GetEntities() {
+			if e != nil {
+				if e != entity {
+					e.Send("\r\nThe door to the %s opens.\r\n", direction)
+				}
+			}
+		}
+		to_room.OpenDoor(nil, direction_reverse(direction))
+	}
+}
+
+func (r *RoomData) CloseDoor(entity Entity, direction string) {
+	flags := r.GetExitFlags(direction)
+	to_room := r.GetExitRoom(direction)
+	if to_room == nil {
+		return
+	}
+	if flags == nil {
+		return
+	}
+	if !flags.Closed {
+		flags.Closed = true
+		if entity != nil {
+			entity.Send("\r\n&GYou close the door.&d\r\n")
+		}
+		for _, e := range r.GetEntities() {
+			if e != nil {
+				if e != entity {
+					e.Send("\r\nThe door to the %s closes.\r\n", direction)
+				}
+			}
+		}
+		to_room.CloseDoor(nil, direction_reverse(direction))
+	}
+}
+
+func (r *RoomData) UnlockDoor(entity Entity, direction string) bool {
+	flags := r.GetExitFlags(direction)
+	to_room := r.GetExitRoom(direction)
+	if to_room == nil {
+		return false
+	}
+	if flags == nil {
+		return false
+	}
+	if flags.Locked {
+		if entity != nil {
+			key := entity.GetCharData().GetItem(flags.Key)
+			if key == nil {
+				entity.Send("\r\n&RYou don't have the key.&d\r\n")
+				return false
+			}
+			entity.Send("\r\n&YYou unlock the door.&d\r\n")
+			ScheduleFunc(func() {
+				// nil Entity because no one closes it, the system does.
+				r.CloseDoor(nil, direction)
+				r.LockDoor(nil, direction, key)
+			}, false, 15)
+		}
+		flags.Locked = false
+		to_room.UnlockDoor(nil, direction_reverse(direction))
+		return true
+	}
+	return false
+}
+
+func (r *RoomData) LockDoor(entity Entity, direction string, key Item) {
+	flags := r.GetExitFlags(direction)
+	if flags == nil {
+		return
+	}
+	flags.Closed = true
+	flags.Locked = true
+	flags.Key = key.GetTypeId()
+	if entity != nil {
+		entity.Send("\r\n&YYou lock the door with %s %s.&d\r\n", get_preface_for_name(key.GetData().Name), key.GetData().Name)
+	}
 }
 
 func (r *RoomData) SendToRoom(message string) {

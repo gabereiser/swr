@@ -1,0 +1,35 @@
+---
+id: 2
+room: 0
+name: maintenance droid
+keywords: [ "droid" ]
+flags: [ npc, sentinel, droid ]
+desc: |
+  A rugged maintenance droid goes about working. It pushes and pulls various levers before noticing you.
+  It stops as it stares at you, almost as if it's never seen anyone before.
+race: Droid
+gender: n
+level: 5
+xp: 2400
+gold: 0
+hp: [100, 100]
+mp: [0, 0]
+mv: [10, 10]
+stats: [ 10, 10, 10, 10, 10, 10 ]
+skills: {}
+languages: {basic: 100, binary: 100, droid: 100}
+speaking: droid
+state: normal
+brain: generic
+equipment: {}
+inventory: []
+progs:
+  greet: |
+    delay(4);
+    say("What are you doing here?");
+    say("You don't belong here.");
+    delay(4);
+    kill($n);
+  death: |
+    say("Uggggghhhhhhh!!");
+    emote("colapses into a pile of junk parts.");

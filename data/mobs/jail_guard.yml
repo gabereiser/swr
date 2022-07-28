@@ -1,0 +1,52 @@
+---
+id: 3
+room: 0
+name: an Imperial guard
+keywords: [ "guard", "guy", "human", "imperial" ]
+flags: [ npc ]
+desc: |
+  An Imperial guard. He's dressed in a typical imperial uniform. Grey long-sleeved
+  shirt, matching pants, tucked into his boots. He wears a small cap upon his head
+  and no clear rankings are visible on his uniform. He's pretty upset you're here.
+race: Human
+gender: m
+level: 5
+xp: 12500
+gold: 50
+hp: [120, 120]
+mp: [0, 0]
+mv: [12, 12]
+stats: [ 10, 10, 10, 10, 10, 10 ]
+skills:
+  vibro-blades: 40
+languages:
+  basic: 100
+speaking: basic
+state: normal
+brain: generic
+equipment:
+  weapon:
+    id: 200
+    typeId: 200
+    name: vibro-blade
+    desc: |
+      A basic looking vibro-blade.
+    keywords: [blade,vibro,vibro-blade]
+    type: weapon
+    weaponType: vibro-blades
+    wearLoc: weapon
+    dmgRoll: 1d6
+    value: 100
+    weight: 3
+inventory: []
+progs:
+  greet: |
+    delay(3);
+    say("What are you doing here? HALT!!");
+    delay(1);
+    kill($n);
+  move: |
+    delay(2);
+    shout("HALT!! GUARDS!!");
+  death: |
+    emote("hits the floor in a bloody mess.");

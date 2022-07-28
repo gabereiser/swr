@@ -1,0 +1,62 @@
+---
+id: 4
+room: 0
+name: an unconscious imperial guard
+keywords: [ "guard", "guy", "human", "imperial" ]
+flags: [ npc, sentinel ]
+desc: |
+  An Imperial guard. He's dressed in a typical imperial uniform. Grey long-sleeved
+  shirt, matching pants, tucked into his boots. He wears a small cap upon his head
+  and no clear rankings are visible on his uniform. He's completely unconscious.
+race: Human
+gender: m
+level: 1
+xp: 0
+gold: 0
+hp: [1, 50]
+mp: [0, 0]
+mv: [50, 50]
+stats: [ 10, 10, 10, 10, 10, 10 ]
+skills:
+  vibro-blades: 40
+  blasters: 50
+  aerobics: 75
+languages:
+  basic: 100
+speaking: basic
+state: sleeping
+brain: generic
+inventory:
+  - id: 1
+    itemId: 1
+    name: keycard
+    desc: |
+      A simple keycard. There's some significant wear.
+         .------------------------.
+        /                         |
+       /    ID: X2F-492D-1001     |
+      |___________________________|
+      | Imperial Transport Ship   |
+      |---------------------------|
+      | -=[ CELL ACTIVATION A ]=- |
+      .---------------------------.
+      | ||  |   |    ||| |  |  || |
+      :::::::::::::::::::::::::::::
+      :::::::::::::::::::::::::::::
+      :::::::::::::::::::::::::::::
+    keywords: [key, keycard]
+    type: key
+    value: 0
+    weight: 0
+progs:
+  greet: |
+    delay(1);
+    emote("snores as he sleeps...");
+    delay(4);
+    emote("whistles a bit as he snores...");
+    delay(2);
+    say("mmm I don't wanna momma....");
+    emote("curls over as he drifts back to sleep");
+    delay(5);
+    stand();
+    kill($n);

@@ -204,9 +204,9 @@ Stats:
 	player.Char.Gold = 0
 	player.Char.Stats = stats
 	player.Char.Skills = map[string]int{}
-	player.Char.Hp = []int{10, 10}
+	player.Char.Hp = []int{50, 50}
 	player.Char.Mp = []int{0, 0}
-	player.Char.Mv = []int{10, 10}
+	player.Char.Mv = []int{50, 50}
 	player.Char.Equipment = make(map[string]*ItemData)
 	player.Char.Inventory = make([]*ItemData, 0)
 	player.Char.Keywords = []string{name, race}

@@ -3,8 +3,8 @@ name: newbie
 desc: Newbie Area
 author: Admin
 levels: [1, 10]
-reset: 60
-reset_msg: You hear a loud *thud* as the spaceship lurches slightly.
+reset: 300
+reset_msg: You feel unsteady as the spaceship lurches slightly.
 rooms: 
   -
     id: 100
@@ -78,6 +78,12 @@ rooms:
     flags: []
     exits:
       west: 102
+      east: 106
+    exflags:
+      west:
+        closed: true
+      east:
+        closed: true
   -
     id: 104
     name: Jail Commissary
@@ -86,6 +92,9 @@ rooms:
     flags: []
     exits:
       south: 102
+    exflags:
+      south:
+        closed: true
   -
     id: 105
     name: Maintenance Level
@@ -94,15 +103,41 @@ rooms:
     flags: []
     exits:
       southwest: 102
+    exflags:
+      southwest:
+        closed: true
+  -
+    id: 106
+    name: Jail Receiving
+    desc: |
+      You're in the jail receiving area.
+    flags: []
+    exits:
+      west: 103
+    exflags:
+      west:
+        closed: true
 
 items:
-  - 
-    item: 1
-    room: 100
   -
     item: 200
     room: 101
 mobs:
   -
+    mob: 4
+    room: 100
+  -
     mob: 1
     room: 101
+  -
+    mob: 2
+    room: 105
+  -
+    mob: 3
+    room: 106
+  -
+    mob: 3
+    room: 104
+  -
+    mob: 3
+    room: 103

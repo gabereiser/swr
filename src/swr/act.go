@@ -61,7 +61,7 @@ func do_look(entity Entity, args ...string) {
 					to_room := DB().GetRoom(to_room_id)
 					if k, ok := room.ExitFlags[dir]; ok {
 						exit_flags := k
-						ext := room_get_exit_status(&exit_flags)
+						ext := room_get_exit_status(exit_flags)
 						entity.Send(sprintf("&G%s&W - &Y(&W%s&Y) &C%s&d\r\n", capitalize(dir), to_room.Name, ext))
 					} else {
 						entity.Send(sprintf("&G%s&W - &Y(&W%s&Y)&d\r\n", capitalize(dir), to_room.Name))
@@ -172,8 +172,9 @@ func do_direction(entity Entity, direction string) {
 		} else {
 			locked := false
 			closed := false
-			if flags, ok := room.ExitFlags[direction]; ok {
-				locked, closed = room_get_blocked_exit_flags(&flags)
+			flags := room.GetExitFlags(direction)
+			if flags != nil {
+				locked, closed = room_get_blocked_exit_flags(flags)
 			}
 			if locked {
 				entity.Send("\r\nIt's locked.\r\n")
@@ -332,93 +333,7 @@ func do_open(entity Entity, args ...string) {
 		entity.Send("\r\n&ROpen what?&d.\r\n")
 		return
 	}
-	if flags, ok := room.ExitFlags[direction]; ok {
-		if flags.Locked {
-			key_id := flags.Key
-			key := entity.GetCharData().GetItem(key_id)
-			if key == nil {
-				entity.Send("\r\n&RYou don't have the key.&d\r\n")
-			} else {
-				entity.Send("\r\n&YYou unlock the door.&d\r\n")
-				go room_prog_exec(entity, "unlock", direction)
-				f := room.ExitFlags[direction]
-				f.Locked = false
-				room.ExitFlags[direction] = f
-				to_room := db.GetRoom(room.Exits[direction])
-				to_flags := to_room.GetExitFlags(direction_reverse(direction))
-				to_flags.Locked = false
-				for _, e := range db.GetEntitiesInRoom(entity.RoomId()) {
-					if e != nil {
-						if e != entity {
-							e.Send("\r\n&P%s&d unlocks the door to the %s.\r\n", entity.GetCharData().Name, direction)
-						}
-					}
-				}
-				for _, e := range db.GetEntitiesInRoom(to_room.Id) {
-					if e != nil {
-						e.Send("\r\n&P%s&d unlocks the door to the %s.\r\n", entity.GetCharData().Name, direction_reverse(direction))
-					}
-				}
-			}
-			return
-		}
-		if flags.Closed {
-			entity.Send("\r\n&GYou open the door.&d\r\n")
-			f := room.ExitFlags[direction]
-			f.Closed = false
-			room.ExitFlags[direction] = f
-			ScheduleFunc(func() {
-				f := room.ExitFlags[direction]
-				f.Closed = true
-				room.ExitFlags[direction] = f
-				for _, e := range db.GetEntitiesInRoom(entity.RoomId()) {
-					if e != nil {
-						if e != entity {
-							e.Send("\r\nThe door to the %s closes.\r\n", direction)
-						}
-					}
-				}
-			}, false, 15)
-			to_room := db.GetRoom(room.Exits[direction])
-			reverse_direction := direction_reverse(direction)
-			if room.Id == to_room.Exits[reverse_direction] {
-				if _, ok := to_room.ExitFlags[reverse_direction]; ok {
-					f := to_room.ExitFlags[reverse_direction]
-					f.Closed = false
-					to_room.ExitFlags[reverse_direction] = f
-					ScheduleFunc(func() {
-						f := to_room.ExitFlags[reverse_direction]
-						f.Closed = true
-						to_room.ExitFlags[reverse_direction] = f
-						for _, e := range db.GetEntitiesInRoom(to_room.Id) {
-							if e != nil {
-								if e != entity {
-									e.Send("\r\nThe door to the %s closes.\r\n", direction)
-								}
-							}
-						}
-					}, false, 15)
-				}
-			}
-			for _, e := range db.GetEntitiesInRoom(entity.RoomId()) {
-				if e != nil {
-					if e != entity {
-						e.Send("\r\nThe door to the %s opens.\r\n", direction)
-					}
-				}
-			}
-			for _, e := range db.GetEntitiesInRoom(to_room.Id) {
-				if e != nil {
-					e.Send("\r\nThe door to the %s opens.\r\n", reverse_direction)
-				}
-			}
-			go room_prog_exec(entity, "open", direction)
-			return
-		}
-		entity.Send("\r\nIt's already open.\r\n")
-	} else {
-		entity.Send("\r\nYou can't close a door that doesn't exist.\r\n")
-	}
+	room.OpenDoor(entity, direction)
 }
 
 func do_close(entity Entity, args ...string) {
@@ -443,49 +358,7 @@ func do_close(entity Entity, args ...string) {
 		entity.Send("\r\n&RClose what?&d.\r\n")
 		return
 	}
-	if flags, ok := room.ExitFlags[direction]; ok {
-		if flags.Locked {
-			entity.Send("\r\n&RIt's closed and locked already.&d\r\n")
-			return
-		}
-		if flags.Closed {
-			entity.Send("\r\nIt's already closed.\r\n")
-			return
-		}
-		if !flags.Closed && !flags.Locked {
-			entity.Send("\r\n&GYou close the door.&d\r\n")
-			f := room.ExitFlags[direction]
-			f.Closed = true
-			room.ExitFlags[direction] = f
-			to_room := db.GetRoom(room.Exits[direction])
-			reverse_direction := direction_reverse(direction)
-			if room.Id == to_room.Exits[reverse_direction] {
-				if _, ok := to_room.ExitFlags[reverse_direction]; ok {
-					f := to_room.ExitFlags[reverse_direction]
-					f.Closed = true
-					to_room.ExitFlags[reverse_direction] = f
-				}
-			}
-			for _, e := range db.GetEntitiesInRoom(entity.RoomId()) {
-				if e != nil {
-					if e != entity {
-						e.Send("\r\nThe door to the %s closes.\r\n", direction)
-					}
-				}
-			}
-			for _, e := range db.GetEntitiesInRoom(to_room.Id) {
-				if e != nil {
-					e.Send("\r\nThe door to the %s closes.\r\n", reverse_direction)
-				}
-			}
-			go room_prog_exec(entity, "close", direction)
-			return
-		}
-	} else {
-		entity.Send("\r\n&RClose what? There's no door here.&d\r\n")
-		return
-	}
-	entity.Send("\r\nHuh?.\r\n")
+	room.CloseDoor(entity, direction)
 }
 
 func do_get(entity Entity, args ...string) {
@@ -521,7 +394,7 @@ func do_get(entity Entity, args ...string) {
 	}
 	// get <item> from
 	if len(args) == 2 {
-		entity.Send("\r\n&RGet &Y%s&W from &Rwhere?&d\r\n")
+		entity.Send("\r\n&RGet &Y%s&W from &Rwhere?&d\r\n", args[0])
 	}
 	// get <item> from <item>
 	if len(args) == 3 {

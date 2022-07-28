@@ -65,6 +65,7 @@ type ItemData struct {
 
 type Item interface {
 	GetId() uint
+	GetTypeId() uint
 	GetData() *ItemData
 	GetKeywords() []string
 	IsWeapon() bool
@@ -80,6 +81,13 @@ func (i *ItemData) GetData() *ItemData {
 
 func (i *ItemData) GetId() uint {
 	return i.Id
+}
+
+func (i *ItemData) GetTypeId() uint {
+	if i.OId == 0 {
+		return i.Id
+	}
+	return i.OId
 }
 
 func (i *ItemData) GetKeywords() []string {

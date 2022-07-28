@@ -118,6 +118,10 @@ func mud_prog_init(entity Entity) *otto.Otto {
 		do_say(entity, call.Argument(0).String())
 		return otto.Value{}
 	})
+	vm.Set("shout", func(call otto.FunctionCall) otto.Value {
+		do_shout(entity, call.Argument(0).String())
+		return otto.Value{}
+	})
 	// emote("sits down");
 	vm.Set("emote", func(call otto.FunctionCall) otto.Value {
 		do_emote(entity, call.Argument(0).String())
@@ -170,6 +174,15 @@ func mud_prog_init(entity Entity) *otto.Otto {
 	})
 	vm.Set("look", func(call otto.FunctionCall) otto.Value {
 		do_look(entity)
+		return otto.Value{}
+	})
+	vm.Set("kill", func(call otto.FunctionCall) otto.Value {
+		target, _ := call.Argument(0).ToString()
+		do_fight(entity, target)
+		return otto.Value{}
+	})
+	vm.Set("stand", func(call otto.FunctionCall) otto.Value {
+		do_stand(entity)
 		return otto.Value{}
 	})
 	return vm
