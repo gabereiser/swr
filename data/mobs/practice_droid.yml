@@ -22,7 +22,7 @@ state: normal
 brain: generic
 equipment: {}
 inventory: []
-mob_progs:
+progs:
   greet: |
     say("Hello there!");
     delay(1);

@@ -171,7 +171,7 @@ func do_combat(attacker Entity, defender Entity) {
 		defender.Send("\r\n%s &RYou have killed &W%s&d\r\n", EMOJI_SKULL, ach.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(dch.Level) * 250
+		xp_base = int(dch.Level) * 150
 		make_corpse(attacker)
 		entity_add_xp(defender, xp_base)
 		entity_lose_xp(attacker, xp_base)
@@ -182,7 +182,7 @@ func do_combat(attacker Entity, defender Entity) {
 		defender.Send("\r\n&RYou have knocked out &W%s&d\r\n", ach.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(dch.Level) * 100
+		xp_base = int(dch.Level) * 50
 		entity_add_xp(defender, xp_base)
 		entity_lose_xp(attacker, xp_base)
 		return
@@ -192,7 +192,7 @@ func do_combat(attacker Entity, defender Entity) {
 		attacker.Send("\r\n&RYou have killed &W%s&d %s\r\n", dch.Name, EMOJI_SKULL)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(ach.Level) * 250
+		xp_base = int(ach.Level) * 150
 		make_corpse(defender)
 		entity_lose_xp(defender, xp_base)
 		entity_add_xp(attacker, xp_base)
@@ -203,7 +203,7 @@ func do_combat(attacker Entity, defender Entity) {
 		attacker.Send("\r\n&RYou have knocked out &W%s&d\r\n", dch.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(ach.Level) * 100
+		xp_base = int(ach.Level) * 50
 		entity_lose_xp(defender, xp_base)
 		entity_add_xp(attacker, xp_base)
 		return

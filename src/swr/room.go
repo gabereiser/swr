@@ -45,15 +45,15 @@ type AreaData struct {
 }
 
 type RoomData struct {
-	Id        uint                     `yaml:"id"`
-	Name      string                   `yaml:"name"`
-	Desc      string                   `yaml:"desc,flow"`
-	Exits     map[string]uint          `yaml:"exits,flow"`
-	ExitFlags map[string]*RoomExitFlag `yaml:"exflags,flow,omitempty"`
-	Flags     []string                 `yaml:"flags,flow,omitempty"`
-	RoomProgs map[string]string        `yaml:"roomProgs,flow,omitempty"`
-	Area      *AreaData                `yaml:"-"`
-	Items     []Item                   `yaml:"-"`
+	Id        uint                    `yaml:"id"`
+	Name      string                  `yaml:"name"`
+	Desc      string                  `yaml:"desc,flow"`
+	Exits     map[string]uint         `yaml:"exits,flow"`
+	ExitFlags map[string]RoomExitFlag `yaml:"exflags,flow,omitempty"`
+	Flags     []string                `yaml:"flags,flow,omitempty"`
+	RoomProgs map[string]string       `yaml:"roomProgs,flow,omitempty"`
+	Area      *AreaData               `yaml:"-"`
+	Items     []Item                  `yaml:"-"`
 }
 
 type RoomExitFlag struct {
@@ -112,7 +112,7 @@ func (r *RoomData) FindItem(keyword string) Item {
 	return nil
 }
 
-func (r *RoomData) GetExitFlags(direction string) *RoomExitFlag {
+func (r *RoomData) GetExitFlags(direction string) RoomExitFlag {
 	return r.ExitFlags[direction]
 }
 
@@ -156,15 +156,18 @@ func area_reset(area *AreaData) {
 			continue
 		}
 		for dir, f := range r.ExitFlags {
-			room.ExitFlags[dir].Closed = f.Closed
-			room.ExitFlags[dir].Locked = f.Locked
-			room.ExitFlags[dir].Key = f.Key
+			room.ExitFlags[dir] = f
 		}
 		rem_items := make([]Item, 0)
 		for _, i := range room.Items {
 			if i != nil {
 				if i.IsCorpse() {
 					rem_items = append(rem_items, i)
+				}
+				if i.IsContainer() {
+					if i.GetData().Type == ITEM_TYPE_TRASH_BIN {
+						i.GetData().Items = make([]Item, 0)
+					}
 				}
 			}
 		}
@@ -213,6 +216,15 @@ func area_reset(area *AreaData) {
 			m.GetCharData().Room = spawn.Room
 			if mob.GetCharData().AI == nil {
 				m.GetCharData().AI = MakeGenericBrain(m)
+				m.GetCharData().AI.OnSpawn()
+				for _, e := range db.GetEntitiesInRoom(spawn.Room) {
+					if e == nil {
+						continue
+					}
+					if e != m {
+						m.GetCharData().AI.OnGreet(e)
+					}
+				}
 			}
 		}
 	}

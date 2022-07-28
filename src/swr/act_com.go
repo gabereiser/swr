@@ -47,10 +47,13 @@ func do_say(entity Entity, args ...string) {
 				ex.Send("%s says \"%s\"\n", speaker.Name, language_spoken(speaker, listener, words))
 			} else {
 				ex.Send("%s says \"%s\"\n", speaker.Name, words)
+				if ex.GetCharData().AI != nil {
+					ex.GetCharData().AI.OnSay(speaker, words)
+				}
 			}
 		}
 	}
-	room_prog_exec(entity, "say", words)
+	go room_prog_exec(entity, "say", words)
 }
 
 func do_shout(entity Entity, args ...string) {

@@ -61,7 +61,7 @@ func do_look(entity Entity, args ...string) {
 					to_room := DB().GetRoom(to_room_id)
 					if k, ok := room.ExitFlags[dir]; ok {
 						exit_flags := k
-						ext := room_get_exit_status(exit_flags)
+						ext := room_get_exit_status(&exit_flags)
 						entity.Send(sprintf("&G%s&W - &Y(&W%s&Y) &C%s&d\r\n", capitalize(dir), to_room.Name, ext))
 					} else {
 						entity.Send(sprintf("&G%s&W - &Y(&W%s&Y)&d\r\n", capitalize(dir), to_room.Name))
@@ -173,7 +173,7 @@ func do_direction(entity Entity, direction string) {
 			locked := false
 			closed := false
 			if flags, ok := room.ExitFlags[direction]; ok {
-				locked, closed = room_get_blocked_exit_flags(flags)
+				locked, closed = room_get_blocked_exit_flags(&flags)
 			}
 			if locked {
 				entity.Send("\r\nIt's locked.\r\n")
@@ -185,8 +185,6 @@ func do_direction(entity Entity, direction string) {
 			}
 			if entity.CurrentMv() > 0 {
 				entity.GetCharData().Mv[0]--
-				room_prog_exec(entity, "leave", direction)
-				entity.GetCharData().Room = to_room.Id
 				for _, e := range room.GetEntities() {
 					if entity_unspeakable_state(e) {
 						continue
@@ -194,10 +192,12 @@ func do_direction(entity Entity, direction string) {
 					if e != entity {
 						e.Send("\r\n%s has left going %s.\r\n", entity.GetCharData().Name, direction)
 						if e.GetCharData().AI != nil {
-							e.GetCharData().AI.OnEnter(entity)
+							e.GetCharData().AI.OnMove(entity)
 						}
 					}
 				}
+				go room_prog_exec(entity, "leave", direction)
+				entity.GetCharData().Room = to_room.Id
 				for _, e := range to_room.GetEntities() {
 					if entity_unspeakable_state(e) {
 						continue
@@ -205,12 +205,12 @@ func do_direction(entity Entity, direction string) {
 					if e != entity {
 						e.Send("\r\n%s has arrived from the %s.\r\n", entity.GetCharData().Name, direction_reverse(direction))
 						if e.GetCharData().AI != nil {
-							e.GetCharData().AI.OnEnter(entity)
+							e.GetCharData().AI.OnGreet(entity)
 						}
 					}
 				}
 				do_look(entity)
-				room_prog_exec(entity, "enter", direction_reverse(direction))
+				go room_prog_exec(entity, "enter", direction_reverse(direction))
 				return
 			} else {
 				entity.Send("\r\n&You are too exhausted.\r\n")
@@ -340,8 +340,10 @@ func do_open(entity Entity, args ...string) {
 				entity.Send("\r\n&RYou don't have the key.&d\r\n")
 			} else {
 				entity.Send("\r\n&YYou unlock the door.&d\r\n")
-				room_prog_exec(entity, "unlock", direction)
-				room.ExitFlags[direction].Locked = false
+				go room_prog_exec(entity, "unlock", direction)
+				f := room.ExitFlags[direction]
+				f.Locked = false
+				room.ExitFlags[direction] = f
 				to_room := db.GetRoom(room.Exits[direction])
 				to_flags := to_room.GetExitFlags(direction_reverse(direction))
 				to_flags.Locked = false
@@ -362,9 +364,13 @@ func do_open(entity Entity, args ...string) {
 		}
 		if flags.Closed {
 			entity.Send("\r\n&GYou open the door.&d\r\n")
-			room.ExitFlags[direction].Closed = false
+			f := room.ExitFlags[direction]
+			f.Closed = false
+			room.ExitFlags[direction] = f
 			ScheduleFunc(func() {
-				room.ExitFlags[direction].Closed = true
+				f := room.ExitFlags[direction]
+				f.Closed = true
+				room.ExitFlags[direction] = f
 				for _, e := range db.GetEntitiesInRoom(entity.RoomId()) {
 					if e != nil {
 						if e != entity {
@@ -377,9 +383,13 @@ func do_open(entity Entity, args ...string) {
 			reverse_direction := direction_reverse(direction)
 			if room.Id == to_room.Exits[reverse_direction] {
 				if _, ok := to_room.ExitFlags[reverse_direction]; ok {
-					to_room.ExitFlags[reverse_direction].Closed = false
+					f := to_room.ExitFlags[reverse_direction]
+					f.Closed = false
+					to_room.ExitFlags[reverse_direction] = f
 					ScheduleFunc(func() {
-						to_room.ExitFlags[reverse_direction].Closed = true
+						f := to_room.ExitFlags[reverse_direction]
+						f.Closed = true
+						to_room.ExitFlags[reverse_direction] = f
 						for _, e := range db.GetEntitiesInRoom(to_room.Id) {
 							if e != nil {
 								if e != entity {
@@ -402,7 +412,7 @@ func do_open(entity Entity, args ...string) {
 					e.Send("\r\nThe door to the %s opens.\r\n", reverse_direction)
 				}
 			}
-			room_prog_exec(entity, "open", direction)
+			go room_prog_exec(entity, "open", direction)
 			return
 		}
 		entity.Send("\r\nIt's already open.\r\n")
@@ -444,12 +454,16 @@ func do_close(entity Entity, args ...string) {
 		}
 		if !flags.Closed && !flags.Locked {
 			entity.Send("\r\n&GYou close the door.&d\r\n")
-			room.ExitFlags[direction].Closed = true
+			f := room.ExitFlags[direction]
+			f.Closed = true
+			room.ExitFlags[direction] = f
 			to_room := db.GetRoom(room.Exits[direction])
 			reverse_direction := direction_reverse(direction)
 			if room.Id == to_room.Exits[reverse_direction] {
 				if _, ok := to_room.ExitFlags[reverse_direction]; ok {
-					to_room.ExitFlags[reverse_direction].Closed = true
+					f := to_room.ExitFlags[reverse_direction]
+					f.Closed = true
+					to_room.ExitFlags[reverse_direction] = f
 				}
 			}
 			for _, e := range db.GetEntitiesInRoom(entity.RoomId()) {
@@ -464,7 +478,7 @@ func do_close(entity Entity, args ...string) {
 					e.Send("\r\nThe door to the %s closes.\r\n", reverse_direction)
 				}
 			}
-			room_prog_exec(entity, "close", direction)
+			go room_prog_exec(entity, "close", direction)
 			return
 		}
 	} else {
@@ -501,7 +515,7 @@ func do_get(entity Entity, args ...string) {
 				}
 			}
 			entity.Send("\r\n&dYou pick up %s &Y%s&d.\r\n", get_preface_for_name(item.GetData().Name), item.GetData().Name)
-			room_prog_exec(entity, "get", item)
+			go room_prog_exec(entity, "get", item)
 			return
 		}
 	}
@@ -604,5 +618,5 @@ func do_drop(entity Entity, args ...string) {
 			}
 		}
 	}
-	room_prog_exec(entity, "drop", item)
+	go room_prog_exec(entity, "drop", item)
 }

@@ -27,7 +27,6 @@ import (
 
 type Brain interface {
 	OnSpawn()
-	OnEnter(entity Entity)
 	OnGreet(entity Entity)
 	OnMove(entity Entity)
 	OnKill(entity Entity)
@@ -60,9 +59,6 @@ func (b *GenericBrain) OnKill(entity Entity) {
 }
 func (b *GenericBrain) OnMove(entity Entity) {
 	go mud_prog_exec("move", b.Entity, entity)
-}
-func (b *GenericBrain) OnEnter(entity Entity) {
-	go mud_prog_exec("enter", b.Entity, entity)
 }
 func (b *GenericBrain) OnGreet(entity Entity) {
 	go mud_prog_exec("greet", b.Entity, entity)
@@ -99,13 +95,13 @@ func mud_prog_bind(vm *otto.Otto, any ...interface{}) {
 	if any_len > 0 {
 		for i := 0; i < any_len; i++ {
 			if _, ok := any[i].(Entity); ok {
-				err := vm.Set("$n", any[i].(Entity))
+				err := vm.Set("$n", any[i].(Entity).GetCharData().Name)
 				ErrorCheck(err)
 			} else if _, ok := any[i].(string); ok {
 				err := vm.Set("$s", any[i].(string))
 				ErrorCheck(err)
 			} else if _, ok := any[i].(Item); ok {
-				err := vm.Set("$i", any[i].(Item))
+				err := vm.Set("$i", any[i].(Item).GetData().Name)
 				ErrorCheck(err)
 			}
 		}

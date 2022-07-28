@@ -440,6 +440,7 @@ func entity_clone(entity Entity) Entity {
 		Equipment: make(map[string]*ItemData),
 		Inventory: make([]*ItemData, 0),
 		Languages: make(map[string]int),
+		Progs:     make(map[string]string),
 		AI:        ch.AI,
 		State:     ch.State,
 		Brain:     ch.Brain,
@@ -478,6 +479,9 @@ func entity_clone(entity Entity) Entity {
 	}
 	for s, v := range ch.Skills {
 		c.Skills[s] = v
+	}
+	for k, v := range ch.Progs {
+		c.Progs[k] = v
 	}
 	return c
 }
