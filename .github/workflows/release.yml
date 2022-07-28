@@ -34,8 +34,8 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       run: |
         make all VERSION=${{ github.ref_name }}
-        tar -cJf ${{ matrix.asset_name }} data docs bin web LICENSE
-        tar -czf ${{ matrix.client_name }} bin\\client
+        tar -czf ${{ matrix.asset_name }} data docs bin web LICENSE
+        tar -czf ${{ matrix.client_name }} bin\\client.exe
     - name: Build BSD
       if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macos')
       run: |
