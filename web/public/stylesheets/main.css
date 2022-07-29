@@ -1,0 +1,71 @@
+@font-face {
+    font-family: "DOS";
+    src: url("/static/fonts/IBM.woff");
+  }
+html, body {
+    background: black;
+    color: #f5f5f5;
+    font-family: DOS, 'Courier New', Courier, monospace;
+    font-size: 16px;
+    margin: 0;
+    padding: 0;
+    float: left;
+}
+
+a {
+    color:#FF9933;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+input {
+    background: #333333;
+    color: #CCCCCC;
+}
+li {
+    display: none;
+}
+.nav {
+    position: absolute;
+    top: 0;
+    left: 0px;
+    right: 0px;
+    height: 25px !important;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    margin: 0px;
+    padding: 0px;
+}
+.nav ul {
+    list-style: none;
+    list-style-type: none;
+    margin: 5px;
+    padding: 5px;
+    cursor: pointer;
+}
+.nav ul>li {
+    display: flexbox;
+    list-style-type: none;
+    list-style: none;
+    list-style-position:inside;
+    cursor: pointer;
+}
+.nav ul>a {
+    color:#ffffff;
+    text-decoration: none;
+}
+.nav ul>a:hover {
+    text-decoration: underline;
+}
+
+#editor { 
+    position: absolute;
+    top: 30px;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}

@@ -52,10 +52,8 @@ func serveTemplate(w http.ResponseWriter, r *http.Request) {
 	if !strings.HasSuffix(fn, ".html") {
 		fn = fmt.Sprintf("%s.html", fn)
 	}
-	fmt.Println(fn)
 	lp := filepath.Join("web", "templates", "layout.html")
 	fp := filepath.Join("web", "templates", fn)
-	fmt.Println(fp)
 	// Return a 404 if the template doesn't exist
 	info, err := os.Stat(fp)
 	if err != nil {
