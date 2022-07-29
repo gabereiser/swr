@@ -9,9 +9,11 @@ html, body {
     font-size: 16px;
     margin: 0;
     padding: 0;
-    float: left;
 }
-
+* {
+    font-family: DOS, 'Courier New', Courier, monospace;
+    font-size: 16px;
+}
 a {
     color:#FF9933;
     text-decoration: none;
@@ -25,43 +27,61 @@ input {
     background: #333333;
     color: #CCCCCC;
 }
-li {
-    display: none;
+.heart {
+    color:#000000;
+    padding:8px;
+}
+.menu-button {
+    border: 0;
+    background: transparent;
+    color: #000000;
+}
+.nav-bar {
+    background:#ffffff;
 }
 .nav {
+    background:#ffffff;
+    display: inline-block;
+    position: relative;
+    z-index:100;
+}
+.nav-content {
+    display: none;
     position: absolute;
-    top: 0;
-    left: 0px;
-    right: 0px;
-    height: 25px !important;
     width: 100%;
-    overflow: hidden;
-    display: flex;
-    margin: 0px;
-    padding: 0px;
-}
-.nav ul {
-    list-style: none;
-    list-style-type: none;
-    margin: 5px;
+    overflow: visible;
+    box-shadow: 0px 10px 10px 0px rgba(0,0,0,0.4);
+    background:#ffffff;
+    flex:auto;
+    z-index: 100;
+  }
+  .nav:hover .nav-content {
+    display: block;
+  }
+  .nav-content a {
+    display: block;
+    color: #000000;
     padding: 5px;
-    cursor: pointer;
-}
-.nav ul>li {
-    display: flexbox;
-    list-style-type: none;
-    list-style: none;
-    list-style-position:inside;
-    cursor: pointer;
-}
-.nav ul>a {
-    color:#ffffff;
     text-decoration: none;
-}
-.nav ul>a:hover {
+  }
+  .nav-content a:hover {
     text-decoration: underline;
 }
-
+.file-menu {
+    width:175px;
+}
+.create-menu {
+    width:115px;
+}
+.find-menu {
+    width:115px;
+}
+.server-menu {
+    width:175px;
+}
+.help-menu {
+    width:95px;
+}
 #editor { 
     position: absolute;
     top: 30px;

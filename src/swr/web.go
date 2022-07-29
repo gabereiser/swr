@@ -100,8 +100,8 @@ func dataHandler(w http.ResponseWriter, r *http.Request) {
 
 func writeError(w http.ResponseWriter, err error) {
 	if err != nil {
+		w.Header().Write(w)
 		w.WriteHeader(500)
-		w.Header().Add("Content-Type", "application/yaml")
 		w.Write([]byte("---\nstatus: 500\n"))
 	}
 }
@@ -113,7 +113,8 @@ func writeData(w http.ResponseWriter, obj interface{}) {
 		writeError(w, err)
 		return
 	}
-	w.Header().Add("Content-Type", "application/yaml")
+	w.Header().Write(w)
+	w.WriteHeader(200)
 	w.Write(buf)
 }
 func dataGet(w http.ResponseWriter, r *http.Request) {
