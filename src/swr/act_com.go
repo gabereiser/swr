@@ -66,33 +66,42 @@ func do_shout(entity Entity, args ...string) {
 	if entity.IsPlayer() {
 		entity.Send("You shout \"%s\"!\n", words)
 	}
-	yell(entity, words, speaker.RoomId(), 0)
+	yell(entity, words, speaker.RoomId(), 0, make([]uint, 0))
 }
 
-func yell(entity Entity, words string, roomId uint, dist uint) {
+func yell(entity Entity, words string, roomId uint, dist uint, visited []uint) {
 	if dist > 3 {
 		return
 	}
-	speaker := entity.GetCharData()
-	room := DB().GetRoom(roomId)
-	for _, ex := range room.GetEntities() {
-		if ex == nil {
-			continue
-		}
-		if entity_unspeakable_state(ex) {
-			continue
-		}
-		if ex != entity {
-			if ex.IsPlayer() {
-				listener := ex.GetCharData()
-				ex.Send("Someone shouts \"%s\"!\n", language_spoken(speaker, listener, words))
-			} else {
-				ex.Send("Someone shouts \"%s\"!\n", words)
-			}
+	visited_already := false
+	for _, rId := range visited {
+		if rId == roomId {
+			visited_already = true
 		}
 	}
-	for _, e := range room.Exits {
-		yell(entity, words, e, dist+1)
+	if !visited_already {
+		speaker := entity.GetCharData()
+		room := DB().GetRoom(roomId)
+		for _, ex := range room.GetEntities() {
+			if ex == nil {
+				continue
+			}
+			if entity_unspeakable_state(ex) {
+				continue
+			}
+			if ex != entity {
+				if ex.IsPlayer() {
+					listener := ex.GetCharData()
+					ex.Send("Someone shouts \"%s\"!\n", language_spoken(speaker, listener, words))
+				} else {
+					ex.Send("Someone shouts \"%s\"!\n", words)
+				}
+			}
+		}
+		visited = append(visited, roomId)
+		for _, e := range room.Exits {
+			yell(entity, words, e, dist+1, visited)
+		}
 	}
 }
 

@@ -126,6 +126,9 @@ func do_transfer(entity Entity, args ...string) {
 		}
 		if e != target {
 			e.Send("\r\n&C%s&d has left.\r\n")
+			if e.GetCharData().AI != nil {
+				e.GetCharData().AI.OnMove(entity)
+			}
 		}
 	}
 	target.GetCharData().Room = uint(room_id)
@@ -136,6 +139,9 @@ func do_transfer(entity Entity, args ...string) {
 		}
 		if e != target {
 			e.Send("\r\n&C%s&d has appeared.\r\n")
+			if e.GetCharData().AI != nil {
+				e.GetCharData().AI.OnGreet(entity)
+			}
 		}
 	}
 }

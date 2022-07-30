@@ -124,15 +124,15 @@ func direction_reverse(direction string) string {
 func get_gender_for_code(gender string) string {
 	g := strings.ToLower(gender)
 	if g[0:1] == "m" {
-		return "Male"
+		return "male"
 	}
 	if g[0:1] == "f" {
-		return "Female"
+		return "female"
 	}
 	if g[0:1] == "n" {
-		return "Neuter"
+		return "neuter"
 	}
-	return "Male"
+	return "male"
 }
 
 func get_preface_for_name(name string) string {

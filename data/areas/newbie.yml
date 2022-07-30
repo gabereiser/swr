@@ -82,8 +82,6 @@ rooms:
     exflags:
       west:
         closed: true
-      east:
-        closed: true
   -
     id: 104
     name: Jail Commissary
@@ -114,9 +112,6 @@ rooms:
     flags: []
     exits:
       west: 103
-    exflags:
-      west:
-        closed: true
 
 items:
   -

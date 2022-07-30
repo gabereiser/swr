@@ -1,7 +1,7 @@
 ---
 id: 2
 room: 0
-name: maintenance droid
+name: a maintenance droid
 keywords: [ "droid" ]
 flags: [ npc, sentinel, droid ]
 desc: |
@@ -17,8 +17,8 @@ mp: [0, 0]
 mv: [10, 10]
 stats: [ 10, 10, 10, 10, 10, 10 ]
 skills: {}
-languages: {basic: 100, binary: 100, droid: 100}
-speaking: droid
+languages: {basic: 100, binary: 100}
+speaking: binary
 state: normal
 brain: generic
 equipment: {}

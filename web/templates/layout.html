@@ -2,25 +2,29 @@
 <!doctype html>
 <html>
 <head>
-	<meta charset="utf-8">
+	<meta charset="UTF-8">
+	<meta name="description" content="SWR Editor">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' cdnjs.cloudflare.com; connect-src 'self'; img-src 'self'; style-src 'self' 'unsafe-inline'; base-uri 'self'; form-action 'self'">
 	<title>{{template "title"}}</title>
 	<link rel="stylesheet" href="/static/stylesheets/main.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/yamljs/0.3.0/yaml.min.js" integrity="sha512-f/K0Q5lZ1SrdNdjc2BO2I5kTx8E5Uw1EU3PhSUB9fYPohap5rPWEmQRCjtpDxNmQB4/+MMI/Cf+nvh1VSiwrTA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
 	<div class="nav-bar">
 		<span class="heart">♥️</span>
 		<div class="nav">
-			<button class="menu-button">File</button>
+			<a href="#" class="menu-button">File</a>
 			<div class="nav-content file-menu">
-				<a href="#">Connect</a>
-				<a href="#">Open Local File</a>
+				<a href="#" onclick="new_file();">New</a>
+				<a href="#" onclick="open_file();">Open Local File</a>
 				<a href="#">Save</a>
 				<a href="#">Save As</a>
 				<a href="#">Quit</a>
 			</div>
 		</div>
 		<div class="nav">
-			<button class="menu-button">Create</button>
+			<a href="#" class="menu-button">Create</a>
 			<div class="nav-content create-menu">
 				<a href="#">Star System</a>
 				<a href="#">Area</a>
@@ -31,7 +35,7 @@
 			</div>
 		</div>
 		<div class="nav">
-			<button class="menu-button">Find</button>
+			<a href="#" class="menu-button">Find</a>
 			<div class="nav-content find-menu">
 				<a href="#">Player</a>
 				<a href="#">Star System</a>
@@ -43,25 +47,30 @@
 			</div>
 		</div>
 		<div class="nav">
-			<button class="menu-button">Server</button>
+			<a href="#" class="menu-button">Server</a>
 			<div class="nav-content server-menu">
 				<a href="#">Options</a>
 				<a href="#">Preferences</a>
-				<a href="#">Restrict</a>
-				<a href="#">Restart</a>
-				<a href="#">Shutdown</a>
+				<a href="#" class="disabled">Restrict</a>
+				<a href="#" class="disabled">Restart</a>
+				<a href="#" class="disabled">Shutdown</a>
 			</div>
 		</div>
 		<div class="nav">
-			<button class="menu-button">Help</button>
+			<a href="#" class="menu-button">Help</a>
 			<div class="nav-content help-menu">
-				<a href="#">About</a>
+				<a href="#" onclick="menu_about();">About</a>
 				<a href="#">License</a>
 				<a href="#">Sources</a>
 			</div>
 		</div>
 	</div>
 	{{template "body"}}
+
+	<div id="popup">
+		<div class="popup-header"><div class="popup-close" onclick="popup_close();"><span>[x]</span></div>
+		<div class="popup-content"></div>
+	</div>
 </body>
 </html>
 {{end}}

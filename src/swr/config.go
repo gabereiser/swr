@@ -26,9 +26,10 @@ import (
 )
 
 type Configuration struct {
-	Name string
-	Addr string
-	Salt string
+	Name           string
+	Addr           string
+	Salt           string
+	EditorPassword string
 }
 
 var _config *Configuration
@@ -44,6 +45,11 @@ func Config() *Configuration {
 		err = yaml.Unmarshal(fp, &_config)
 		ErrorCheck(err)
 		log.Printf("Configuration loaded.")
+		if _config.EditorPassword == "" {
+			_config.EditorPassword = sprintf("%x%x%x", gen_player_char_id(), gen_npc_char_id(), gen_item_id())
+			log.Printf("Editor Password: %s\n", _config.EditorPassword)
+		}
+
 	}
 	return _config
 }

@@ -162,6 +162,7 @@ func do_combat(attacker Entity, defender Entity) {
 		}
 		damage = ach.DamageRoll(skill)
 		if hit_chance == 20 {
+			attacker.Send("\r\n}Y***CRITICAL HIT***&d&Y!!!&d\r\n")
 			damage *= 2
 		}
 		defender.ApplyDamage(damage)
@@ -237,15 +238,15 @@ func get_damage_string(damage uint, attacker string, defender string, weapon str
 func make_corpse(entity Entity) {
 	ch := entity.GetCharData()
 	if ch.State == ENTITY_STATE_DEAD {
-		death_fmt := "A bloody corpse of a %s %s lies here rotting away."
+		death_fmt := "A bloody corpse of %s lies here rotting away."
 		if strings.Contains(ch.Race, "Droid") {
 			death_fmt = "A busted %s %s lies here as scrap materials."
 		}
 		corpse := &ItemData{
 			Id:       gen_item_id(),
-			Name:     fmt.Sprintf("corpse of a %s %s", get_gender_for_code(ch.Gender), strings.ToLower(ch.Race)),
+			Name:     fmt.Sprintf("corpse of %s", ch.Name),
 			Keywords: make([]string, 0),
-			Desc:     fmt.Sprintf(death_fmt, get_gender_for_code(ch.Gender), strings.ToLower(ch.Race)),
+			Desc:     fmt.Sprintf(death_fmt, ch.Name),
 			Type:     ITEM_TYPE_CORPSE,
 			Value:    int(ch.Gold),
 			Weight:   ch.base_weight(),

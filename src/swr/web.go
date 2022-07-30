@@ -18,6 +18,8 @@
 package swr
 
 import (
+	"crypto/sha256"
+	"crypto/subtle"
 	"fmt"
 	"log"
 	"net/http"
@@ -37,11 +39,45 @@ func EditorStart() {
 	go func() {
 		fs := http.FileServer(http.Dir("./web/public"))
 		http.Handle("/static/", http.StripPrefix("/static/", fs))
-		http.HandleFunc("/", serveTemplate)
-		http.HandleFunc("/data", dataHandler)
+		http.HandleFunc("/", basicAuth(serveTemplate))
+		http.HandleFunc("/data", basicAuth(dataHandler))
 		http.ListenAndServe(":8080", nil)
 		log.Println("Editor now accepting connections on 0.0.0.0:8080")
 	}()
+}
+func basicAuth(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Extract the username and password from the request
+		// Authorization header. If no Authentication header is present
+		// or the header value is invalid, then the 'ok' return value
+		// will be false.
+		username, password, ok := r.BasicAuth()
+		if ok {
+			// Calculate SHA-256 hashes for the provided and expected
+			// usernames and passwords.
+			usernameHash := sha256.Sum256([]byte(username))
+			passwordHash := sha256.Sum256([]byte(password))
+			expectedUsernameHash := sha256.Sum256([]byte("admin"))
+			expectedPasswordHash := sha256.Sum256([]byte(Config().EditorPassword))
+
+			// Use the subtle.ConstantTimeCompare() function to check if
+			// the provided username and password hashes equal the
+			// expected username and password hashes. ConstantTimeCompare
+			// will return 1 if the values are equal, or 0 otherwise.
+			// Importantly, we should to do the work to evaluate both the
+			// username and password before checking the return values to
+			// avoid leaking information.
+			usernameMatch := (subtle.ConstantTimeCompare(usernameHash[:], expectedUsernameHash[:]) == 1)
+			passwordMatch := (subtle.ConstantTimeCompare(passwordHash[:], expectedPasswordHash[:]) == 1)
+
+			if usernameMatch && passwordMatch {
+				next.ServeHTTP(w, r)
+				return
+			}
+		}
+		w.Header().Set("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	})
 }
 
 func serveTemplate(w http.ResponseWriter, r *http.Request) {

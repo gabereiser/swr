@@ -1,7 +1,7 @@
 ---
 id: 3
 room: 0
-name: an Imperial guard
+name: an imperial guard
 keywords: [ "guard", "guy", "human", "imperial" ]
 flags: [ npc ]
 desc: |
@@ -13,12 +13,12 @@ gender: m
 level: 5
 xp: 12500
 gold: 50
-hp: [120, 120]
+hp: [100, 100]
 mp: [0, 0]
 mv: [12, 12]
 stats: [ 10, 10, 10, 10, 10, 10 ]
 skills:
-  vibro-blades: 40
+  vibro-blades: 20
 languages:
   basic: 100
 speaking: basic
@@ -35,7 +35,7 @@ equipment:
     type: weapon
     weaponType: vibro-blades
     wearLoc: weapon
-    dmgRoll: 1d6
+    dmgRoll: 1d3
     value: 100
     weight: 3
 inventory: []

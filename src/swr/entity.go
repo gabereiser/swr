@@ -392,7 +392,7 @@ func (p *PlayerProfile) ApplyDamage(damage uint) {
 	p.Char.Hp[0] -= int(damage)
 	if p.Char.Hp[0] <= 0 {
 		p.Char.State = ENTITY_STATE_UNCONSCIOUS
-		if p.Char.Hp[0] <= -(p.Char.Hp[1]) {
+		if p.Char.Hp[0] <= -(p.Char.Hp[1] * 2) {
 			p.Char.State = ENTITY_STATE_DEAD
 			p.Send(sprintf("\r\n&RYou have died.&d %s\r\n", EMOJI_SKULL))
 			return

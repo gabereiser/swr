@@ -1,14 +1,13 @@
 {{define "title"}}SWR Editor{{end}}
 
 {{define "body"}}
-    <div id="editor"></div>
-        
+    <input type="file" id="file-selector" class="hidden" accept=".yml .yaml">   
+    <div class="workspace">
+        <div class="sidepanel"></div>
+        <div class="mainpanel">
+            <div id="editor"></div>
+        </div>
+    </div>
     <script src="static/scripts/ace.js"></script>
-    <script>
-        var editor = ace.edit("editor");
-        editor.setOption("useSoftTabs", true);
-        editor.setTheme("ace/theme/terminal");
-        editor.session.setMode("ace/mode/yaml");
-    </script>
-    
+    <script src="static/scripts/editor.js"></script>
 {{end}}

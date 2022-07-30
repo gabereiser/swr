@@ -81,6 +81,11 @@ Login:
 				Entity:  player,
 				Command: "look",
 			}
+			for _, e := range room.GetEntities() {
+				if e.GetCharData().AI != nil {
+					e.GetCharData().AI.OnGreet(player)
+				}
+			}
 		}
 	} else {
 		client.Send(fmt.Sprintf("\r\n&RHrm, it seems there isn't a record of &Y%s&R in the galactic databank.\r\n\r\n&RAre you new? &G[&Wy&G/&Wn&G]&d ", username))
@@ -132,7 +137,7 @@ Email:
 	}
 
 Race:
-	client.Send("\r\n&G-=-=-=-=-=-=-=-=-=-=-=( &WChoose Your Race &G)=-=-=-=-=-=-=-=-=-=-=-=-=-=-&d\r\n\r\n")
+	client.Sendf("\r\n%s\r\n\r\n", MakeTitle("Choose Your Race", ANSI_TITLE_STYLE_BLOCK, ANSI_TITLE_ALIGNMENT_CENTER))
 
 	buf := ""
 	for i, race := range race_list {
@@ -159,7 +164,7 @@ Race:
 	}
 	race = race_list[r_index-1]
 Gender:
-	client.Send("\r\n\r\n&G-=-=-=-=-=-=-=-=-=-=-=( &WChoose Your Gender &G)=-=-=-=-=-=-=-=-=-=-=-=-=-&d")
+	client.Sendf("\r\n\r\n%s", MakeTitle("Choose Your Gender", ANSI_TITLE_STYLE_BLOCK, ANSI_TITLE_ALIGNMENT_CENTER))
 	client.Send("\r\n&GYour character needs a gender. You can be &Wmale&G, &Wfemale&G, or &Wnon-binary&G/&Wneutral&G.\r\n")
 	client.Send("&W[&GM&W/&GF&W/&GN&W]:&d ")
 	gender := strings.ToLower(client.Read())
@@ -167,18 +172,9 @@ Gender:
 		client.Send("\r\n}RGender not recognized, please try again.&d\r\n")
 		goto Gender
 	}
-	switch gender[0:1] {
-	case "m":
-	case "M":
-		gender = "Male"
-	case "f":
-	case "F":
-		gender = "Female"
-	default:
-		gender = "Non"
-	}
+	gender = get_gender_for_code(strings.ToLower(gender[0:1]))
 
-	client.Send("\r\n\r\n&G-=-=-=-=-=-=-=-=-=-=-=( &WStats &G)=-=-=-=-=-=-=-=-=-=-=-=-=-&d")
+	client.Sendf("\r\n\r\n%s", MakeTitle("Stats", ANSI_TITLE_STYLE_BLOCK, ANSI_TITLE_ALIGNMENT_CENTER))
 	stats := make([]int, 6)
 Stats:
 	stats[0] = rand_min_max(1, 6) + rand_min_max(1, 6) + rand_min_max(1, 6)
@@ -197,7 +193,7 @@ Stats:
 	player.Char.Name = capitalize(name)
 	player.Char.Room = 100
 	player.Char.Race = race
-	player.Char.Gender = gender
+	player.Char.Gender = capitalize(gender)
 	player.Char.Title = fmt.Sprintf("%s the %s", player.Char.Name, player.Char.Race)
 	player.Char.Level = 1
 	player.Char.XP = 0
@@ -214,6 +210,8 @@ Stats:
 	player.Char.Brain = "client"
 	if race == "Human" {
 		player.Char.Speaking = "basic"
+	} else if strings.Contains(race, "Droid") {
+		player.Char.Speaking = "binary"
 	} else {
 		player.Char.Speaking = strings.ToLower(race)
 	}
@@ -245,6 +243,11 @@ Stats:
 	ServerQueue <- MudClientCommand{
 		Entity:  player,
 		Command: "look",
+	}
+	for _, e := range room.GetEntities() {
+		if e.GetCharData().AI != nil {
+			e.GetCharData().AI.OnGreet(player)
+		}
 	}
 
 }
