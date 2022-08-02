@@ -1,6 +1,6 @@
 ---
 name: Communication
-keywords: ["communication", "say", "comsay", "talk", "chat", "shout", "ooc", "shipsay", "clansay", "yell", "emote"]
+keywords: ["communication", "say", "talk", "chat", "shout", "shipsay", "clansay", "yell", "emote"]
 level: 1
 desc: |
   &wSWR features several modes of communicating. The most common (and most used) is the &Gsay&w
@@ -14,7 +14,6 @@ desc: |
   &Gcomsay&w    - Says something to your tuned frequency. (" shortcut) [example: "What planet are you on? / comsay What planet are you on?]
     &W-&Gtune&w   - Tunes your comlink to a frequency. Only other players on the same frequency will hear your &Gcomsay&w.
   &Gshipsay&w   - Says something over your ship's intercom to all rooms on your ship. (; shortcut) [example: ;We have arrived. / shipsay We have arrived.]
-  &Gooc&w       - Communicates over the Out Of Character channel. [example: ooc Anyone seen the new movie?]
 
   &Gemote&w     - Emotes a message to the room you are in. (. shortcut) [example: .sits down / emote sits down]  *Character sits down*
 

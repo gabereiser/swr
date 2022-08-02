@@ -24,6 +24,10 @@ import (
 	"strings"
 )
 
+func bytes_to_mb(b uint64) float64 {
+	return float64(b) / (1024 * 1024)
+}
+
 // Replaces line endings to enforce CR+LF instead of just LF
 func telnet_encode(input string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(input, "\r\n", "\n"), "\n", "\r\n")
@@ -54,9 +58,14 @@ func umin(min uint, value uint) uint {
 	}
 	return value
 }
-
+func random_seed(seed int64) {
+	rand.Seed(seed)
+}
 func gen_player_char_id() uint {
 	return uint(rand.Intn(9000000000)) + 9000000000
+}
+func gen_ship_id() uint {
+	return uint(rand.Intn(8000000000)) + 8000000000
 }
 
 func gen_npc_char_id() uint {
@@ -69,20 +78,19 @@ func gen_item_id() uint {
 
 func tune_random_frequency() string {
 	buf := ""
-	buf += strconv.Itoa(rand.Intn(2) + 1) // 1,2,3
+	buf += strconv.Itoa(rand.Intn(3) + 1) // 1,2,3,4
 	buf += strconv.Itoa(rand.Intn(9))     // 0-9
 	buf += strconv.Itoa(rand.Intn(9))     // 0-9
 	buf += "."
-	buf += strconv.Itoa(rand.Intn(9))
 	switch rand.Intn(3) {
 	case 0:
-		buf += "00"
+		buf += "000"
 	case 1:
-		buf += "25"
+		buf += "250"
 	case 2:
-		buf += "50"
+		buf += "500"
 	case 3:
-		buf += "75"
+		buf += "750"
 	}
 	return buf
 }

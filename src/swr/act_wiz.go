@@ -119,8 +119,8 @@ func do_transfer(entity Entity, args ...string) {
 		entity.Send("\r\n&RUnable to parse room_id!&d\r\n")
 		return
 	}
-	room := DB().GetRoom(target.RoomId())
-	for _, e := range room.GetEntities() {
+	room := DB().GetRoom(target.RoomId(), target.ShipId())
+	for _, e := range DB().GetEntitiesInRoom(room.Id, target.ShipId()) {
 		if e == nil {
 			continue
 		}
@@ -132,8 +132,8 @@ func do_transfer(entity Entity, args ...string) {
 		}
 	}
 	target.GetCharData().Room = uint(room_id)
-	room = DB().GetRoom(uint(room_id))
-	for _, e := range room.GetEntities() {
+	room = DB().GetRoom(uint(room_id), 0)
+	for _, e := range DB().GetEntitiesInRoom(room.Id, 0) {
 		if e == nil {
 			continue
 		}

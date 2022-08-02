@@ -18,7 +18,6 @@
 package swr
 
 import (
-	"log"
 	"math/rand"
 	"strconv"
 	"time"
@@ -62,7 +61,6 @@ func (b *GenericBrain) OnMove(entity Entity) {
 	go mud_prog_exec("move", b.Entity, entity)
 }
 func (b *GenericBrain) OnGreet(entity Entity) {
-	log.Printf("Greet Called: %s %s", b.Entity.GetCharData().Name, entity.GetCharData().Name)
 	go mud_prog_exec("greet", b.Entity, entity)
 }
 func (b *GenericBrain) OnDrop(entity Entity, item Item) {

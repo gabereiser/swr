@@ -211,7 +211,7 @@ func acceptClient(con *net.TCPConn) {
 	log.Printf("Entity %s has left the game.", entity.GetCharData().Name)
 	db.RemoveClient(client)
 	log.Printf("Client %s has disconnected.", client.Id)
-	room := DB().GetRoom(entity.RoomId())
+	room := DB().GetRoom(entity.RoomId(), entity.ShipId())
 	room.SendToRoom(fmt.Sprintf("\r\n&P%s&d has left.\r\n", entity.GetCharData().Name))
 	con.Close()
 }

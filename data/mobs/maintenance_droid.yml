@@ -12,7 +12,7 @@ gender: n
 level: 5
 xp: 2400
 gold: 0
-hp: [100, 100]
+hp: [60, 60]
 mp: [0, 0]
 mv: [10, 10]
 stats: [ 10, 10, 10, 10, 10, 10 ]
@@ -32,4 +32,4 @@ progs:
     kill($n);
   death: |
     say("Uggggghhhhhhh!!");
-    emote("colapses into a pile of junk parts.");
+    emote("collapses into a pile of junk parts.");

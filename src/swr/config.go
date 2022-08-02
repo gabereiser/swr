@@ -26,10 +26,10 @@ import (
 )
 
 type Configuration struct {
-	Name           string
-	Addr           string
-	Salt           string
-	EditorPassword string
+	Name           string `yaml:"name"`
+	Addr           string `yaml:"addr"`
+	Salt           string `yaml:"salt"`
+	EditorPassword string `yaml:"editor_password"`
 }
 
 var _config *Configuration

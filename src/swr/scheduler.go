@@ -44,6 +44,7 @@ type SchedulerService struct {
 	m     *sync.Mutex
 	t     *time.Ticker
 	funcs []*ScheduledFunction
+	bt    time.Time
 }
 
 var _scheduler *SchedulerService
@@ -68,6 +69,7 @@ func Scheduler() *SchedulerService {
 				_scheduler.tick(time.Now().UTC())
 			}
 		}()
+		_scheduler.bt = now
 		log.Println("Scheduler Started.")
 	}
 	return _scheduler
@@ -86,22 +88,17 @@ func (s *SchedulerService) Schedule(function *ScheduledFunction) {
 	s.funcs = append(s.funcs, function)
 }
 
-func (s *SchedulerService) remove(function *ScheduledFunction) {
+func (s *SchedulerService) Remove(function *ScheduledFunction) {
 	s.Lock()
 	defer s.Unlock()
-	index := -1
-	for i, f := range s.funcs {
+	ret := make([]*ScheduledFunction, 0)
+	for _, f := range s.funcs {
 		if f == function {
-			index = i
+			continue
 		}
+		ret = append(ret, f)
 	}
-	if index > -1 {
-		ret := make([]*ScheduledFunction, 0)
-		ret = append(ret, s.funcs[:index]...)
-		ret = append(ret, s.funcs[index+1:]...)
-		s.funcs = ret
-	}
-
+	s.funcs = ret
 }
 func (s *SchedulerService) tick(t time.Time) {
 
@@ -119,6 +116,6 @@ func (s *SchedulerService) tick(t time.Time) {
 	}
 
 	for _, fn := range removal {
-		s.remove(fn)
+		s.Remove(fn)
 	}
 }

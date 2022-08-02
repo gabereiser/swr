@@ -65,7 +65,7 @@ Login:
 			player.LastSeen = time.Now()
 			player.Client = client
 			DB().SavePlayerData(player)
-			room := DB().GetRoom(player.Char.Room)
+			room := DB().GetRoom(player.Char.Room, player.Char.Ship)
 			room.SendToRoom(fmt.Sprintf("\r\n&P%s&d has arrived.\r\n", player.Char.Name))
 			// see if player is already in the game...
 			p := DB().GetPlayerEntityByName(player.Char.Name)
@@ -81,7 +81,7 @@ Login:
 				Entity:  player,
 				Command: "look",
 			}
-			for _, e := range room.GetEntities() {
+			for _, e := range DB().GetEntitiesInRoom(player.Char.Room, player.Char.Ship) {
 				if e.GetCharData().AI != nil {
 					e.GetCharData().AI.OnGreet(player)
 				}
@@ -235,7 +235,7 @@ Stats:
 	}
 	DB().SavePlayerData(player)
 	player.Client = client
-	room := DB().GetRoom(player.Char.Room)
+	room := DB().GetRoom(player.Char.Room, player.Char.Ship)
 	room.SendToRoom(fmt.Sprintf("\r\n&P%s&d has arrived.\r\n", player.Char.Name))
 	DB().AddEntity(player)
 	client.Send(Color().ClearScreen())
@@ -244,7 +244,7 @@ Stats:
 		Entity:  player,
 		Command: "look",
 	}
-	for _, e := range room.GetEntities() {
+	for _, e := range DB().GetEntitiesInRoom(player.Char.Room, player.Char.Ship) {
 		if e.GetCharData().AI != nil {
 			e.GetCharData().AI.OnGreet(player)
 		}

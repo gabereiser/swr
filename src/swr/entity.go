@@ -61,6 +61,7 @@ const (
 
 type Entity interface {
 	RoomId() uint
+	ShipId() uint
 	IsPlayer() bool
 	Send(str string, any ...interface{})
 	Event(evt string)
@@ -76,12 +77,14 @@ type Entity interface {
 	GetCharData() *CharData
 	Weapon() Item
 	FindItem(keyword string) Item
+	GetShip() Ship
 }
 
 type CharData struct {
 	Id        uint                 `yaml:"id"`
 	OId       uint                 `yaml:"mobId,omitempty"`
 	Room      uint                 `yaml:"room,omitempty"`
+	Ship      uint                 `yaml:"ship,omitempty"` // if 0, entity is not on a ship
 	Name      string               `yaml:"name"`
 	Keywords  []string             `yaml:"keywords,flow,omitempty"`
 	Title     string               `yaml:"title,omitempty"`
@@ -96,11 +99,11 @@ type CharData struct {
 	Mp        []int                `yaml:"mp,flow"`    // Magic Points [0] Current [1] Max : len = 2
 	Mv        []int                `yaml:"mv,flow"`    // Move Points [0] Current [1] Max : len = 2
 	Stats     []int                `yaml:"stats,flow"` // str, int, dex, wis, con, cha
-	Skills    map[string]int       `yaml:"skills,flow,omitempty"`
-	Languages map[string]int       `yaml:"languages,flow,omitempty"`
-	Speaking  string               `yaml:"speaking,omitempty"`
-	Equipment map[string]*ItemData `yaml:"equipment,omitempty"` // Key is a EQUIPMENT_WEAR_LOC_* const, Value is an item.
-	Inventory []*ItemData          `yaml:"inventory,omitempty"`
+	Skills    map[string]int       `yaml:"skills"`
+	Languages map[string]int       `yaml:"languages"`
+	Speaking  string               `yaml:"speaking"`
+	Equipment map[string]*ItemData `yaml:"equipment"` // Key is a EQUIPMENT_WEAR_LOC_* const, Value is an item.
+	Inventory []*ItemData          `yaml:"inventory"`
 	State     string               `yaml:"state,omitempty"`
 	Brain     string               `yaml:"brain,omitempty"`
 	Progs     map[string]string    `yaml:"progs,omitempty"`
@@ -121,6 +124,10 @@ func (*CharData) Send(m string, args ...interface{}) {
 
 func (c *CharData) RoomId() uint {
 	return c.Room
+}
+
+func (c *CharData) ShipId() uint {
+	return c.Ship
 }
 
 func (c *CharData) Event(evt string) {
@@ -233,9 +240,7 @@ func (c *CharData) DamageRoll(skillName string) uint {
 	} else {
 		skill += get_weapon_skill_stat("martial-arts", str, dex)
 	}
-	if skill == 0 {
-		skill = 1
-	}
+	skill = umin(1, skill/10)
 	dmg := uint(roll_dice(d)) + uint(roll_dice(fmt.Sprintf("1d%d", skill)))
 	return dmg
 }
@@ -313,6 +318,12 @@ func (c *CharData) ApplyDamage(damage uint) {
 	}
 }
 
+func (c *CharData) GetShip() Ship {
+	if c.Ship > 0 {
+		return DB().GetShip(c.Ship)
+	}
+	return nil
+}
 func (c *CharData) GetCharData() *CharData {
 	return c
 }
@@ -343,6 +354,10 @@ func (p *PlayerProfile) Send(m string, any ...interface{}) {
 
 func (p *PlayerProfile) RoomId() uint {
 	return p.Char.Room
+}
+
+func (p *PlayerProfile) ShipId() uint {
+	return p.Char.Ship
 }
 
 func (p *PlayerProfile) Event(evt string) {
@@ -412,6 +427,13 @@ func (p *PlayerProfile) Weapon() Item {
 
 func (p *PlayerProfile) FindItem(keyword string) Item {
 	return p.Char.FindItem(keyword)
+}
+
+func (p *PlayerProfile) GetShip() Ship {
+	if p.Char.Ship > 0 {
+		return DB().GetShip(p.Char.Ship)
+	}
+	return nil
 }
 
 func entity_clone(entity Entity) Entity {
@@ -697,6 +719,9 @@ func entity_get_skill_value(ch *CharData, skill string) int {
 
 func entity_add_skill_value(entity Entity, skill string, value int) {
 	ch := entity.GetCharData()
+	if ch == nil {
+		return
+	}
 	ch.Skills[skill] += value
 	if ch.Skills[skill] >= 100 {
 		ch.Skills[skill] = 100

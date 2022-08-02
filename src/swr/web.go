@@ -20,7 +20,10 @@ package swr
 import (
 	"crypto/sha256"
 	"crypto/subtle"
+	"encoding/json"
 	"fmt"
+	"io/fs"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -40,6 +43,8 @@ func EditorStart() {
 		fs := http.FileServer(http.Dir("./web/public"))
 		http.Handle("/static/", http.StripPrefix("/static/", fs))
 		http.HandleFunc("/", basicAuth(serveTemplate))
+		http.HandleFunc("/license", serverLicense)
+		http.HandleFunc("/tree", basicAuth(serveTree))
 		http.HandleFunc("/data", basicAuth(dataHandler))
 		http.ListenAndServe(":8080", nil)
 		log.Println("Editor now accepting connections on 0.0.0.0:8080")
@@ -80,6 +85,39 @@ func basicAuth(next http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
+func serverLicense(w http.ResponseWriter, r *http.Request) {
+	buf, _ := ioutil.ReadFile("LICENSE")
+	w.Write(buf)
+}
+func make_file_tree(path []string, list map[string]interface{}) map[string]interface{} {
+	if _, ok := list[path[0]]; !ok {
+		if strings.HasSuffix(path[0], ".yml") || strings.HasSuffix(path[0], ".yaml") {
+			list[path[0]] = path[0]
+			return list
+		}
+		list[path[0]] = make(map[string]interface{})
+		return list
+	} else {
+		k := list[path[0]].(map[string]interface{})
+		list[path[0]] = make_file_tree(path[1:], k)
+		return list
+	}
+}
+func serveTree(w http.ResponseWriter, r *http.Request) {
+	files := make(map[string]interface{})
+	filepath.Walk("data", func(path string, info fs.FileInfo, err error) error {
+		parts := strings.Split(path, "/")
+		files = make_file_tree(parts[0:], files)
+		return nil
+	})
+	buf, err := json.Marshal(files)
+	ErrorCheck(err)
+	if err != nil {
+		w.WriteHeader(500)
+	}
+	w.Write(buf)
+
+}
 func serveTemplate(w http.ResponseWriter, r *http.Request) {
 	fn := filepath.Clean(r.URL.Path)
 	if fn == "/" {

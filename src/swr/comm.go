@@ -20,6 +20,7 @@ package swr
 import (
 	"io/ioutil"
 	"log"
+	"sort"
 	"strings"
 	"time"
 
@@ -66,6 +67,8 @@ var CommandFuncs = map[string]func(Entity, ...string){
 	"do_examine":        do_examine,
 	"do_equip":          do_equip,
 	"do_remove":         do_remove,
+	"do_statsys":        do_statsys,
+	"do_commands":       do_commands,
 }
 var GMCommandFuncs = map[string]func(Entity, ...string){
 	"do_area_create": do_area_create,
@@ -176,5 +179,37 @@ func do_command(entity Entity, input string) {
 			player.LastCommand = input
 		}
 	}
+}
 
+func do_commands(entity Entity, args ...string) {
+	if entity == nil {
+		return
+	}
+	if !entity.IsPlayer() {
+		return
+	}
+	entity.Send("\r\n%s\r\n", MakeTitle("Commands", ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_CENTER))
+	entity.Send("&wFor more information, type &yhelp &Y<command>&d\r\n")
+	c := make([]string, 0)
+	for _, com := range Commands {
+		if com.Level > entity.GetCharData().Level {
+			continue
+		}
+		c = append(c, com.Name)
+	}
+	sort.Strings(c)
+	idx := 0
+	buf := ""
+	for {
+		buf += sprintf(" &W%-16s&g |&d", c[idx])
+		idx++
+		if idx%4 == 0 && idx > 0 {
+			buf += "\r\n"
+		}
+		if idx == len(c) {
+			break
+		}
+	}
+	entity.Send(buf)
+	entity.Send("&d\r\n")
 }

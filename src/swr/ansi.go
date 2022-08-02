@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"math"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -390,9 +391,9 @@ func MakeTitle(title string, style int, alignment int) string {
 		cap_left = "["
 		cap_right = "]"
 	default:
-		t = strings.Repeat("══", 38) + "═"
-		cap_left = "("
-		cap_right = ")"
+		t = "+----------------------------------------------------------------------------+"
+		cap_left = "["
+		cap_right = "]"
 	}
 	offset := 0
 	title_length := len(title)
@@ -445,6 +446,40 @@ func MakeProgressBar(value int, max int, size int) string {
 			}
 		} else {
 			ret += "▪"
+		}
+	}
+	ret += ""
+	return ret
+}
+func MakeTunerBar(freq string, size int) string {
+	max := 400.0
+	value, err := strconv.ParseFloat(freq, 64)
+	value -= 100.0 // bands the value to 0-400  (freq is 100-500mhz)
+	ErrorCheck(err)
+	if err != nil {
+		return ""
+	}
+	percent := float64(value) / float64(max)
+	size_percent := float64(size) * percent
+	cap := int(math.Floor(size_percent))
+	if cap >= size {
+		cap = size - 1
+	}
+	ret := ""
+	for i := 0; i < size; i++ {
+		if i == cap {
+			ret += "█"
+		} else {
+			switch i % 4 {
+			case 0:
+				ret += "&x.&d"
+			case 1:
+				ret += "&x*&d"
+			case 2:
+				ret += "&x'&d"
+			case 3:
+				ret += "&x*&d"
+			}
 		}
 	}
 	ret += ""

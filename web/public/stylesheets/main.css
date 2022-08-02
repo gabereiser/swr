@@ -143,12 +143,11 @@ input {
 }
 #editor { 
     visibility: hidden;
-    width:70vw;
     height:100vh;
     position: relative;
     font-family: DOS, 'Courier New', Courier, monospace;
     font-size: 16px;
-    top: 0;
+    top: 16px;
     left: 0;
     bottom: 30px;
     right: 0;

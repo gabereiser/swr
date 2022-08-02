@@ -24,8 +24,9 @@ import (
 )
 
 type MobSpawn struct {
-	Mob  uint `yaml:"mob"`
-	Room uint `yaml:"room"`
+	Mob    uint   `yaml:"mob"`
+	Room   uint   `yaml:"room"`
+	entity Entity `yaml:"-"`
 }
 
 type ItemSpawn struct {
@@ -46,6 +47,7 @@ type AreaData struct {
 
 type RoomData struct {
 	Id        uint                     `yaml:"id"`
+	ship      uint                     `yaml:"shipId,omitempty"`
 	Name      string                   `yaml:"name"`
 	Desc      string                   `yaml:"desc,flow"`
 	Exits     map[string]uint          `yaml:"exits,flow"`
@@ -65,9 +67,6 @@ type RoomExitFlag struct {
 func (r *RoomData) String() string {
 	return fmt.Sprintf("ROOM:[%d-%s]", r.Id, r.Name)
 }
-func (r *RoomData) GetEntities() []Entity {
-	return DB().GetEntitiesInRoom(r.Id)
-}
 func (r *RoomData) HasExit(direction string) bool {
 	if _, ok := r.Exits[direction]; ok {
 		return true
@@ -77,6 +76,10 @@ func (r *RoomData) HasExit(direction string) bool {
 
 func (r *RoomData) AddItem(item Item) {
 	r.Items = append(r.Items, item)
+}
+
+func (r *RoomData) ShipId() uint {
+	return r.ship
 }
 func (r *RoomData) RemoveItem(item Item) {
 	idx := -1
@@ -120,13 +123,13 @@ func (r *RoomData) GetExitFlags(direction string) *RoomExitFlag {
 }
 
 func (r *RoomData) GetExitRoom(direction string) *RoomData {
-	if _, ok := r.Exits[direction]; ok {
-		return DB().GetRoom(r.Exits[direction])
+	if rid, ok := r.Exits[direction]; ok {
+		return DB().GetRoom(rid, r.ShipId())
 	}
 	return nil
 }
 
-func (r *RoomData) OpenDoor(entity Entity, direction string) {
+func (r *RoomData) OpenDoor(entity Entity, direction string, silent bool) {
 	flags := r.GetExitFlags(direction)
 	to_room := r.GetExitRoom(direction)
 	if to_room == nil {
@@ -137,35 +140,50 @@ func (r *RoomData) OpenDoor(entity Entity, direction string) {
 	}
 	if flags.Closed {
 		if flags.Locked && entity != nil {
-			if !r.UnlockDoor(entity, direction) {
-				entity.Send("\r\n&YIt's locked.&d\r\n")
+			if !r.UnlockDoor(entity, direction, silent) {
+				if !silent {
+					entity.Send("\r\n&YIt's locked.&d\r\n")
+				}
 			}
-			return // make them call open again after it's unlocked.
+			return
 		}
 		flags.Closed = false
 		flags.Locked = false // just in-case this is called with a nil entity, the system wants to open the door.
-		if entity != nil {
-			entity.Send("\r\n&GYou open the door.&d\r\n")
+		if entity != nil && !silent {
+			entity.Send("\r\nThe door slides open.\r\n")
 		}
 		// schedule a closing of the door 15 seconds from now
 		ScheduleFunc(func() {
-			// nil Entity because no one closes it, the system does.
-			r.CloseDoor(nil, direction)
+			flags.Closed = true
+			r.SendToRoom(sprintf("\r\nThe door to the %s slides closed.\r\n", direction))
 		}, false, 15)
 
-		// tell others the door is open
-		for _, e := range r.GetEntities() {
-			if e != nil {
-				if e != entity {
-					e.Send("\r\nThe door to the %s opens.\r\n", direction)
+		r.SendToOthers(entity, sprintf("\r\nThe door to the %s slides open.\r\n", direction))
+		tflags := to_room.GetExitFlags(direction_reverse(direction))
+		if tflags != nil {
+			if tflags.Closed {
+				was_locked := (tflags.Key != 0) // keys set on doors are always lockable.
+				if tflags.Locked {
+					tflags.Locked = false
 				}
+				tflags.Closed = false
+				to_room.SendToOthers(entity, sprintf("\r\nThe door to the %s slides open.\r\n", direction_reverse(direction)))
+				ScheduleFunc(func() {
+					tflags.Closed = true
+					tflags.Locked = was_locked
+					to_room.SendToRoom(sprintf("\r\nThe door to the %s slides closed.\r\n", direction_reverse(direction)))
+				}, false, 15)
 			}
 		}
-		to_room.OpenDoor(nil, direction_reverse(direction))
+
+	} else {
+		if entity != nil && !silent {
+			entity.Send("\r\nIt's already open.\r\n")
+		}
 	}
 }
 
-func (r *RoomData) CloseDoor(entity Entity, direction string) {
+func (r *RoomData) CloseDoor(entity Entity, direction string, silent bool) {
 	flags := r.GetExitFlags(direction)
 	to_room := r.GetExitRoom(direction)
 	if to_room == nil {
@@ -176,21 +194,26 @@ func (r *RoomData) CloseDoor(entity Entity, direction string) {
 	}
 	if !flags.Closed {
 		flags.Closed = true
-		if entity != nil {
-			entity.Send("\r\n&GYou close the door.&d\r\n")
+		if entity != nil && !silent {
+			entity.Send("\r\nThe door slides closed.\r\n")
 		}
-		for _, e := range r.GetEntities() {
-			if e != nil {
-				if e != entity {
-					e.Send("\r\nThe door to the %s closes.\r\n", direction)
-				}
+		r.SendToRoom(sprintf("\r\nThe door to the %s slides closed.\r\n", direction))
+		tflags := to_room.GetExitFlags(direction_reverse(direction))
+		if tflags != nil {
+			if !tflags.Closed {
+				tflags.Closed = true
+				tflags.Locked = (tflags.Key != 0) // keys set on doors are always lockable.
+				to_room.SendToRoom(sprintf("\r\nThe door to the %s slides closed.\r\n", direction_reverse(direction)))
 			}
 		}
-		to_room.CloseDoor(nil, direction_reverse(direction))
+	} else {
+		if entity != nil && !silent {
+			entity.Send("\r\nIt's already closed.\r\n")
+		}
 	}
 }
 
-func (r *RoomData) UnlockDoor(entity Entity, direction string) bool {
+func (r *RoomData) UnlockDoor(entity Entity, direction string, silent bool) bool {
 	flags := r.GetExitFlags(direction)
 	to_room := r.GetExitRoom(direction)
 	if to_room == nil {
@@ -206,16 +229,26 @@ func (r *RoomData) UnlockDoor(entity Entity, direction string) bool {
 				entity.Send("\r\n&RYou don't have the key.&d\r\n")
 				return false
 			}
-			entity.Send("\r\n&YYou unlock the door.&d\r\n")
+			if !silent {
+				entity.Send("\r\n&YYou hear a clunk as you unlock the door.&d\r\n")
+			}
 			ScheduleFunc(func() {
-				// nil Entity because no one closes it, the system does.
-				r.CloseDoor(nil, direction)
-				r.LockDoor(nil, direction, key)
+				flags.Locked = true
 			}, false, 15)
 		}
 		flags.Locked = false
-		to_room.UnlockDoor(nil, direction_reverse(direction))
+		tflags := to_room.GetExitFlags(direction_reverse(direction))
+		was_locked := (tflags.Key != 0) // keys set on doors are always lockable...
+		if tflags.Locked {
+			tflags.Locked = false
+			ScheduleFunc(func() {
+				tflags.Locked = was_locked
+			}, false, 15)
+		}
 		return true
+	}
+	if entity != nil && !silent {
+		entity.Send("\r\n&RIt's unlocked.&d\r\n")
 	}
 	return false
 }
@@ -225,17 +258,36 @@ func (r *RoomData) LockDoor(entity Entity, direction string, key Item) {
 	if flags == nil {
 		return
 	}
-	flags.Closed = true
+	if !flags.Closed {
+		r.CloseDoor(entity, direction, false)
+	}
 	flags.Locked = true
 	flags.Key = key.GetTypeId()
 	if entity != nil {
-		entity.Send("\r\n&YYou lock the door with %s %s.&d\r\n", get_preface_for_name(key.GetData().Name), key.GetData().Name)
+		entity.Send("\r\n&YWith a clunk you lock the door with %s %s.&d\r\n", get_preface_for_name(key.GetData().Name), key.GetData().Name)
 	}
 }
 
 func (r *RoomData) SendToRoom(message string) {
-	for _, e := range r.GetEntities() {
+	for _, e := range DB().GetEntitiesInRoom(r.Id, r.ShipId()) {
 		if e == nil {
+			continue
+		}
+		if entity_unspeakable_state(e) {
+			continue
+		}
+		e.Send(message)
+	}
+}
+func (r *RoomData) SendToOthers(entity Entity, message string) {
+	for _, e := range DB().GetEntitiesInRoom(r.Id, r.ShipId()) {
+		if e == nil {
+			continue
+		}
+		if e == entity {
+			continue
+		}
+		if entity_unspeakable_state(e) {
 			continue
 		}
 		e.Send(message)
@@ -267,7 +319,7 @@ func area_reset(area *AreaData) {
 	}
 	for _, r := range area.Rooms {
 		room_id := r.Id
-		room := db.GetRoom(room_id)
+		room := db.GetRoom(room_id, 0)
 		if room == nil {
 			log.Printf("Error: roomId %d doesn't exist! area_reset(%s)", room_id, area.Name)
 			continue
@@ -291,16 +343,11 @@ func area_reset(area *AreaData) {
 		for _, i := range rem_items {
 			room.RemoveItem(i)
 		}
-		for _, e := range room.GetEntities() {
-			if e != nil {
-				if e.IsPlayer() {
-					e.Send("\r\n&d%s&d\r\n", area.ResetMsg)
-				}
-			}
-		}
+
+		room.SendToRoom(sprintf("\r\n&d%s&d\r\n", area.ResetMsg))
 	}
 	for _, spawn := range area.Items {
-		room := db.GetRoom(spawn.Room)
+		room := db.GetRoom(spawn.Room, 0)
 		item := db.GetItem(spawn.Item)
 		exists := false
 		for _, i := range room.Items {
@@ -314,36 +361,32 @@ func area_reset(area *AreaData) {
 			room.AddItem(item_clone(item))
 		}
 	}
-	for _, spawn := range area.Mobs {
-		mob := db.GetMob(spawn.Mob)
-		exists := false
-		for _, e := range db.GetEntitiesInRoom(spawn.Room) {
-			if e == nil {
+	for i := range area.Mobs {
+		spawn := area.Mobs[i]
+		mob := db.GetMob(spawn.Mob) // grabs the mob template
+		if spawn.entity != nil {    // checks to see if we have a managed entity
+			if spawn.entity.GetCharData().State == ENTITY_STATE_DEAD { // is it dead?
+				log.Printf("Removing dead entity %s\n", spawn.entity.GetCharData().Name)
+				db.RemoveEntity(spawn.entity)
+				spawn.entity = nil // nil it out so we create a new one...
+			} else {
 				continue
-			}
-			if e.IsPlayer() {
-				continue
-			}
-			if e.GetCharData().Id == mob.GetCharData().Id || e.GetCharData().OId == mob.GetCharData().Id {
-				exists = true
 			}
 		}
-		if !exists {
-			m := db.SpawnEntity(mob)
-			m.GetCharData().Room = spawn.Room
-			if mob.GetCharData().AI == nil {
-				m.GetCharData().AI = MakeGenericBrain(m)
-				m.GetCharData().AI.OnSpawn()
-				for _, e := range db.GetEntitiesInRoom(spawn.Room) {
-					if e == nil {
-						continue
-					}
-					if e != m {
-						m.GetCharData().AI.OnGreet(e)
-					}
+		if spawn.entity == nil {
+			log.Printf("Nil entity for spawn, spawning %s\n", mob.GetCharData().Name)
+			spawn.entity = db.SpawnEntity(mob)
+			spawn.entity.GetCharData().Room = spawn.Room
+			for _, e := range db.GetEntitiesInRoom(spawn.entity.GetCharData().Room, spawn.entity.GetCharData().Ship) {
+				if e == nil {
+					continue
+				}
+				if e.GetCharData().Id != spawn.entity.GetCharData().Id {
+					spawn.entity.GetCharData().AI.OnGreet(e)
 				}
 			}
 		}
+		area.Mobs[i] = spawn
 	}
 	ScheduleFunc(func() {
 		area_reset(area)
@@ -386,7 +429,7 @@ func get_direction_string(direction string) string {
 }
 
 func room_prog_exec(entity Entity, evt string, any ...interface{}) {
-	room := DB().GetRoom(entity.RoomId())
+	room := DB().GetRoom(entity.RoomId(), entity.ShipId())
 	if pg, ok := room.RoomProgs[evt]; ok {
 		vm := mud_prog_init(entity)
 		mud_prog_bind(vm, any...)

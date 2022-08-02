@@ -190,6 +190,16 @@
   keywords: [ "remove", "unwield", "unequip" ]
   level: 1
   func: do_remove
+- 
+  name: statsys
+  keywords: [ "statsys" ]
+  level: 1
+  func: do_statsys
+- 
+  name: commands
+  keywords: [ "commands" ]
+  level: 1
+  func: do_commands
 
 # Wiz Commands
 -

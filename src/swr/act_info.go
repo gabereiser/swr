@@ -133,13 +133,13 @@ func do_examine(entity Entity, args ...string) {
 		return
 	}
 	object_name := args[0]
-	room := DB().GetRoom(entity.RoomId())
+	room := DB().GetRoom(entity.RoomId(), entity.ShipId())
 	object := entity.FindItem(object_name)
 	if object == nil {
 		object = room.FindItem(object_name)
 	}
 	if object == nil {
-		for _, e := range room.GetEntities() {
+		for _, e := range DB().GetEntitiesInRoom(room.Id, entity.ShipId()) {
 			if strings.HasPrefix(e.GetCharData().Name, object_name) {
 				entity.Send("You look at %s and see...\r\n%s\r\n", e.GetCharData().Name, e.GetCharData().Desc)
 				entity.Send("&YEquipment:\r\n-------------------------------------&d\r\n")
@@ -206,7 +206,7 @@ func do_equip(entity Entity, args ...string) {
 	entity.GetCharData().Equipment[wearLoc] = data
 	entity.Send("\r\n&YYou equip %s %s&d\r\n", get_preface_for_name(data.Name), data.Name)
 	entity.GetCharData().RemoveItem(item)
-	others := DB().GetEntitiesInRoom(entity.RoomId())
+	others := DB().GetEntitiesInRoom(entity.RoomId(), entity.ShipId())
 	for _, e := range others {
 		if e == nil {
 			continue
@@ -244,7 +244,7 @@ func do_remove(entity Entity, args ...string) {
 		delete(ch.Equipment, *item.GetData().WearLoc)
 	}
 	data := item.GetData()
-	others := DB().GetEntitiesInRoom(entity.RoomId())
+	others := DB().GetEntitiesInRoom(entity.RoomId(), entity.ShipId())
 	for _, e := range others {
 		if e == nil {
 			continue

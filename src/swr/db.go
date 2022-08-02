@@ -59,8 +59,8 @@ type GameDatabase struct {
 	mobs            map[uint]*CharData   // used as templates for spawning [entities]
 	items           map[uint]*ItemData   // used as templates for spawning [items]
 	ships           []Ship
-	ship_prototypes map[string]*ShipData // used as templates for spawning [ships]
-	starsystems     []Starsystem         // Planets (star systems)
+	ship_prototypes map[uint]*ShipData // used as templates for spawning [ships]
+	starsystems     []Starsystem       // Planets (star systems)
 	helps           []*HelpData
 }
 
@@ -76,7 +76,7 @@ func DB() *GameDatabase {
 		_db.mobs = make(map[uint]*CharData)
 		_db.items = make(map[uint]*ItemData)
 		_db.ships = make([]Ship, 0)
-		_db.ship_prototypes = make(map[string]*ShipData)
+		_db.ship_prototypes = make(map[uint]*ShipData)
 		_db.starsystems = make([]Starsystem, 0)
 		_db.helps = make([]*HelpData, 0)
 		log.Printf("Database Started.")
@@ -119,6 +119,9 @@ func (d *GameDatabase) RemoveClient(client *MudClient) {
 }
 
 func (d *GameDatabase) RemoveEntity(entity Entity) {
+	if entity == nil {
+		return
+	}
 	index := -1
 	for i, e := range d.entities {
 		if e == nil {
@@ -135,6 +138,25 @@ func (d *GameDatabase) RemoveEntity(entity Entity) {
 		d.entities = ret
 	} else {
 		ErrorCheck(Err(fmt.Sprintf("Can't find entity %s", entity.GetCharData().Name)))
+	}
+}
+func (d *GameDatabase) RemoveShip(ship Ship) {
+	index := -1
+	for i, s := range d.ships {
+		if s == nil {
+			continue
+		}
+		if s == ship {
+			index = i
+		}
+	}
+	if index > -1 {
+		ret := make([]Ship, len(d.ships)-1)
+		ret = append(ret, d.ships[:index]...)
+		ret = append(ret, d.ships[index+1:]...)
+		d.ships = ret
+	} else {
+		ErrorCheck(Err(fmt.Sprintf("Can't find ship %s", ship.GetData().Name)))
 	}
 }
 
@@ -362,32 +384,89 @@ func (d *GameDatabase) AddEntity(entity Entity) {
 	d.entities = append(d.entities, entity)
 }
 
+func (d *GameDatabase) AddShip(ship Ship) {
+	d.Lock()
+	defer d.Unlock()
+	d.ships = append(d.ships, ship)
+}
+
 func (d *GameDatabase) SpawnEntity(entity Entity) Entity {
 	e := entity_clone(entity)
+	e.GetCharData().State = ENTITY_STATE_NORMAL
+	if e.GetCharData().AI == nil {
+		e.GetCharData().AI = MakeGenericBrain(e)
+		e.GetCharData().AI.OnSpawn()
+	}
 	d.AddEntity(e)
 	return e
 }
 
-func (d *GameDatabase) GetEntitiesInRoom(roomId uint) []Entity {
+func (d *GameDatabase) SpawnShip(ship Ship) Ship {
+	s := ship_clone(ship)
+	d.AddShip(s)
+	return s
+}
+
+func (d *GameDatabase) GetShip(shipId uint) Ship {
+	for _, ship := range d.ships {
+		if ship.GetData().Id == shipId {
+			return ship
+		}
+	}
+	return nil
+}
+func (d *GameDatabase) GetShipsInSystem(system string) []Ship {
+	ret := make([]Ship, 0)
+	for _, ship := range d.ships {
+		s := ship.GetData()
+		if s.CurrentSystem == system {
+			if s.InSpace {
+				ret = append(ret, ship)
+			}
+		}
+	}
+	return ret
+}
+func (d *GameDatabase) GetEntity(entity Entity) Entity {
+	for _, e := range d.entities {
+		if e == entity {
+			return e
+		}
+	}
+	return nil
+}
+func (d *GameDatabase) GetEntitiesInRoom(roomId uint, shipId uint) []Entity {
 	ret := make([]Entity, 0)
 	for _, entity := range d.entities {
 		if entity == nil {
 			continue
 		}
-		if entity.RoomId() == roomId {
+		if entity.RoomId() == roomId && entity.ShipId() == shipId {
 			ret = append(ret, entity)
 		}
 	}
 	return ret
 }
 
-func (d *GameDatabase) GetRoom(roomId uint) *RoomData {
-	for _, r := range d.rooms {
-		if r == nil {
-			continue
+func (d *GameDatabase) GetRoom(roomId uint, shipId uint) *RoomData {
+	if shipId > 0 {
+		for _, s := range d.ships {
+			if s.GetData().Id == shipId {
+				for _, r := range s.GetData().Rooms {
+					if r.Id == roomId {
+						return r
+					}
+				}
+			}
 		}
-		if r.Id == roomId {
-			return r
+	} else {
+		for _, r := range d.rooms {
+			if r == nil {
+				continue
+			}
+			if r.Id == roomId {
+				return r
+			}
 		}
 	}
 	return nil

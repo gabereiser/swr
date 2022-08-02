@@ -5,7 +5,6 @@
 	<meta charset="UTF-8">
 	<meta name="description" content="SWR Editor">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' cdnjs.cloudflare.com; connect-src 'self'; img-src 'self'; style-src 'self' 'unsafe-inline'; base-uri 'self'; form-action 'self'">
 	<title>{{template "title"}}</title>
 	<link rel="stylesheet" href="/static/stylesheets/main.css">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/yamljs/0.3.0/yaml.min.js" integrity="sha512-f/K0Q5lZ1SrdNdjc2BO2I5kTx8E5Uw1EU3PhSUB9fYPohap5rPWEmQRCjtpDxNmQB4/+MMI/Cf+nvh1VSiwrTA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -17,51 +16,59 @@
 			<a href="#" class="menu-button">File</a>
 			<div class="nav-content file-menu">
 				<a href="#" onclick="new_file();">New</a>
+				<hr>
 				<a href="#" onclick="open_file();">Open Local File</a>
-				<a href="#">Save</a>
-				<a href="#">Save As</a>
-				<a href="#">Quit</a>
+				<a href="#" onclick="save_file();">Save</a>
+				<hr>
+				<a href="#" onclick="quit();">Quit</a>
 			</div>
 		</div>
 		<div class="nav">
 			<a href="#" class="menu-button">Create</a>
 			<div class="nav-content create-menu">
-				<a href="#">Star System</a>
-				<a href="#">Area</a>
-				<a href="#">Entity</a>
-				<a href="#">Item</a>
-				<a href="#">Shop</a>
-				<a href="#">Ship</a>
+				<a href="#" onclick="create_star_system();">Star System</a>
+				<hr>
+				<a href="#" onclick="create_area();">Area</a>
+				<a href="#" onclick="create_entity();">Entity</a>
+				<a href="#" onclick="create_item();">Item</a>
+				<a href="#" onclick="create_shop();">Shop</a>
+				<a href="#" onclick="create_ship();">Ship</a>
 			</div>
 		</div>
 		<div class="nav">
 			<a href="#" class="menu-button">Find</a>
 			<div class="nav-content find-menu">
-				<a href="#">Player</a>
-				<a href="#">Star System</a>
-				<a href="#">Area</a>
-				<a href="#">Entity</a>
-				<a href="#">Item</a>
-				<a href="#">Shop</a>
-				<a href="#">Ship</a>
+				<a href="#" onclick="find_player();">Player</a>
+				<hr>
+				<a href="#" onclick="find_star_system();">Star System</a>
+				<hr>
+				<a href="#" onclick="find_area();">Area</a>
+				<a href="#" onclick="find_entity();">Entity</a>
+				<a href="#" onclick="find_item();">Item</a>
+				<a href="#" onclick="find_shop();">Shop</a>
+				<a href="#" onclick="find_ship();">Ship</a>
 			</div>
 		</div>
 		<div class="nav">
 			<a href="#" class="menu-button">Server</a>
 			<div class="nav-content server-menu">
-				<a href="#">Options</a>
-				<a href="#">Preferences</a>
-				<a href="#" class="disabled">Restrict</a>
-				<a href="#" class="disabled">Restart</a>
-				<a href="#" class="disabled">Shutdown</a>
+				<a href="#" onclick="server_options();">Options</a>
+				<a href="#" onclick="server_preferences();">Preferences</a>
+				<hr>
+				<a href="#" onclick="server_restrict();">Restrict</a>
+				<a href="#" onclick="server_restart();">Restart</a>
+				<hr>
+				<a href="#" onclick="server_logs();">Logs</a>
+				<hr>
+				<a href="#" onclick="server_shutdown();">Shutdown</a>
 			</div>
 		</div>
 		<div class="nav">
 			<a href="#" class="menu-button">Help</a>
 			<div class="nav-content help-menu">
-				<a href="#" onclick="menu_about();">About</a>
-				<a href="#">License</a>
-				<a href="#">Sources</a>
+				<a href="#" onclick="help_about();">About</a>
+				<a href="/license" target="_blank">License</a>
+				<a href="https://github.com/gabereiser/swr" target="_blank">Sources</a>
 			</div>
 		</div>
 	</div>

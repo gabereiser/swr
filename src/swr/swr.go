@@ -21,9 +21,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 func Init() {
+	random_seed(time.Now().Unix())
 	// Ensure that the player directories exists
 	for _, p := range "abcdefghijklmnopqrstuvwxyz" {
 		_ = os.MkdirAll(fmt.Sprintf("data/accounts/%s", string(p)), 0755)

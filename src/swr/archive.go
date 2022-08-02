@@ -69,7 +69,7 @@ func DoBackup(t time.Time) {
 		_, err := exec.Command("tar", "-cJf", fmt.Sprintf("backup/%s.tar.xz", t.Format("2006_01_02_15_04_05")), "data").Output()
 		ErrorCheck(err)
 	}
-
+	runtime.GC()
 	log.Printf("***** BACKUP COMPLETE *****\r\n")
 }
 

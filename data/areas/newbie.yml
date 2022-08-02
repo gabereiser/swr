@@ -3,7 +3,7 @@ name: newbie
 desc: Newbie Area
 author: Admin
 levels: [1, 10]
-reset: 300
+reset: 120
 reset_msg: You feel unsteady as the spaceship lurches slightly.
 rooms: 
   -
@@ -55,20 +55,23 @@ rooms:
     flags: []
     roomProgs:
        say: |
-          if ($s == '1') {
-            transfer($me, 103);
-            look();
-          } else if ($s == 'B1') {
-            transfer($me, 104);
-            look();
-          } else if ($s == 'B2') {
-            transfer($me, 105);
-            look();
-          } else if ($s == 'B3') {
-            transfer($me, 101);
-            look();
-          } else if ($s == '2') {
-            echo("&RAccess is restricted.&d");
+          {
+            var s = $s.toLowerCase();
+            if (s == '1') {
+              transfer($me, 103);
+              look();
+            } else if (s == 'b1') {
+              transfer($me, 104);
+              look();
+            } else if (s == 'b2') {
+              transfer($me, 105);
+              look();
+            } else if (s == 'b3') {
+              transfer($me, 101);
+              look();
+            } else if (s == '2') {
+              echo("&RAccess is restricted.&d");
+            }
           }
   -
     id: 103

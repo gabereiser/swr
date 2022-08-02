@@ -1,0 +1,30 @@
+---
+name: Comlinks
+keywords: ["comlink", "comsay", "tune"]
+level: 1
+desc: |
+  &wSWR has a unique radio system. Unlike other muds that have channels, we
+  have a space radio! Frequencies can be tuned using the &ytune&w command.
+
+  Our radios support frequencies in the ranges of 100.000mhz to 500.000mhz
+  in 250khz increments. (100.000mhz, 100.250mhz, 100.500mhz...)
+
+  Your comlink has a bar on it that shows where in the frequency bands your
+  comlink is tuned to. It looks like this...
+
+  &G----[&W█&x*'*.*'*.*'*.*'*.*'*.*'*.*'*.*'*.*'*.*'*.*'*.*'*.*&G]----&w
+
+  This is 100.000mhz, the bottom of the band.
+
+  &G----[&x*'*.*'*.*'*.*'*.*'*.*'*.*'*.*'*.*'*.*'*.*'*.*'*.*&W█&G]----&w
+
+  This is 500.000mhz, the top of the band.
+
+  Common bands form channels. Here's our list of common channels:
+
+  - Newbie        (100.000mhz)
+  - General OOC   (200.000mhz)
+  - GM/Admin Help (500.000mhz)
+  - Imperial News (300.000mhz)
+  - Rebel Radio   (250.000mhz)
+  - Trade Network (400.000mhz)

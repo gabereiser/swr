@@ -25,6 +25,11 @@ import (
 
 func do_say(entity Entity, args ...string) {
 	words := strings.Join(args, " ")
+	words = strings.TrimSpace(words)
+	if words == "" {
+		entity.Send("\r\n&RSay what?&d\r\n")
+		return
+	}
 	speaker := entity.GetCharData()
 	if entity_unspeakable_state(entity) {
 		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
@@ -33,7 +38,7 @@ func do_say(entity Entity, args ...string) {
 	if entity.IsPlayer() {
 		entity.Send("You say \"%s\"\n", words)
 	}
-	entities := DB().GetEntitiesInRoom(speaker.RoomId())
+	entities := DB().GetEntitiesInRoom(speaker.RoomId(), speaker.ShipId())
 	for _, ex := range entities {
 		if ex == nil {
 			continue
@@ -58,6 +63,10 @@ func do_say(entity Entity, args ...string) {
 
 func do_shout(entity Entity, args ...string) {
 	words := strings.Join(args, " ")
+	words = strings.TrimSpace(words)
+	if words == "" {
+		entity.Send("\r\n&RShout what?&d\r\n")
+	}
 	speaker := entity.GetCharData()
 	if entity_unspeakable_state(entity) {
 		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
@@ -81,8 +90,8 @@ func yell(entity Entity, words string, roomId uint, dist uint, visited []uint) {
 	}
 	if !visited_already {
 		speaker := entity.GetCharData()
-		room := DB().GetRoom(roomId)
-		for _, ex := range room.GetEntities() {
+		room := DB().GetRoom(roomId, speaker.Ship)
+		for _, ex := range DB().GetEntitiesInRoom(room.Id, speaker.Ship) {
 			if ex == nil {
 				continue
 			}
@@ -112,7 +121,7 @@ func do_emote(entity Entity, args ...string) {
 		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
 		return
 	}
-	entities := DB().GetEntitiesInRoom(speaker.RoomId())
+	entities := DB().GetEntitiesInRoom(speaker.Room, speaker.Ship)
 	for _, ex := range entities {
 		if ex == nil {
 			continue
@@ -127,10 +136,18 @@ func do_emote(entity Entity, args ...string) {
 }
 func do_say_comlink(entity Entity, args ...string) {
 	words := strings.Join(args, " ")
+	words = strings.TrimSpace(words)
 	speaker := entity.GetCharData()
 	speaker_freq := entity.(*PlayerProfile).Frequency
 	if entity_unspeakable_state(entity) {
 		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
+		return
+	}
+	if words == "" {
+		entity.Send("\r\n%s\r\n", MakeTitle("Comlink Status", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
+		entity.Send("&GComlink&d: %-32s\r\n\r\n", "PIC//113 Kuat Systems Intercom")
+		entity.Send("&G----[&W%s&G]----&d\r\n", MakeTunerBar(speaker_freq, 50))
+		entity.Send("&G Freq&d: &Y%s mhz&d\r\n", speaker_freq)
 		return
 	}
 	if entity.IsPlayer() {
