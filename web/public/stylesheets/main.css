@@ -144,15 +144,42 @@ input {
 #editor { 
     visibility: hidden;
     height:100vh;
-    position: relative;
+    position: absolute;
     font-family: DOS, 'Courier New', Courier, monospace;
     font-size: 16px;
     top: 16px;
-    left: 0;
+    left: 20vw;
     bottom: 30px;
     right: 0;
     background: #000000;
     color: #aaaaaa;
+}
+#map { 
+    visibility: visible;
+    height:100vh;
+    position: absolute;
+    font-family: DOS, 'Courier New', Courier, monospace;
+    font-size: 16px;
+    top: 16px;
+    left: 20vw;
+    bottom: 30px;
+    right: 0;
+    background: #000000;
+    color: #aaaaaa;
+}
+#toggleEditor { 
+    height: 20px;
+    width: 80px;
+    position: absolute;
+    font-family: DOS, 'Courier New', Courier, monospace;
+    font-size: 16px;
+    top: 16px;
+    bottom: 30px;
+    right: 20px;
+    float: right;
+    background: #333333;
+    color: #aaaaaa;
+    z-index:100;
 }
 
 .workspace {

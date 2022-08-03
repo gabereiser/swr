@@ -5,6 +5,22 @@ let file_opts = {
       accept: {'text/plain': ['.yml', '.yaml']},
     }],
 };
+let project = {};
+let currentRoom = null;
+let toggleButton = document.getElementById("toggleEditor");
+toggleButton.onclick = function(event){
+    event.preventDefault();
+    if (map.$el.style.visibility == 'visible') {
+        show_editor();
+    } else {
+        hide_editor();
+    }
+    
+}
+function map_room_clicked(room) {
+    show_room_in_editor(room.id);
+    map.show(project, room);
+}
 function popup_close() {
     let popup = document.getElementById("popup");
     popup.style.visibility = 'hidden';
@@ -17,13 +33,61 @@ function help_about() {
     popup.getElementsByClassName("popup-content")[0].innerHTML="About<br/><br/>SWR Editor<br/>&copy; 2022; All rights reserved.";
     return false;
 }
-
-function new_file() {
+function show_editor() {
     let $editor = document.getElementById("editor");
     $editor.style.visibility = 'visible';
     $editor.style.display = 'block';
-    editor.session.setValue("");
+    map.$el.style.visibility = 'hidden';
+    map.$el.style.display = 'none';
     editor.resize();
+}
+function hide_editor() {
+    let $editor = document.getElementById("editor");
+    $editor.style.visibility = 'hidden';
+    $editor.style.display = 'none';
+    map.$el.style.visibility = 'visible';
+    map.$el.style.display = 'block';
+    map.show(project, currentRoom);
+}
+function make_tree_node(contents, index) {
+    let $node = document.createElement("li");
+    $node.innerHTML = contents;
+    if (index != undefined) {
+        $node.setAttribute("index", index);
+    }
+    return $node;
+}
+function make_tree() {
+    let $rooms = document.createElement("ul");
+    $rooms.style.cursor = "pointer";
+    for (const room of project.rooms) {
+        $n = make_tree_node(room.id);
+        $n.style.cursor = "pointer";
+        $n.onclick = function(event){ 
+            currentRoom = room;
+            event.preventDefault();
+            show_room_in_editor(room.id);
+            map.show(project, room);
+        }
+        $rooms.appendChild($n);
+    }
+    return $rooms;
+}
+function show_room_in_editor(roomId) {
+    console.log(editor.find(`id: ${roomId}`, {range: null}, true));
+    editor.focus();
+}
+function show_project_tree() {
+    let $sidePanel = document.getElementsByClassName("sidepanel")[0];
+    $sidePanel.innerHTML = "";
+
+    let $root = document.createElement("div");
+    $root.id = "treeview";
+    $root.appendChild(make_tree());
+    $sidePanel.appendChild($root);
+}
+function new_file() {
+    show_editor("");
     return false;
 }
 
@@ -31,11 +95,12 @@ async function open_file() {
     [fileHandle] = await window.showOpenFilePicker(file_opts);
     const file = await fileHandle.getFile();
     const contents = await file.text();
-    let $editor = document.getElementById("editor");
+    project = YAML.parse(contents);
+    show_project_tree();
     editor.session.setValue(contents);
-    $editor.style.visibility = 'visible';
-    $editor.style.display = 'block';
-    editor.resize();
+    //show_editor(contents);
+    currentRoom = project.rooms[0];
+    map.show(project, project.rooms[0]);
     filename = file.name;
     return true;
 }
@@ -138,3 +203,5 @@ let editor = ace.edit("editor");
     editor.setShowPrintMargin(false);
     editor.session.setMode("ace/mode/yaml");
     editor.resize();
+
+let map = mapper().new(document.getElementById("map"), map_room_clicked);

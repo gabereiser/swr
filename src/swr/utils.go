@@ -19,11 +19,20 @@ package swr
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
+	"runtime"
 	"strconv"
 	"strings"
 )
 
+func assert(expr bool) {
+	if !expr {
+		buf := make([]byte, 0)
+		runtime.Stack(buf, true)
+		panic(sprintf("%s\n", string(buf)))
+	}
+}
 func bytes_to_mb(b uint64) float64 {
 	return float64(b) / (1024 * 1024)
 }
@@ -157,10 +166,16 @@ func get_preface_for_name(name string) string {
 	}
 	return "a"
 }
+func sqrt32(v float32) float32 {
+	return float32(math.Sqrt(float64(v)))
+}
+func pow32(v float32, i int) float32 {
+	return float32(math.Pow(float64(v), float64(i)))
+}
 
 func distance_between_points(origin []float32, dest []float32) float32 {
-	return 0
+	return sqrt32(pow32(dest[0]-origin[0], 2) + pow32(dest[1]-origin[1], 2)*1.0)
 }
 
 var ZERO_DISTANCE float32 = distance_between_points([]float32{0.0, 0.0}, []float32{0.0, 0.0})
-var MAX_DISTANCE float32 = distance_between_points([]float32{-10000000.0, -10000000.0}, []float32{10000000.0, 10000000.0})
+var MAX_DISTANCE float32 = distance_between_points([]float32{-100000.0, -100000.0}, []float32{100000.0, 100000.0})
