@@ -17,10 +17,52 @@
  */
 package swr
 
-import "strconv"
+import (
+	"log"
+	"strconv"
+	"strings"
+)
 
 func do_area_create(entity Entity, args ...string) {
-
+	if !entity.IsPlayer() {
+		return
+	}
+	if len(args) < 3 {
+		entity.Send("\r\nSyntax: acreate <areaname> <min vnum> <max vnum>\r\n")
+		return
+	}
+	min_vnum, err := strconv.ParseInt(args[1], 10, 32)
+	ErrorCheck(err)
+	max_vnum, err := strconv.ParseInt(args[2], 10, 32)
+	ErrorCheck(err)
+	db := DB()
+	for _, area := range db.areas {
+		for _, r := range area.Rooms {
+			if uint(min_vnum) < r.Id && r.Id < uint(max_vnum) {
+				entity.Send("\r\n&RError! Vnum range already exists!&d\r\n")
+				return
+			}
+		}
+	}
+	area := new(AreaData)
+	area.Name = args[0]
+	area.Author = entity.GetCharData().Name
+	area.Rooms = make([]RoomData, 0)
+	area.Items = make([]ItemSpawn, 0)
+	area.Mobs = make([]MobSpawn, 0)
+	area.Levels = []uint16{1, 100}
+	area.Reset = 300
+	area.ResetMsg = "The world seems to shift around you."
+	for i := min_vnum; i < max_vnum; i++ {
+		room := RoomData{
+			Id:   uint(i),
+			Name: "A void",
+			Desc: "Somewhere in the void of space.",
+		}
+		area.Rooms = append(area.Rooms, room)
+	}
+	db.SaveArea(area)
+	entity.Send("\r\n&GDone&d\r\n")
 }
 
 func do_area_set(entity Entity, args ...string) {
@@ -28,11 +70,29 @@ func do_area_set(entity Entity, args ...string) {
 }
 
 func do_area_remove(entity Entity, args ...string) {
-
+	for i, area := range DB().areas {
+		if strings.EqualFold(area.Name, args[0]) {
+			DB().RemoveArea(DB().areas[i])
+			entity.Send("\r\n&GArea Removed.&d\r\n")
+			return
+		}
+	}
+	entity.Send("\r\n&RArea not found.&d\r\n")
 }
 
 func do_area_reset(entity Entity, args ...string) {
-
+	if len(args) == 0 {
+		DB().ResetAll()
+	} else {
+		for i, area := range DB().areas {
+			if strings.EqualFold(area.Name, args[0]) {
+				area_reset(DB().areas[i])
+				entity.Send("\r\n&YReset. Ok.&d\r\n")
+				return
+			}
+		}
+		entity.Send("\r\n&RArea not found.&d\r\n")
+	}
 }
 
 func do_room_create(entity Entity, args ...string) {
@@ -141,6 +201,41 @@ func do_transfer(entity Entity, args ...string) {
 			e.Send("\r\n&C%s&d has appeared.\r\n")
 			if e.GetCharData().AI != nil {
 				e.GetCharData().AI.OnGreet(entity)
+			}
+		}
+	}
+}
+
+func do_advance(entity Entity, args ...string) {
+	if entity == nil {
+		return
+	}
+	if len(args) == 0 {
+		// we are advancing ourselves...
+		ch := entity.GetCharData()
+		for i := ch.Level; i <= 100; i++ {
+			entity_advance_level(entity)
+		}
+		log.Printf("ADMIN (ADVANCE): %s has been advanced a level!", ch.Name)
+
+	} else {
+		if len(args) > 2 {
+			entity.Send("\r\nSyntax: advance <charactername> <level>")
+			return
+		} else {
+			l, e := strconv.ParseInt(args[1], 10, 32)
+			ErrorCheck(e)
+			if e != nil {
+				entity.Send("\r\n&RUnable to parse <level>&d\r\n")
+				return
+			}
+			p := DB().GetPlayerEntityByName(args[0])
+			if p == nil {
+				entity.Send("\r\n&RUnable to find player %s", args[0])
+				return
+			}
+			for i := p.GetCharData().Level; i <= uint(l); i++ {
+				entity_advance_level(p)
 			}
 		}
 	}

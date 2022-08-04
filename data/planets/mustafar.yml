@@ -1,0 +1,21 @@
+---
+name: Mustafar
+sector: Outer Rim
+grid: L-19
+position: [17.856, -984.675]
+stars:
+  1:
+    name: Mustafar
+    type: Yellow Giant
+    radius: 100
+    position: [0.0, 0.0]
+orbits:
+  1:
+    name: Mustafar
+    type: Volcanic
+    radius: 10  # 10,465km
+    position: [-150, -280]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

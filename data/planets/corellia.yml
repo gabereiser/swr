@@ -1,0 +1,21 @@
+---
+name: Corellia
+sector: Core Worlds
+grid: M-11
+position: [157.553, -186.038]
+stars:
+  1:
+    name: Corellia Prime
+    type: Yellow Giant
+    radius: 120
+    position: [500.0, 1000.0]
+orbits:
+  1:
+    name: Corellia
+    type: Forest
+    radius: 7  # 10,465km
+    position: [0, 0]
+    spaceports: [16000]
+    market:
+      imports: []
+      exports: []

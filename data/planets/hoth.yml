@@ -1,0 +1,21 @@
+---
+name: Hoth
+sector: Outer Rim
+grid: K-18
+position: [-94.755, -858.69]
+stars:
+  1:
+    name: Hoth I
+    type: White Dwarf
+    radius: 30
+    position: [0.0, 0.0]
+orbits:
+  1:
+    name: Hoth
+    type: Ice
+    radius: 7  # 7,465km
+    position: [1050, 2080]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

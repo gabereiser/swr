@@ -1,0 +1,21 @@
+---
+name: Coruscant
+sector: Core Worlds
+grid: K-9
+position: [0,0]
+stars:
+  1:
+    name: Coruscant Prime
+    type: Blue-White B-Class
+    radius: 150
+    position: [-50.0, 50.0]
+orbits:
+  1:
+    name: Coruscant
+    type: City
+    radius: 10  # 10,465km
+    position: [0, 0]
+    spaceports: [2000]
+    market:
+      imports: []
+      exports: []

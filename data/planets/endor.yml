@@ -1,0 +1,21 @@
+---
+name: Endor
+sector: Outer Rim
+grid: K-18
+position: [-343.219, -683.025]
+stars:
+  1:
+    name: Endor
+    type: Yellow-Red Giant
+    radius: 230
+    position: [0.0, 0.0]
+orbits:
+  1:
+    name: Endor
+    type: Forest
+    radius: 6  # 6,465km
+    position: [-600, 180]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

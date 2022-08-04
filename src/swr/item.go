@@ -48,31 +48,32 @@ const (
 )
 
 type ItemData struct {
-	Id         uint     `yaml:"id"`
-	OId        uint     `yaml:"itemId,omitempty"`
-	Name       string   `yaml:"name"`
-	Desc       string   `yaml:"desc"`
-	Keywords   []string `yaml:"keywords,flow"`
-	Type       string   `yaml:"type"`
-	Value      int      `yaml:"value"`
-	Weight     int      `yaml:"weight"`
-	AC         int      `yaml:"ac,omitempty"`
-	WearLoc    *string  `yaml:"wearLoc,omitempty"`
-	WeaponType *string  `yaml:"weaponType,omitempty"`
-	Dmg        *string  `yaml:"dmgRoll,omitempty"`
-	Items      []Item   `yaml:"contains,omitempty,flow"`
+	Id         uint     `yaml:"id"`                      // instance id of the item
+	OId        uint     `yaml:"itemId,omitempty"`        // item type id.
+	Filename   string   `yaml:"-"`                       // filename for this item
+	Name       string   `yaml:"name"`                    // name of the item
+	Desc       string   `yaml:"desc"`                    // description of the item
+	Keywords   []string `yaml:"keywords,flow"`           // keywords for the item
+	Type       string   `yaml:"type"`                    // item type, a value of ITEM_TYPE_* const.
+	Value      int      `yaml:"value"`                   // how much is this item generally worth?
+	Weight     int      `yaml:"weight"`                  // how much does this item weigh?
+	AC         int      `yaml:"ac,omitempty"`            // If armor, what's the AC (common AC values are 1-8 for torso, 2-3 for hands/head/feet, 0-1 for waist)
+	WearLoc    *string  `yaml:"wearLoc,omitempty"`       // where is this item worn? nil means it's not wearable.
+	WeaponType *string  `yaml:"weaponType,omitempty"`    // weapon type from ITEM_WEAPON_TYPE_* const, nil means it's not a weapon.
+	Dmg        *string  `yaml:"dmgRoll,omitempty"`       // Damage roll represented by a D20 compatible string. Weapons do damage.
+	Items      []Item   `yaml:"contains,omitempty,flow"` // If item type is "container", then this is the list of stored items.
 }
 
 type Item interface {
-	GetId() uint
-	GetTypeId() uint
-	GetData() *ItemData
-	GetKeywords() []string
-	IsWeapon() bool
-	IsContainer() bool
-	IsWearable() bool
-	IsCorpse() bool
-	GetWeight() int
+	GetId() uint           // instance id
+	GetTypeId() uint       // item type id
+	GetData() *ItemData    // underlying core [ItemData] struct pointer
+	GetKeywords() []string // keywords for this item
+	IsWeapon() bool        // is item a weapon?
+	IsContainer() bool     // is item a container? (corpses are containers)
+	IsWearable() bool      // is item wearable?
+	IsCorpse() bool        // is item a corpse? (corpses are containers but containers aren't always corpses)
+	GetWeight() int        // item weight in kg.
 }
 
 func (i *ItemData) GetData() *ItemData {
@@ -110,6 +111,7 @@ func item_clone(item Item) Item {
 		Id:         gen_item_id(),
 		OId:        i.Id,
 		Name:       i.Name,
+		Filename:   i.Filename,
 		Desc:       i.Desc,
 		Keywords:   make([]string, 0),
 		Type:       i.Type,

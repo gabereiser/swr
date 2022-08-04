@@ -1,0 +1,21 @@
+---
+name: Sullust
+sector: Outer Rim
+grid: M-17
+position: [156.027, -781.302]
+stars:
+  1:
+    name: Sullust Prime
+    type: Yellow Giant
+    radius: 130
+    position: [0.0, 0.0]
+orbits:
+  1:
+    name: Sullust
+    type: Temperate
+    radius: 10  # 10,465km
+    position: [-1400, 1800]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

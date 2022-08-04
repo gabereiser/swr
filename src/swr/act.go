@@ -28,6 +28,27 @@ func do_nothing(entity Entity, args ...string) {
 	entity.Send("\r\n&rInput not recognized.&d\r\n")
 }
 
+func do_password(entity Entity, args ...string) {
+	if entity.IsPlayer() {
+		player := entity.(*PlayerProfile)
+		if len(args) != 3 {
+			player.Send("\r\nSyntax: password <oldpassword> <newpassword> <repeat newpassword>\r\n")
+		} else {
+			oldp := args[0]
+			if encrypt_string(oldp) == player.Password {
+				if strings.EqualFold(args[1], args[2]) {
+					player.Password = encrypt_string(args[1])
+					player.Send("\r\n&YPassword. Ok.&d\r\n")
+				} else {
+					player.Send("\r\n&RPassword Mis-match!&d\r\n")
+				}
+			} else {
+				player.Send("\r\n&RPassword incorrect!&d\r\n")
+			}
+		}
+	}
+}
+
 func do_save(entity Entity, args ...string) {
 	if entity.IsPlayer() {
 		player := entity.(*PlayerProfile)
@@ -543,10 +564,26 @@ func do_drop(entity Entity, args ...string) {
 }
 
 func do_statsys(entity Entity, args ...string) {
+	db := DB()
+	mobCount := 0
+	playerCount := 0
+	for _, e := range db.entities {
+		if e == nil {
+			continue
+		}
+		if !e.IsPlayer() {
+			mobCount++
+		} else {
+			playerCount++
+		}
+	}
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 	entity.Send("\r\n%s\r\n", MakeTitle("System Stats", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
-	entity.Send("&GSystem Name:&W %s\r\n", Config().Name)
+	entity.Send("&G      System Name:&W %s\r\n", Config().Name)
+	entity.Send("&G    Total Systems: &W%-3d       &GTotal Areas: &W%-3d&d\r\n", len(db.starsystems), len(db.areas))
+	entity.Send("&G       Total Mobs: &W%-12d &GTotal Rooms: &W%-12d&d\r\n", mobCount, len(db.rooms))
+	entity.Send("&G      Total Ships: &W%-4d&d\r\n", len(db.ships))
 	entity.Send("\r\n%s\r\n", MakeTitle("OS", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
 	entity.Send("&Y           Name&d: %s\r\n", runtime.GOOS)
 	entity.Send("&Y           Arch&d: %s\r\n", runtime.GOARCH)
@@ -554,9 +591,9 @@ func do_statsys(entity Entity, args ...string) {
 	entity.Send("&Y          Cores&d: %d\r\n", runtime.NumCPU())
 	entity.Send("&Y  Total Threads&d: %d\r\n", runtime.NumGoroutine())
 	entity.Send("\r\n%s\r\n", MakeTitle("Memory", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
-	entity.Send("&Y      Allocated&d: %.4f mb\r\n", bytes_to_mb(m.Alloc))
-	entity.Send("&YTotal Allocated&d: %.4f mb\r\n", bytes_to_mb(m.TotalAlloc))
-	entity.Send("&Y  System Memory&d: %.4f mb\r\n", bytes_to_mb(m.Sys))
-	entity.Send("&Y             GC&d: %d\r\n", m.NumGC)
+	entity.Send("&Y Current Memory&d: %.4f mb\r\n", bytes_to_mb(m.Alloc))
+	entity.Send("&YReserved Memory&d: %.4f mb\r\n", bytes_to_mb(m.Sys))
+	entity.Send("&Y    Misc Memory&d: %.4f mb\r\n", bytes_to_mb(m.OtherSys))
+	entity.Send("&Y       GC Count&d: %d\r\n", m.NumGC)
 	entity.Send("\r\n")
 }

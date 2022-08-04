@@ -202,8 +202,15 @@ func do_starsystems(entity Entity, args ...string) {
 		starsystem := s.GetData()
 		entity.Send("&Y┌──────────────────────────────────────────────────────────────────────────────┐&d\r\n")
 		entity.Send(fmt.Sprintf("&Y│ System: &W%-42s &YSector:&d%17s  &Y│\r\n", starsystem.Name, starsystem.Sector))
+		p := false
 		for _, o := range starsystem.Orbits {
-			entity.Send(fmt.Sprintf("&Y│           &W└%-34s    &YPosition: &g%4.2f, %4.2f  &Y│\r\n", o.Name, starsystem.Position[0], starsystem.Position[1]))
+			if !p {
+				entity.Send(fmt.Sprintf("&Y│           &W└%-34s    &YPosition: &g%-18s&Y│\r\n", o.Name, sprintf("%4.2f, %4.2f", starsystem.Position[0], starsystem.Position[1])))
+				p = true
+			} else {
+				entity.Send(fmt.Sprintf("&Y│           &W└%-64s  &Y│\r\n", o.Name))
+			}
+
 		}
 		entity.Send("&Y└──────────────────────────────────────────────────────────────────────────────┘&d\r\n")
 	}

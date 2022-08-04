@@ -1,0 +1,21 @@
+---
+name: Ord Mantell
+sector: Mid Rim
+grid: L-7
+position: [4.742, 254.964]
+stars:
+  1:
+    name: Bright Jewel
+    type: Blue Giant
+    radius: 140
+    position: [-100.0, 100.0]
+orbits:
+  1:
+    name: Ord Mantell
+    type: Temperate
+    radius: 10  # 10,465km
+    position: [850, -400]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

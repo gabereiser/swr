@@ -1,0 +1,26 @@
+---
+name: Mon Calamari
+sector: Outer Rim
+grid: U-6
+position: [907.208, 330.121]
+stars:
+  1:
+    name: Dac Prime
+    type: Yellow Giant
+    radius: 100
+    position: [0.0, 0.0]
+  2:
+    name: Dac Beta
+    type: White Dwarf
+    radius: 45
+    position: [-4000, -2000]
+orbits:
+  1:
+    name: Mon Cala
+    type: Ocean
+    radius: 10  # 10,465km
+    position: [-850, -400]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

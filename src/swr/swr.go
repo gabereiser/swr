@@ -24,6 +24,8 @@ import (
 	"time"
 )
 
+var startup time.Time = time.Now()
+
 func Init() {
 	random_seed(time.Now().Unix())
 	// Ensure that the player directories exists
@@ -36,7 +38,6 @@ func Init() {
 }
 
 func Main() {
-
 	log.Printf("Starting version %s\n", version)
 	assert(is_skill("martial-arts"))
 	log.Printf("Max Space Region is: %.9f", MAX_DISTANCE)
@@ -46,6 +47,7 @@ func Main() {
 	LanguageLoad()
 	StartBackup()
 	EditorStart()
+	log.Printf("Server took %s seconds to boot.", time.Since(startup).String())
 	ServerStart(Config().Addr)
 
 	DB().Save()

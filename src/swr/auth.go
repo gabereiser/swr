@@ -33,7 +33,7 @@ func auth_do_welcome(client Client) {
 	_ = client.Read()
 	welcome, err := ioutil.ReadFile("data/sys/welcome")
 	ErrorCheck(err)
-	client.Send(string(welcome))
+	client.Send(telnet_encode(string(welcome)))
 	auth_do_login(client)
 }
 
@@ -74,7 +74,15 @@ Login:
 			} else {
 				client.Send("\r\nReconnecting to player...\r\n")
 				player = p.(*PlayerProfile)
+				if player.Client != nil {
+					// disconnect old client.
+					player.Client.Send("\r\n&RAnother player has logged in as this character!!!\r\n")
+					player.Client.(*MudClient).Con.Close()
+					DB().RemoveClient(player.Client.(*MudClient))
+					time.Sleep(1 * time.Second) // sleep a little to make sure they're kicked...
+				}
 				player.Client = client
+				DB().AddEntity(player)
 				player.LastSeen = time.Now()
 			}
 			ServerQueue <- MudClientCommand{
@@ -117,10 +125,15 @@ Name:
 	if !strings.HasPrefix(strings.ToLower(name_confirm), "y") {
 		goto Name
 	}
+	client.Sendf("\r\n&GWelcome &W%s&G.\r\n", name)
 Password:
-	client.Sendf("\r\n&GWelcome &W%s&G.\r\n&GPlease enter a &Wpassword&G:&d ", name)
+	client.Sendf("&GPlease enter a &Wpassword&G:&d ")
 	//telnet_disable_local_echo(client.(*MudClient).Con)
 	password := client.Read()
+	if strings.ContainsAny(password, " \x00\t") {
+		client.Sendf("\r\n&RInvalid password, passwords cannot contain spaces or control chars.&d\r\n")
+		goto Password
+	}
 	client.Send("\r\n&GRepeat your &Wpassword&G:&d ")
 	password2 := client.Read()
 	//telnet_enable_local_echo(client.(*MudClient).Con)
@@ -129,7 +142,7 @@ Password:
 		goto Password
 	}
 Email:
-	client.Send("\r\n&GPlease enter your email &X(we won't spam you)&G:&d ")
+	client.Send("\r\n&GPlease enter your email &x(we won't spam you)&G:&d ")
 	email := client.Read()
 	if !strings.Contains(email, "@") {
 		client.Send("\r\n}RError, an email address is needed for account recovery purposes.&d\r\n")

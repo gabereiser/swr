@@ -1,0 +1,21 @@
+---
+name: Kamino
+sector: Outer Rim
+grid: S-15
+position: [710.488, -530.778]
+stars:
+  1:
+    name: Kamino
+    type: Yellow Giant
+    radius: 100
+    position: [0.0, 0.0]
+orbits:
+  1:
+    name: Kamino
+    type: Ocean
+    radius: 10  # 10,465km
+    position: [850, 80]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

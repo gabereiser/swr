@@ -1,0 +1,35 @@
+---
+name: Kashyyyk
+sector: Mid Rim
+grid: P-9
+position: [472.517, 11.164]
+stars:
+  1:
+    name: Kashyyyk
+    type: Yellow Giant
+    radius: 100
+    position: [0.0, 0.0]
+  2:
+    name: Dac Beta
+    type: White Dwarf
+    radius: 45
+    position: [-4000, -2000]
+orbits:
+  1:
+    name: Kashyyyk
+    type: Forest
+    radius: 10  # 10,465km
+    position: [-850, -400]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []
+  2:
+    name: Trandosha
+    type: Desert
+    radius: 10  # 10,465km
+    position: [950, 1400]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

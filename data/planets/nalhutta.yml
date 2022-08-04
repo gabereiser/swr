@@ -1,0 +1,21 @@
+---
+name: Nal Hutta
+sector: Hutt Space
+grid: S-12
+position: [703.988, -205.807]
+stars:
+  1:
+    name: Nal Shadda
+    type: Yellow Giant
+    radius: 100
+    position: [0.0, 0.0]
+orbits:
+  1:
+    name: Nal Hutta
+    type: Temperate
+    radius: 10  # 10,465km
+    position: [850, 80]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

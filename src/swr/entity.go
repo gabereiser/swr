@@ -37,137 +37,152 @@ var race_list = []string{
 }
 
 const (
-	ENTITY_STAT_STR = iota
-	ENTITY_STAT_INT
-	ENTITY_STAT_DEX
-	ENTITY_STAT_WIS
-	ENTITY_STAT_CON
-	ENTITY_STAT_CHA
+	ENTITY_STAT_STR = iota // [0] Strength
+	ENTITY_STAT_INT        // [1] Intelligence
+	ENTITY_STAT_DEX        // [2] Dexterity
+	ENTITY_STAT_WIS        // [3] Wisdom
+	ENTITY_STAT_CON        // [4] Constitution
+	ENTITY_STAT_CHA        // [5] Charisma
 )
 
 const (
-	ENTITY_STATE_NORMAL      = "normal"
-	ENTITY_STATE_FIGHTING    = "fighting"
-	ENTITY_STATE_SEDATED     = "sedated"
-	ENTITY_STATE_UNCONSCIOUS = "unconscious"
-	ENTITY_STATE_SLEEPING    = "sleeping"
-	ENTITY_STATE_SITTING     = "sitting"
-	ENTITY_STATE_PILOTING    = "piloting"
-	ENTITY_STATE_GUNNING     = "gunning"
-	ENTITY_STATE_EDITING     = "editing"
-	ENTITY_STATE_CRAFTING    = "crafting"
-	ENTITY_STATE_DEAD        = "dead"
+	ENTITY_STATE_NORMAL      = "normal"      // everything's fine.
+	ENTITY_STATE_FIGHTING    = "fighting"    // conner mcgreggor mode
+	ENTITY_STATE_SEDATED     = "sedated"     // fear and loathing
+	ENTITY_STATE_UNCONSCIOUS = "unconscious" // comatose
+	ENTITY_STATE_SLEEPING    = "sleeping"    // because we all need rest
+	ENTITY_STATE_SITTING     = "sitting"     // can't move, but you can see (and gain a bonus to hp regen)
+	ENTITY_STATE_PILOTING    = "piloting"    // chuck yaeger / wedge antilles
+	ENTITY_STATE_GUNNING     = "gunning"     // millenium falcon turret mode
+	ENTITY_STATE_EDITING     = "editing"     // set when the admin is editing a description so that his char is safe from harm
+	ENTITY_STATE_CRAFTING    = "crafting"    // set when crafting the next big item.
+	ENTITY_STATE_DEAD        = "dead"        // EOL...
 )
 
 type Entity interface {
-	RoomId() uint
-	ShipId() uint
-	IsPlayer() bool
-	Send(str string, any ...interface{})
-	Event(evt string)
-	Prompt()
-	CurrentHp() int
-	MaxHp() int
-	CurrentMv() int
-	MaxMv() int
-	IsFighting() bool
-	StopFighting()
-	SetAttacker(entity Entity)
-	ApplyDamage(damage uint)
-	GetCharData() *CharData
-	Weapon() Item
-	FindItem(keyword string) Item
-	GetShip() Ship
+	RoomId() uint                        // the current room id.
+	ShipId() uint                        // the current ship id. 0 value means they currently aren't on a ship.
+	IsPlayer() bool                      // is the entity a player? or a mob?
+	Send(str string, any ...interface{}) // send sprintf style.
+	Event(evt string)                    // trigger a non-AI event (long speak prog?)
+	Prompt()                             // shows the player prompt at next tick.
+	CurrentHp() int                      // current hitpoints
+	MaxHp() int                          // maximum hitpoints
+	CurrentMv() int                      // current movement
+	MaxMv() int                          // maximum movement
+	IsFighting() bool                    // is fighting someone?
+	StopFighting()                       // stop fighting whomever it's fighting.
+	SetAttacker(entity Entity)           // starting fighting an entity. Next tick will commence combat.
+	ApplyDamage(damage uint)             // apply damage to this entity. If it's hp < 0 or otherwise unconscious then the [CharData.State] will change.
+	GetCharData() *CharData              // get the backing [CharData]
+	Weapon() Item                        // get the current weapon. nil means he's bruce lee and fights with his fists. bravo good sir, bravo.
+	FindItem(keyword string) Item        // find an item on this entity by keyword. If multiple are found, it will return the first found.
+	GetShip() Ship                       // get the current ship the player is in. Not that they own it, but physically inside.
 }
 
 type CharData struct {
-	Id        uint                 `yaml:"id"`
-	OId       uint                 `yaml:"mobId,omitempty"`
-	Room      uint                 `yaml:"room,omitempty"`
-	Ship      uint                 `yaml:"ship,omitempty"` // if 0, entity is not on a ship
-	Name      string               `yaml:"name"`
-	Keywords  []string             `yaml:"keywords,flow,omitempty"`
-	Title     string               `yaml:"title,omitempty"`
-	Desc      string               `yaml:"desc"`
-	Race      string               `yaml:"race,omitempty"`
-	Gender    string               `yaml:"gender,omitempty"`
-	Level     uint                 `yaml:"level,omitempty"`
-	XP        uint                 `yaml:"xp,omitempty"`
-	Gold      uint                 `yaml:"gold,omitempty"`
-	Bank      uint                 `yaml:"bank,omitempty"`
-	Hp        []int                `yaml:"hp,flow"`    // Hit Points [0] Current [1] Max : len = 2
-	Mp        []int                `yaml:"mp,flow"`    // Magic Points [0] Current [1] Max : len = 2
-	Mv        []int                `yaml:"mv,flow"`    // Move Points [0] Current [1] Max : len = 2
-	Stats     []int                `yaml:"stats,flow"` // str, int, dex, wis, con, cha
-	Skills    map[string]int       `yaml:"skills"`
-	Languages map[string]int       `yaml:"languages"`
-	Speaking  string               `yaml:"speaking"`
-	Equipment map[string]*ItemData `yaml:"equipment"` // Key is a EQUIPMENT_WEAR_LOC_* const, Value is an item.
-	Inventory []*ItemData          `yaml:"inventory"`
-	State     string               `yaml:"state,omitempty"`
-	Brain     string               `yaml:"brain,omitempty"`
-	Progs     map[string]string    `yaml:"progs,omitempty"`
-	Flags     []string             `yaml:"flags,omitempty"`
-	AI        Brain                `yaml:"-"`
-	Attacker  Entity               `yaml:"-"`
+	Id        uint                 `yaml:"id"`                      // instance id. Will always be unique to a spawn.
+	OId       uint                 `yaml:"mobId,omitempty"`         // type id. What kind of mob is it? check [GameDatabase.Mobs]
+	Room      uint                 `yaml:"room,omitempty"`          // room id.
+	Ship      uint                 `yaml:"ship,omitempty"`          // ship id. if 0, entity is not on a ship
+	Name      string               `yaml:"name"`                    // character name
+	Filename  string               `yaml:"-"`                       // mob filename as used in ./data/mobs/<areaname>/<filename>.yml
+	Keywords  []string             `yaml:"keywords,flow,omitempty"` // keywords to refer to this mob
+	Title     string               `yaml:"title,omitempty"`         // titles granted
+	Desc      string               `yaml:"desc"`                    // description of mob
+	Race      string               `yaml:"race,omitempty"`          // race name from [race_list]
+	Gender    string               `yaml:"gender,omitempty"`        // single char gender, lowercase. m/f/n
+	Level     uint                 `yaml:"level,omitempty"`         // character level. 100 is max level.
+	XP        uint                 `yaml:"xp,omitempty"`            // character xp.
+	Gold      uint                 `yaml:"gold,omitempty"`          // character money on hand.
+	Bank      uint                 `yaml:"bank,omitempty"`          // character money in bank.
+	Hp        []int                `yaml:"hp,flow"`                 // Hit Points [0] Current [1] Max : len = 2
+	Mp        []int                `yaml:"mp,flow"`                 // Magic Points [0] Current [1] Max : len = 2
+	Mv        []int                `yaml:"mv,flow"`                 // Move Points [0] Current [1] Max : len = 2
+	Stats     []int                `yaml:"stats,flow"`              // str, int, dex, wis, con, cha
+	Skills    map[string]int       `yaml:"skills"`                  // skills map. skills are indexed by skill name with a value of 0-100.
+	Languages map[string]int       `yaml:"languages"`               // languages known. languages are indexed by language name with a value of 0-100
+	Speaking  string               `yaml:"speaking"`                // what language are we speaking? should match a key in [CharData.Languages]
+	Equipment map[string]*ItemData `yaml:"equipment"`               // equipment map.key is a EQUIPMENT_WEAR_LOC_* const, value is an [ItemData].
+	Inventory []*ItemData          `yaml:"inventory"`               // inventory list. multiple items (with different id's) can be stored.
+	State     string               `yaml:"state,omitempty"`         // character state as defined as an ENTITY_STATE_* const
+	Brain     string               `yaml:"brain,omitempty"`         // character brain. essentially the ai class. generic is the default.
+	Progs     map[string]string    `yaml:"progs,omitempty"`         // mob progs. key is an event ("greet", "enter", "death"...) and the value is motherfucking javascript.
+	Flags     []string             `yaml:"flags,omitempty"`         // list of flags. See [entity_flags] for values.
+	AI        Brain                `yaml:"-"`                       // actual AI interface. instantiated upon spawn.
+	Attacker  Entity               `yaml:"-"`                       // who is this mob fighting?
 }
 
+// Returns true if the entity is a *PlayerProfile, false if just a *CharData mob.
 func (*CharData) IsPlayer() bool {
 	return false
 }
 
+// Entities don't need screens...
 func (*CharData) Prompt() {
 }
 
-func (*CharData) Send(m string, args ...interface{}) {
+// Entities don't have connections
+func (c *CharData) Send(m string, args ...interface{}) {
 }
 
+// Room ID of the entity
 func (c *CharData) RoomId() uint {
 	return c.Room
 }
 
+// Ship ID of the entity. If 0, entity is on planet.
 func (c *CharData) ShipId() uint {
 	return c.Ship
 }
 
+// Triggers a mob prog to fire.
 func (c *CharData) Event(evt string) {
+	e := mud_prog_exec(c.Progs[evt], c, evt)
+	ErrorCheck(e)
 }
 
+// Current HP
 func (c *CharData) CurrentHp() int {
 	return c.Hp[0]
 }
 
+// Maximum HP
 func (c *CharData) MaxHp() int {
 	return c.Hp[1]
 }
 
+// Current MV
 func (c *CharData) CurrentMv() int {
 	return c.Mv[0]
 }
 
+// Maximum MV
 func (c *CharData) MaxMv() int {
 	return c.Mv[1]
 }
 
+// Base weight of a person based on race (ignoring gender for sake of gender equality and body positivity ;)
 func (c *CharData) base_weight() int {
 	switch c.Race {
-	case "Wookiee":
+	case "Wookiee": // big guy eats steaks for sure
 		return 105
-	case "Hutt":
+	case "Hutt": // because there's no fatter
 		return 425
 	case "Ewok":
-	case "Jawa":
+	case "Jawa": // the tinyist of hero's
 		return 25
-	case "Droid":
+	case "Droid": // metal weighs more than bone, facts.
 	case "Protocol Droid":
 		return 95
-	case "Assassin Droid":
+	case "Assassin Droid": // so do guns...
 	case "Gladiator Droid":
 		return 245
 	}
 	return 75
 }
 
+// Calculates the current weight of the mob taking into account their inventory (equipment isn't factored, yet...)
 func (c *CharData) CurrentWeight() int {
 	weight := c.base_weight()
 	for _, item := range c.Inventory {
@@ -182,10 +197,11 @@ func (c *CharData) CurrentWeight() int {
 func (c *CharData) MaxWeight() int {
 	weight := c.base_weight()
 
-	// str / 10 * base_weight + (level * 5) + dex / 10 * base_weight
+	// str / 10 * base_weight + (level * 5) + dex / 10 * base_weight  : because math is awesome.
 	return ((c.Stats[0] / 10) * weight) + int(c.Level*5) + ((c.Stats[2] / 10) * weight)
 }
 
+// Total number of held objects (objects in containers, don't count, that's the point of containers...)
 func (c *CharData) CurrentInventoryCount() int {
 	count := 0
 	for range c.Inventory {
@@ -194,27 +210,31 @@ func (c *CharData) CurrentInventoryCount() int {
 	return count
 }
 
+// How many items can you juggle on your person?
 func (c *CharData) MaxInventoryCount() int {
 	return (int(c.Level) * 3) + c.Stats[0]
 }
 
+// Is fighting someone?
 func (c *CharData) IsFighting() bool {
 	return c.State == ENTITY_STATE_FIGHTING
 }
 
+// Stop fighting
 func (c *CharData) StopFighting() {
 	if c.State == ENTITY_STATE_FIGHTING {
 		c.State = ENTITY_STATE_NORMAL
 		c.Attacker = nil
-		c.Send("\r\n&dYou stop fighting.\r\n")
 	}
 }
 
+// Start fighting someone
 func (c *CharData) SetAttacker(entity Entity) {
 	c.Attacker = entity
 	c.State = ENTITY_STATE_FIGHTING
 }
 
+// What's your armor class? AC can't be above 20.
 func (c *CharData) ArmorAC() int {
 	str := c.Stats[ENTITY_STAT_STR]
 	dex := c.Stats[ENTITY_STAT_DEX]
@@ -227,6 +247,7 @@ func (c *CharData) ArmorAC() int {
 	return ac_armor + (dex / 10) + (str / 10)
 }
 
+// How hard did you hit for your skill and weapon?
 func (c *CharData) DamageRoll(skillName string) uint {
 	skill := uint(c.Skills[skillName])
 	str := uint(c.Stats[ENTITY_STAT_STR])
@@ -240,11 +261,12 @@ func (c *CharData) DamageRoll(skillName string) uint {
 	} else {
 		skill += get_weapon_skill_stat("martial-arts", str, dex)
 	}
-	skill = umin(1, skill/10)
-	dmg := uint(roll_dice(d)) + uint(roll_dice(fmt.Sprintf("1d%d", skill)))
+	skill = umin(0, skill/10)
+	dmg := uint(roll_dice(d)) + uint(roll_dice(fmt.Sprintf("%dd4", skill)))
 	return dmg
 }
 
+// Get's the entity's weapon. If nil, entity is fighting bare handed like chuck norris.
 func (c *CharData) Weapon() Item {
 	if i, ok := c.Equipment["weapon"]; ok {
 		item := i
@@ -253,6 +275,7 @@ func (c *CharData) Weapon() Item {
 	return nil
 }
 
+// Find an item on this entity by keyword. Useful for checking existence of keys or player commands on items.
 func (c *CharData) FindItem(keyword string) Item {
 	for i := range c.Inventory {
 		item := c.Inventory[i]
@@ -270,6 +293,7 @@ func (c *CharData) FindItem(keyword string) Item {
 	return nil
 }
 
+// Remove an item from this person. No soup for you.
 func (c *CharData) RemoveItem(item Item) {
 	idx := -1
 	for id := range c.Inventory {
@@ -298,6 +322,7 @@ func (c *CharData) RemoveItem(item Item) {
 	}
 }
 
+// Get's an item from this entity based on item id (or item type id), not that dissimilar to find, only you know the id.
 func (c *CharData) GetItem(item_id uint) Item {
 	for id := range c.Inventory {
 		i := c.Inventory[id]
@@ -308,6 +333,7 @@ func (c *CharData) GetItem(item_id uint) Item {
 	return nil
 }
 
+// Apply damage and play dead
 func (c *CharData) ApplyDamage(damage uint) {
 	c.Hp[0] -= int(damage)
 	if c.Hp[0] <= 0 {
@@ -318,16 +344,21 @@ func (c *CharData) ApplyDamage(damage uint) {
 	}
 }
 
+// Get the ship this entity is onboard. Physically. If nil, player is on planet (or other static location)
 func (c *CharData) GetShip() Ship {
 	if c.Ship > 0 {
 		return DB().GetShip(c.Ship)
 	}
 	return nil
 }
+
+// Return the backing CharData struct
 func (c *CharData) GetCharData() *CharData {
 	return c
 }
 
+// [PlayerProfile] is an [Entity] that represents the player, not a mob. As such it has a few extra fields...
+// [Entity.IsPlayer] will return whether or not an [Entity] is a [*PlayerProfile] or just [*CharData]
 type PlayerProfile struct {
 	Char        CharData  `yaml:"char,inline"`
 	Email       string    `yaml:"email,omitempty"`
@@ -336,15 +367,19 @@ type PlayerProfile struct {
 	LastSeen    time.Time `yaml:"last_seen,omitempty"`
 	Banned      bool      `yaml:"banned,omitempty"`
 	Frequency   string    `yaml:"freq"`
+	Kills       uint      `yaml:"kills"`
+	PKills      uint      `yaml:"pkills"`
 	Client      Client    `yaml:"-"`
 	NeedPrompt  bool      `yaml:"-"`
 	LastCommand string    `yaml:"-"`
 }
 
+// Is Entity a player?
 func (*PlayerProfile) IsPlayer() bool {
 	return true
 }
 
+// Send player a message through their [Client]
 func (p *PlayerProfile) Send(m string, any ...interface{}) {
 	if p.Client != nil {
 		p.Client.Sendf(m, any...)
@@ -352,42 +387,55 @@ func (p *PlayerProfile) Send(m string, any ...interface{}) {
 	}
 }
 
+// Get's the room id of the player.
 func (p *PlayerProfile) RoomId() uint {
 	return p.Char.Room
 }
 
+// Get's the ship id of the player. Physically. Not the one they own.
 func (p *PlayerProfile) ShipId() uint {
 	return p.Char.Ship
 }
 
+// Trigger an event on a player. Since players are in control of their own characters, not sure how useful this is.
 func (p *PlayerProfile) Event(evt string) {
 }
 
+// Player's current hitpoints
 func (p *PlayerProfile) CurrentHp() int {
 	return p.Char.Hp[0]
 }
 
+// Player's maximum hitpoints
 func (p *PlayerProfile) MaxHp() int {
 	return p.Char.Hp[1]
 }
 
+// Player's current movement
 func (p *PlayerProfile) CurrentMv() int {
 	return p.Char.Mv[0]
 }
 
+// Player's maximum movement
 func (p *PlayerProfile) MaxMv() int {
 	return p.Char.Mv[1]
 }
+
+// Prompt the player, show's their stats, and readies for input next turn.
 func (p *PlayerProfile) Prompt() {
-	if p.NeedPrompt && p.Char.State != ENTITY_STATE_DEAD {
+	if p.NeedPrompt && p.Char.State != ENTITY_STATE_DEAD && !p.Client.(*MudClient).Editing {
 		prompt := player_prompt(p)
 		p.Send("%s\r\n", prompt)
 		p.NeedPrompt = false
 	}
 }
+
+// Is the player fighting something?
 func (p *PlayerProfile) IsFighting() bool {
 	return p.Char.State == ENTITY_STATE_FIGHTING
 }
+
+// Stop fighthing whatever it's fighting.
 func (p *PlayerProfile) StopFighting() {
 	if p.Char.State == ENTITY_STATE_FIGHTING {
 		p.Char.State = ENTITY_STATE_NORMAL
@@ -395,14 +443,19 @@ func (p *PlayerProfile) StopFighting() {
 		p.Send("\r\n&dYou stop fighting.\r\n")
 	}
 }
+
+// Start fighting [Entity], combat will commence next turn.
 func (p *PlayerProfile) SetAttacker(entity Entity) {
 	p.Char.Attacker = entity
 	p.Char.State = ENTITY_STATE_FIGHTING
 }
 
+// Get the underlying [CharData] pointer.
 func (p *PlayerProfile) GetCharData() *CharData {
 	return &p.Char
 }
+
+// Apply damange and change state for knockout/death.
 func (p *PlayerProfile) ApplyDamage(damage uint) {
 	p.Char.Hp[0] -= int(damage)
 	if p.Char.Hp[0] <= 0 {
@@ -417,6 +470,7 @@ func (p *PlayerProfile) ApplyDamage(damage uint) {
 	}
 }
 
+// Get's the player's current weapon. If nil, player is bruce lee...
 func (p *PlayerProfile) Weapon() Item {
 	if i, ok := p.Char.Equipment["weapon"]; ok {
 		item := i
@@ -425,10 +479,12 @@ func (p *PlayerProfile) Weapon() Item {
 	return nil
 }
 
+// Find's an item on the player by keyword.
 func (p *PlayerProfile) FindItem(keyword string) Item {
 	return p.Char.FindItem(keyword)
 }
 
+// Get's the ship the player is currently on.
 func (p *PlayerProfile) GetShip() Ship {
 	if p.Char.Ship > 0 {
 		return DB().GetShip(p.Char.Ship)
@@ -436,6 +492,7 @@ func (p *PlayerProfile) GetShip() Ship {
 	return nil
 }
 
+// Clones an entity, generating a new ID, copying over the values, and returns the cloned [Entity]
 func entity_clone(entity Entity) Entity {
 	ch := entity.GetCharData()
 	c := &CharData{
@@ -443,6 +500,7 @@ func entity_clone(entity Entity) Entity {
 		OId:       ch.Id,
 		Room:      ch.Room,
 		Name:      ch.Name,
+		Filename:  ch.Filename,
 		Keywords:  make([]string, 0),
 		Flags:     make([]string, 0),
 		Title:     ch.Title,
@@ -508,6 +566,7 @@ func entity_clone(entity Entity) Entity {
 	return c
 }
 
+// Builds a player prompt to send to the player using pretty ANSI colors and ASCII glyphs.
 func player_prompt(player *PlayerProfile) string {
 	mc := player.Client.(*MudClient)
 	if mc.Closed {
@@ -535,6 +594,7 @@ func player_prompt(player *PlayerProfile) string {
 	return sprintf("%s\r\n", prompt)
 }
 
+// Called every turn to process the hundreds of entities in the game. Processes state affects as well as health, movement, force regen.
 func processEntities() {
 	db := DB()
 
@@ -588,8 +648,13 @@ func processEntities() {
 
 	}
 }
+
+// Heals an entity naturally. Called by processEntities and should never be called by a skill/spell/script.
 func processHealing(entity Entity) {
 	ch := entity.GetCharData()
+	if ch.State == ENTITY_STATE_DEAD {
+		return
+	}
 	ch.Hp[0]++
 	if ch.Hp[0] > ch.Hp[1] {
 		ch.Hp[0] = ch.Hp[1]
@@ -602,12 +667,16 @@ func processHealing(entity Entity) {
 		if ch.Hp[0] > 0 {
 			ch.State = ENTITY_STATE_NORMAL
 			entity.Send("\r\n&YYou awake from unconsciousness.&d\r\n")
+			if roll_dice("1d10") >= 10-entity_get_skill_value(ch, "healing") {
+				entity_add_skill_value(entity, "healing", 1)
+			}
 			entity.Prompt()
 		}
 	}
 	entity.Prompt()
 }
 
+// Adds XP to the entity. If the entity gains a level, calculate new HP/MP/MV maximums.
 func entity_add_xp(entity Entity, xp int) {
 	// mobs don't earn xp
 	if !entity.IsPlayer() {
@@ -621,22 +690,40 @@ func entity_add_xp(entity Entity, xp int) {
 		x = 0
 	}
 	ch.XP = uint(x)
-	ch.Level = get_level_for_xp(ch.XP) + 1
-	if ch.Level != level {
-		entity.Send("\r\n}YYou have gained a level!&d\r\n")
-		entity.Send("\r\n&YYou are now level &W%d&d.\r\n", ch.Level)
-		// reset current life stats as a reward and gain a little extra
-		ch.Hp[1] = 50 + (int(ch.Level) / 2)
-		ch.Mv[1] = 50 + (int(ch.Level) / 2)
-		if ch.Mp[1] > 0 { // you don't get force unless you got force
-			ch.Mp[1] = 50 + (int(ch.Level) / 2)
+	ch.Level = get_level_for_xp(ch.XP) + 1 // get_level_for_xp is 0 based (0-99)
+	if ch.Level > 100 {
+		ch.XP = get_xp_for_level(100)
+		ch.Level = 100
+	} else {
+		if ch.Level != level {
+			entity_print_level_up(entity)
 		}
-		ch.Hp[0] = ch.Hp[1]
-		ch.Mp[0] = ch.Mp[1]
-		ch.Mv[0] = ch.Mv[1]
 	}
 	entity.Send("\r\n&dYou gained &w%d&d xp.\r\n", xp)
 }
+
+func entity_print_level_up(entity Entity) {
+	ch := entity.GetCharData()
+	entity.Send("\r\n}YYou have gained a level!&d\r\n")
+	entity.Send("\r\n&YYou are now level &W%d&d.\r\n", ch.Level)
+	// reset current life stats as a reward and gain a little extra
+	ch.Hp[1] = 50 + (int(ch.Level) / 2)
+	ch.Mv[1] = 50 + (int(ch.Level) / 2)
+	if ch.Mp[1] > 0 { // you don't get force unless you got force
+		ch.Mp[1] = 50 + (int(ch.Level) / 2)
+	}
+	ch.Hp[0] = ch.Hp[1]
+	ch.Mp[0] = ch.Mp[1]
+	ch.Mv[0] = ch.Mv[1]
+}
+
+func entity_advance_level(entity Entity) {
+	ch := entity.GetCharData()
+	ch.Level++
+	ch.XP = get_xp_for_level(ch.Level)
+	entity_print_level_up(entity)
+}
+
 func entity_lose_xp(entity Entity, xp int) {
 	if !entity.IsPlayer() {
 		return
@@ -657,14 +744,17 @@ func entity_lose_xp(entity Entity, xp int) {
 	}
 }
 
+// Returns the level for a given XP amount. !WARNING! 0 based. Level 1 is really 0 so +1 to the return if you're printing this.
 func get_level_for_xp(xp uint) uint {
 	return uint(math.Sqrt(float64(xp) / 500))
 }
 
+// What's the bottom line XP for a level. level+1 return value is target XP for next level.
 func get_xp_for_level(level uint) uint {
 	return uint(math.Pow(float64(level), 2)) * 500
 }
 
+// Can the entity speak (or see? (or breathe?)). Returns true if entity is in an unspeakable state. By passes messages sent to them for some actions.
 func entity_unspeakable_state(entity Entity) bool {
 	if entity == nil {
 		return true
@@ -679,6 +769,7 @@ func entity_unspeakable_state(entity Entity) bool {
 	return false
 }
 
+// Why can't they speak? (or see? (or breathe?)). Returns the reason an entity is in an unspeakable state.
 func entity_unspeakable_reason(entity Entity) string {
 	state := entity.GetCharData().State
 	switch state {
@@ -692,6 +783,7 @@ func entity_unspeakable_reason(entity Entity) string {
 	return "none"
 }
 
+// Pick up an item off the ground or off a corpse (living or dead). Protects against picking up corpses or objects too heavy to lift.
 func entity_pickup_item(entity Entity, item Item) bool {
 	ch := entity.GetCharData()
 	if item.IsCorpse() {
@@ -710,6 +802,7 @@ func entity_pickup_item(entity Entity, item Item) bool {
 	return true
 }
 
+// Returns a 0-100 skill value for a skill.
 func entity_get_skill_value(ch *CharData, skill string) int {
 	if v, ok := ch.Skills[strings.ToLower(skill)]; ok {
 		return v
@@ -717,6 +810,7 @@ func entity_get_skill_value(ch *CharData, skill string) int {
 	return 0
 }
 
+// Adds a skill value for a skill for supplied [Entity]
 func entity_add_skill_value(entity Entity, skill string, value int) {
 	ch := entity.GetCharData()
 	if ch == nil {
@@ -731,9 +825,23 @@ func entity_add_skill_value(entity Entity, skill string, value int) {
 
 }
 
+// Returns the name of the item in the equipment slot. Useful for SCORE.
 func entity_get_equipment_for_slot(entity Entity, wearLoc string) string {
 	if o, ok := entity.GetCharData().Equipment[wearLoc]; ok {
 		return o.Name
 	}
 	return "None"
+}
+
+// Award a kill tally for the player's kill. If the victim is a player, award a PKill.
+// This will only be called upon death. Not unconscious.
+func entity_award_kill(killer Entity, victim Entity) {
+	if killer.IsPlayer() {
+		kp := killer.(*PlayerProfile)
+		if victim.IsPlayer() {
+			kp.PKills++
+		} else {
+			kp.Kills++
+		}
+	}
 }

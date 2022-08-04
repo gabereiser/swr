@@ -60,6 +60,11 @@
   keywords: [ "quit" ]
   level: 1
   func: do_quit
+-
+  name: password
+  keywords: [ "password" ]
+  level: 1
+  func: do_password
 - 
   name: who
   keywords: [ "who" ]
@@ -200,6 +205,16 @@
   keywords: [ "commands" ]
   level: 1
   func: do_commands
+-
+  name: time
+  keywords: [ "time" ]
+  level: 1
+  func: do_time
+-
+  name: levels
+  keywords: [ "levels" ]
+  level: 1
+  func: do_levels
 
 # Wiz Commands
 -
@@ -327,3 +342,13 @@
   keywords: [ "mtransfer" ]
   level: 100
   func: do_transfer
+-
+  name: editor
+  keywords: [ "editor" ]
+  level: 100
+  func: do_editor
+-
+  name: advance
+  keywords: [ "advance" ]
+  level: 100
+  func: do_advance

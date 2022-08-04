@@ -20,6 +20,7 @@ package swr
 import (
 	"log"
 	"strings"
+	"time"
 )
 
 func do_quit(entity Entity, args ...string) {
@@ -76,8 +77,9 @@ func do_score(entity Entity, args ...string) {
 		player.Send("&c│ CON: &G%-2d&c                                  │&d▒\r\n", char.Stats[4])
 		player.Send("&c│ CHA: &G%-2d&c                                  │&d▒\r\n", char.Stats[5])
 		player.Send("&c╞══════════════════════════════════════════╡&d▒\r\n")
-		player.Send("&c│ Weight: &G%3d kg&p(%3d kg)&c                   │&d▒\r\n", char.CurrentWeight(), char.MaxWeight())
+		player.Send("&c│ Weight: &G%3d kg&p(%4d kg)&c                  │&d▒\r\n", char.CurrentWeight(), char.MaxWeight())
 		player.Send("&c│ Inventory: &G%3d&p(%3d)&c                      │&d▒\r\n", char.CurrentInventoryCount(), char.MaxInventoryCount())
+		player.Send("&c│ Kills: &G%-5d    &cPlayer Kills: &G%-5d&c      │&d▒\r\n", player.Kills, player.PKills)
 		player.Send("&c├─( Equipment )────────────────────────────┤▒&d\r\n")
 		player.Send("&c│       Head: &d%-20s&c         │&d▒\r\n", entity_get_equipment_for_slot(player, "head"))
 		player.Send("&c│      Torso: &d%-20s&c         │&d▒\r\n", entity_get_equipment_for_slot(player, "torso"))
@@ -115,6 +117,15 @@ func do_inventory(entity Entity, args ...string) {
 	}
 	player.Send("&c└───────────────────────────────────┘&d▒\r\n")
 	player.Send(" ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒&d\r\n")
+}
+
+func do_levels(entity Entity, args ...string) {
+	ch := entity.GetCharData()
+	entity.Send("\r\n%s\r\n", MakeTitle("Levels / Experience", ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_LEFT))
+	entity.Send("&YLevel: &W%3d&Y Exp: &W%d&Y/&W%d&d\r\n", ch.Level, ch.XP, get_xp_for_level(ch.Level))
+	for i := 1; i < 6; i++ {
+		entity.Send("&YLevel: &W%3d&Y Exp: &W%d&d\r\n", ch.Level+uint(i), get_xp_for_level(ch.Level+uint(i)))
+	}
 }
 
 func do_description(entity Entity, args ...string) {
@@ -254,4 +265,15 @@ func do_remove(entity Entity, args ...string) {
 		}
 	}
 	entity.Send("\r\n&YYou remove %s&d\r\n", data.Name)
+}
+
+func do_time(entity Entity, args ...string) {
+	now := time.Now()
+	entity.Send("\r\n&BHolonet Time Synchronization&d\r\n")
+	entity.Send("&g----------------------------------------------------------------&d\r\n")
+	entity.Send("&cThe Current Local Time is: &Y%s&d\r\n", now.Format(time.RFC822))
+	entity.Send("&cThe Current UTC Time is: &Y%s&d\r\n", now.UTC().Format(time.RFC822Z))
+	entity.Send("&cThe Server Started at: &Y%s&d\r\n", startup.Format(time.RFC822))
+	entity.Send("&CThe Server has been running for &Y%s&d\r\n", time.Since(startup).String())
+	entity.Send("\r\n")
 }

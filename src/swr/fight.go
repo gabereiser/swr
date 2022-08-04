@@ -185,8 +185,9 @@ func do_combat(attacker Entity, defender Entity) {
 		defender.Send("\r\n%s &RYou have killed &W%s&d\r\n", EMOJI_SKULL, ach.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(dch.Level) * 75
+		xp_base = 275
 		make_corpse(attacker)
+		entity_award_kill(defender, attacker)
 		log.Printf("Entity %s [%d] has been killed by %s.", ach.Name, ach.Id, dch.Name)
 		entity_add_xp(defender, xp_base)
 		entity_lose_xp(attacker, xp_base)
@@ -197,7 +198,7 @@ func do_combat(attacker Entity, defender Entity) {
 		defender.Send("\r\n&RYou have knocked out &W%s&d\r\n", ach.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(dch.Level) * 40
+		xp_base = 240
 		entity_add_xp(defender, xp_base)
 		entity_lose_xp(attacker, xp_base)
 		return
@@ -207,8 +208,9 @@ func do_combat(attacker Entity, defender Entity) {
 		attacker.Send("\r\n&RYou have killed &W%s&d %s\r\n", dch.Name, EMOJI_SKULL)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(ach.Level) * 75
+		xp_base = 275
 		make_corpse(defender)
+		entity_award_kill(attacker, defender)
 		log.Printf("Entity %s [%d] has been killed by %s.", dch.Name, dch.Id, ach.Name)
 		entity_lose_xp(defender, xp_base)
 		entity_add_xp(attacker, xp_base)
@@ -219,7 +221,7 @@ func do_combat(attacker Entity, defender Entity) {
 		attacker.Send("\r\n&RYou have knocked out &W%s&d\r\n", dch.Name)
 		attacker.StopFighting()
 		defender.StopFighting()
-		xp_base = int(ach.Level) * 40
+		xp_base = 240
 		entity_lose_xp(defender, xp_base)
 		entity_add_xp(attacker, xp_base)
 		return
@@ -227,8 +229,8 @@ func do_combat(attacker Entity, defender Entity) {
 	if roll_dice("1d10") == 10 {
 		entity_add_skill_value(attacker, item_get_weapon_skill(ach.Weapon()), 1)
 	}
-	xp := rand_min_max(1, 5) * int(ach.Level)
-	entity_add_xp(attacker, int(dch.Level)*xp)
+	xp := rand_min_max(5, 50)
+	entity_add_xp(attacker, xp)
 }
 
 func get_damage_string(damage uint, attacker string, defender string, weapon string) string {

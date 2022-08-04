@@ -1,0 +1,21 @@
+---
+name: Kessel
+sector: Outer Rim
+grid: T-10
+position: [836.339, -11.369]
+stars:
+  1:
+    name: Kessel Prime
+    type: Yellow Giant
+    radius: 100
+    position: [0.0, 0.0]
+orbits:
+  1:
+    name: Kessel
+    type: Temperate
+    radius: 10  # 10,465km
+    position: [850, 80]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

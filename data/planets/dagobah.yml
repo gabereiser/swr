@@ -1,0 +1,21 @@
+---
+name: Dagobah
+sector: Outer Rim
+grid: O-17
+position: [164.058, -951.168]
+stars:
+  1:
+    name: Dagobah Prime
+    type: Yellow Giant
+    radius: 100
+    position: [0.0, 0.0]
+orbits:
+  1:
+    name: Dagobah
+    type: Swamp
+    radius: 10  # 10,465km
+    position: [450, 380]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

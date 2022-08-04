@@ -366,15 +366,15 @@ func area_reset(area *AreaData) {
 		mob := db.GetMob(spawn.Mob) // grabs the mob template
 		if spawn.entity != nil {    // checks to see if we have a managed entity
 			if spawn.entity.GetCharData().State == ENTITY_STATE_DEAD { // is it dead?
-				log.Printf("Removing dead entity %s\n", spawn.entity.GetCharData().Name)
-				db.RemoveEntity(spawn.entity)
+				//log.Printf("Removing dead entity %s\n", spawn.entity.GetCharData().Name)
+				//db.RemoveEntity(spawn.entity)
 				spawn.entity = nil // nil it out so we create a new one...
 			} else {
 				continue
 			}
 		}
 		if spawn.entity == nil {
-			log.Printf("Nil entity for spawn, spawning %s\n", mob.GetCharData().Name)
+			//log.Printf("Nil entity for spawn, spawning %s\n", mob.GetCharData().Name)
 			spawn.entity = db.SpawnEntity(mob)
 			spawn.entity.GetCharData().Room = spawn.Room
 			for _, e := range db.GetEntitiesInRoom(spawn.entity.GetCharData().Room, spawn.entity.GetCharData().Ship) {

@@ -1,0 +1,21 @@
+---
+name: Kuat
+sector: Core Worlds
+grid: M-10
+position: [185.999, -59.772]
+stars:
+  1:
+    name: Kuat Prime
+    type: Yellow Dwarf
+    radius: 70
+    position: [500.0, 100.0]
+orbits:
+  1:
+    name: Kuat
+    type: Temperate
+    radius: 12  # 12,465km
+    position: [0, 0]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

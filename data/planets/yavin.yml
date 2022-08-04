@@ -1,0 +1,21 @@
+---
+name: Yavin
+sector: Outer Rim
+grid: P-6
+position: [458.395, 398.671]
+stars:
+  1:
+    name: Yavin Prime
+    type: Yellow Giant
+    radius: 100
+    position: [0.0, 0.0]
+orbits:
+  1:
+    name: Yavin IV
+    type: Temperate
+    radius: 10  # 10,465km
+    position: [850, -400]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

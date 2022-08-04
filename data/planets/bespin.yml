@@ -1,0 +1,21 @@
+---
+name: Bespin
+sector: Outer Rim
+grid: K-18
+position: [-95.33, -849.857]
+stars:
+  1:
+    name: Bespin I
+    type: Yellow-Red Giant
+    radius: 230
+    position: [0.0, 0.0]
+orbits:
+  1:
+    name: Bespin
+    type: Gas
+    radius: 17  # 17,465km
+    position: [630, 1080]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

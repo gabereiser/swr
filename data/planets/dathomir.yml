@@ -1,0 +1,57 @@
+---
+name: Dathomir
+sector: Outer Rim
+grid: O-6
+position: [314.44, 362.44]
+stars:
+  1:
+    name: Domir
+    type: Red Giant
+    radius: 140
+    position: [-100.0, 100.0]
+orbits:
+  1:
+    name: Dathomir
+    type: Temperate
+    radius: 10  # 10,465km
+    position: [850, -400]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []
+  2:
+    name: Dathomir M1
+    type: Moon
+    radius: 2  # 2,465km
+    position: [800, -350]
+    spaceports: []
+    market:
+      imports: []
+      exports: []
+  3:
+    name: Dathomir M2
+    type: Temperate
+    radius: 1  # 1,465km
+    position: [750, -400]
+    spaceports: []
+    market:
+      imports: []
+      exports: []
+  4:
+    name: Dathomir M3
+    type: Temperate
+    radius: 1  # 1,465km
+    position: [850, -600]
+    spaceports: []
+    market:
+      imports: []
+      exports: []
+  5:
+    name: Dathomir M4
+    type: Temperate
+    radius: 1  # 1,465km
+    position: [750, -200]
+    spaceports: []
+    market:
+      imports: []
+      exports: []

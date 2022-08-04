@@ -46,13 +46,29 @@ func sprintf(format string, any ...interface{}) string {
 	return fmt.Sprintf(format, any...)
 }
 
+// D20 System Dice Roll Mechanic
+// Supported formats are...
+// "1d4" for 1 4-sided dice
+// "1d20" for 1 20-sided dice
+// "2d10+10" for 2 10-sided dice + 10 after the roll.
 func roll_dice(d20 string) int {
-	p := strings.Split(strings.ToLower(d20), "d")
+	mods := strings.Split(d20, "+")
+	p := strings.Split(strings.ToLower(mods[0]), "d")
 	num_dice, _ := strconv.Atoi(p[0])
+	if num_dice < 1 {
+		return 0
+	}
 	sides, _ := strconv.Atoi(p[1])
+	if sides < 1 {
+		return 0
+	}
 	roll := 0
 	for i := 0; i < num_dice; i++ {
 		roll += rand.Intn(sides) + 1
+	}
+	if len(mods) == 2 {
+		mod, _ := strconv.Atoi(mods[1])
+		roll += mod
 	}
 	return roll
 }

@@ -1,0 +1,21 @@
+---
+name: Byss
+sector: Deep Core
+grid: K-11
+position: [-48.074, -182.068]
+stars:
+  1:
+    name: Beshqek Prime
+    type: Yellow Giant
+    radius: 150
+    position: [-500.0, 1000.0]
+orbits:
+  1:
+    name: Byss
+    type: Forest
+    radius: 7  # 10,465km
+    position: [0, 0]
+    spaceports: [16000]
+    market:
+      imports: []
+      exports: []

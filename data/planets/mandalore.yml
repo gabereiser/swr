@@ -1,0 +1,39 @@
+---
+name: Mandalore
+sector: Outer Rim
+grid: O-7
+position: [363.452, 272.211]
+stars:
+  1:
+    name: Mandalore Prime
+    type: Yellow Giant
+    radius: 100
+    position: [500.0, 100.0]
+orbits:
+  1:
+    name: Mandalore
+    type: Temperate
+    radius: 10  # 10,465km
+    position: [-400, 1300]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []
+  2:
+    name: Concordia
+    type: Temperate
+    radius: 6  # 6,465km
+    position: [400, 100]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []
+  3:
+    name: Kalevala
+    type: Temperate
+    radius: 8  # 8,465km
+    position: [1400, 3300]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

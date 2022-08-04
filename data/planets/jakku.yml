@@ -1,0 +1,21 @@
+---
+name: Jakku
+sector: Inner Rim
+grid: I-13
+position: [-275.511, -316.755]
+stars:
+  1:
+    name: Jakku
+    type: Yellow Giant
+    radius: 130
+    position: [0.0, 0.0]
+orbits:
+  1:
+    name: Jakku
+    type: Desert
+    radius: 12  # 12,465km
+    position: [1400, 1800]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []

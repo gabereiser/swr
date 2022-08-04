@@ -30,6 +30,7 @@ import (
 var CommandFuncs = map[string]func(Entity, ...string){
 	"do_quit":           do_quit,
 	"do_qui":            do_qui,
+	"do_password":       do_password,
 	"do_say":            do_say,
 	"do_emote":          do_emote,
 	"do_speak":          do_speak,
@@ -69,6 +70,9 @@ var CommandFuncs = map[string]func(Entity, ...string){
 	"do_remove":         do_remove,
 	"do_statsys":        do_statsys,
 	"do_commands":       do_commands,
+	"do_editor":         do_editor,
+	"do_time":           do_time,
+	"do_levels":         do_levels,
 }
 var GMCommandFuncs = map[string]func(Entity, ...string){
 	"do_area_create": do_area_create,
@@ -93,6 +97,7 @@ var GMCommandFuncs = map[string]func(Entity, ...string){
 	"do_item_remove": do_item_remove,
 	"do_item_set":    do_item_set,
 	"do_transfer":    do_transfer,
+	"do_advance":     do_advance,
 }
 
 var Commands []*Command = make([]*Command, 0)
@@ -161,7 +166,7 @@ func do_command(entity Entity, input string) {
 		entity.Prompt()
 	} else {
 		commands := command_fuzzy_match(args[0])
-		if len(commands) > 0 {
+		if len(commands) > 0 && commands[0].Level <= entity.GetCharData().Level {
 			a := args[1:]
 			command_map_to_func(commands[0].Func)(entity, a...)
 			entity.Prompt()

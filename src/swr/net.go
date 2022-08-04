@@ -20,11 +20,9 @@ package swr
 import (
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net"
-	"os"
-	"os/exec"
 	"strings"
 	"time"
 )
@@ -57,18 +55,23 @@ type MudClient struct {
 	Queue   chan string
 }
 
-func (c *MudClient) Raw(str string) {
-	c.Con.SetWriteDeadline(time.Now().Add(10 * time.Second))
-	_, err := c.Con.Write([]byte(str))
-	if err != nil {
-		c.Con.Close()
-		c.Closed = true
-	}
-}
-
 func (c *MudClient) Send(str string) {
 	str = Color().Colorize(str)
-	c.Raw(str)
+	if c.Editing {
+		c.Queue <- str
+	} else {
+		_, e := c.Con.Write([]byte(str))
+		if e == io.EOF {
+			c.Close()
+		}
+		if e == io.ErrClosedPipe {
+			c.Close()
+		}
+		if e == net.ErrClosed {
+			c.Close()
+		}
+	}
+
 }
 
 func (c *MudClient) Sendf(format string, any ...interface{}) {
@@ -82,12 +85,20 @@ func (c *MudClient) Read() string {
 		if c.Closed {
 			break
 		}
+		if c.Editing {
+			break
+		}
 		c.Con.SetReadDeadline(time.Now().Add(1 * time.Hour).Add(1 * time.Second))
 		i, err := c.Con.Read(b)
-		if err != nil {
-			log.Printf("Error: %+v", err)
+		if err == io.EOF {
+			c.Close()
 			c.Con.Close()
-			c.Closed = true
+			return buf
+		}
+		if err != nil {
+			c.Close()
+			c.Con.Close()
+			return buf
 		}
 		if i > 0 {
 			buf += string(b)
@@ -113,7 +124,20 @@ func (c *MudClient) BufferEditor(str *string) {
 	}
 }
 
+func (c *MudClient) Raw(buffer []byte) {
+	c.Con.SetWriteDeadline(time.Now().Add(10 * time.Second))
+	_, e := c.Con.Write(buffer)
+	if e == io.EOF {
+		c.Close()
+		return
+	}
+	if e != nil {
+		ErrorCheck(e)
+	}
+}
+
 type Client interface {
+	Raw(buffer []byte)
 	Send(str string)
 	Sendf(format string, any ...interface{})
 	Read() string
@@ -193,24 +217,29 @@ func acceptClient(con *net.TCPConn) {
 				break
 			}
 			if client.Editing {
-				run_editor(client, client.EditPtr)
-				continue
-			}
-			input := client.Read()
-			if len(input) > 0 {
-				ServerQueue <- MudClientCommand{
-					Entity:  entity,
-					Command: input,
+				run_editor(entity, client.EditPtr)
+			} else {
+				input := client.Read()
+				if len(input) > 0 {
+					if strings.HasPrefix(input, "editor ") {
+						parts := strings.Split(input, " ")[1:]
+						buf := strings.Join(parts, " ")
+						client.BufferEditor(&buf)
+					} else {
+						ServerQueue <- MudClientCommand{
+							Entity:  entity,
+							Command: input,
+						}
+					}
+					client.Idle = 0
 				}
 			}
-			client.Idle = 0
 			time.Sleep(1 * time.Second)
 		}
 	}
 	db.RemoveEntity(entity)
-	log.Printf("Entity %s has left the game.", entity.GetCharData().Name)
+	log.Printf("Player %s has left the game.", entity.GetCharData().Name)
 	db.RemoveClient(client)
-	log.Printf("Client %s has disconnected.", client.Id)
 	room := DB().GetRoom(entity.RoomId(), entity.ShipId())
 	room.SendToRoom(fmt.Sprintf("\r\n&P%s&d has left.\r\n", entity.GetCharData().Name))
 	con.Close()
@@ -236,34 +265,33 @@ func processIdleClients() {
 			}
 			if client.Idle > minuteSeconds {
 				client.Send("\r\n&xClosing idle connection...&d\r\n")
-				client.Closed = true
+				client.Close()
 			}
 		}
 
 	}
 }
 
-func run_editor(client *MudClient, buffer *string) {
-	telnet_disable_local_echo(client.Con)
-	telnet_suppress_ga(client.Con)
-	player := DB().GetEntityForClient(client)
+func run_editor(entity Entity, buffer *string) {
+	//client := entity.(*PlayerProfile).Client.(*MudClient)
+	//telnet_disable_local_echo(client.Con)
+	//telnet_suppress_ga(client.Con)
+	value := editor(entity, *buffer)
+	if value == "" {
+		log.Printf("Editor has no contents, not setting buffer")
+	}
+	p := entity.(*PlayerProfile)
+	c := p.Client.(*MudClient)
+	c.Editing = false
+	for i := 0; i < len(c.Queue); i++ {
+		c.Send(<-c.Queue)
+	}
 
-	file := sprintf("/tmp/%s-buffer", player.GetCharData().Name)
-	err := os.WriteFile(file, []byte(*buffer), 0755)
-	ErrorCheck(err)
-	cmd := exec.Command("vim", file)
-	cmd.Stdin = client.Con
-	cmd.Stdout = client.Con
-	err = cmd.Run()
-	ErrorCheck(err)
-
-	buf, _ := ioutil.ReadFile(file)
-
-	*buffer = string(buf)
-	telnet_unsuppress_ga(client.Con)
-	telnet_enable_local_echo(client.Con)
+	//telnet_unsuppress_ga(client.Con)
+	//telnet_enable_local_echo(client.Con)
 }
 
+/*
 func telnet_suppress_ga(con *net.TCPConn) {
 	_, err := con.Write([]byte{NET_IAC, NET_WILL, NET_GA})
 	if err != nil {
@@ -286,7 +314,8 @@ func telnet_unsuppress_ga(con *net.TCPConn) {
 		panic(fmt.Sprintf("%v", resp))
 	}
 }
-
+*/
+/*
 func telnet_disable_local_echo(con *net.TCPConn) {
 	_, err := con.Write([]byte{NET_IAC, NET_WILL, NET_ECHO})
 	if err != nil {
@@ -309,4 +338,4 @@ func telnet_enable_local_echo(con *net.TCPConn) {
 	if resp[0] != NET_IAC || resp[1] != NET_DONT || resp[2] != NET_ECHO {
 		panic(fmt.Sprintf("%v", resp))
 	}
-}
+}*/

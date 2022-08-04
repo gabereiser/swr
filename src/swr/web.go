@@ -89,7 +89,8 @@ func serverLicense(w http.ResponseWriter, r *http.Request) {
 	buf, _ := ioutil.ReadFile("LICENSE")
 	w.Write(buf)
 }
-func make_file_tree(path []string, list map[string]interface{}) map[string]interface{} {
+
+/*func make_file_tree(path []string, list map[string]interface{}) map[string]interface{} {
 	if _, ok := list[path[0]]; !ok {
 		if strings.HasSuffix(path[0], ".yml") || strings.HasSuffix(path[0], ".yaml") {
 			list[path[0]] = path[0]
@@ -102,18 +103,23 @@ func make_file_tree(path []string, list map[string]interface{}) map[string]inter
 		list[path[0]] = make_file_tree(path[1:], k)
 		return list
 	}
-}
+}*/
 func serveTree(w http.ResponseWriter, r *http.Request) {
-	files := make(map[string]interface{})
+	//files := make(map[string]interface{})
+	files := make([]string, 0)
 	filepath.Walk("data", func(path string, info fs.FileInfo, err error) error {
-		parts := strings.Split(path, "/")
-		files = make_file_tree(parts[0:], files)
+		//parts := strings.Split(path, "/")
+		//files = make_file_tree(parts[0:], files)
+		if strings.HasSuffix(path, ".yml") || strings.HasSuffix(path, ".yaml") {
+			files = append(files, path)
+		}
 		return nil
 	})
 	buf, err := json.Marshal(files)
 	ErrorCheck(err)
 	if err != nil {
 		w.WriteHeader(500)
+		return
 	}
 	w.Write(buf)
 

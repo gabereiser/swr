@@ -18,7 +18,6 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"io"
@@ -34,10 +33,13 @@ func main() {
 	if url == "" {
 		url = "127.0.0.1:5000"
 	}
-
-	con, err := net.Dial("tcp", url)
+	addr, err := net.ResolveTCPAddr("tcp", url)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("error parsing connection URL"))
+	}
+	con, err := net.DialTCP("tcp", nil, addr)
+	if err != nil {
+		panic(fmt.Errorf("error, %v", err))
 	}
 	defer con.Close()
 	fmt.Println("Connected...")
@@ -45,6 +47,7 @@ func main() {
 	var waitGroup sync.WaitGroup
 
 	waitGroup.Add(2)
+	fmt.Print("\x1b[")
 	go func() {
 		defer waitGroup.Done()
 		read(con)
@@ -57,11 +60,15 @@ func main() {
 
 }
 
-func read(con net.Conn) {
-	reader := bufio.NewReader(con)
+func read(con *net.TCPConn) {
+	con.SetReadBuffer(4096)
+	f, err := con.File()
+	if err != nil {
+		panic(fmt.Errorf("error getting file descriptor: %v", err))
+	}
 	for {
 		d := make([]byte, 1)
-		_, err := reader.Read(d)
+		_, err := f.Read(d)
 		if err == io.EOF {
 			os.Exit(1)
 		}
@@ -69,14 +76,18 @@ func read(con net.Conn) {
 	}
 }
 
-func write(con net.Conn) {
-	reader := bufio.NewReader(os.Stdin)
+func write(con *net.TCPConn) {
+	con.SetWriteBuffer(1)
+	f, err := con.File()
+	if err != nil {
+		panic(fmt.Errorf("error getting file descriptor: %v", err))
+	}
 	for {
 		i := make([]byte, 1)
-		_, err := reader.Read(i)
+		_, err := os.Stdin.Read(i)
 		if err == io.EOF {
 			os.Exit(1)
 		}
-		con.Write(i)
+		f.Write(i)
 	}
 }

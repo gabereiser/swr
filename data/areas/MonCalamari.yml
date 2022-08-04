@@ -1,0 +1,2006 @@
+name: MonCalamari
+author: Admin
+levels: [1, 100]
+reset: 300
+reset_msg: The world seems to shift around you.
+rooms:
+    - id: 11000
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11001
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11002
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11003
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11004
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11005
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11006
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11007
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11008
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11009
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11010
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11011
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11012
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11013
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11014
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11015
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11016
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11017
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11018
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11019
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11020
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11021
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11022
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11023
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11024
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11025
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11026
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11027
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11028
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11029
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11030
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11031
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11032
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11033
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11034
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11035
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11036
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11037
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11038
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11039
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11040
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11041
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11042
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11043
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11044
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11045
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11046
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11047
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11048
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11049
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11050
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11051
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11052
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11053
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11054
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11055
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11056
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11057
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11058
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11059
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11060
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11061
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11062
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11063
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11064
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11065
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11066
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11067
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11068
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11069
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11070
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11071
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11072
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11073
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11074
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11075
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11076
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11077
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11078
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11079
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11080
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11081
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11082
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11083
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11084
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11085
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11086
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11087
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11088
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11089
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11090
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11091
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11092
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11093
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11094
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11095
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11096
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11097
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11098
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11099
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11100
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11101
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11102
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11103
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11104
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11105
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11106
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11107
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11108
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11109
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11110
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11111
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11112
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11113
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11114
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11115
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11116
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11117
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11118
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11119
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11120
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11121
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11122
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11123
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11124
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11125
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11126
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11127
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11128
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11129
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11130
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11131
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11132
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11133
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11134
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11135
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11136
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11137
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11138
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11139
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11140
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11141
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11142
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11143
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11144
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11145
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11146
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11147
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11148
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11149
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11150
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11151
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11152
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11153
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11154
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11155
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11156
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11157
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11158
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11159
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11160
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11161
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11162
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11163
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11164
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11165
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11166
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11167
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11168
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11169
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11170
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11171
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11172
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11173
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11174
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11175
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11176
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11177
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11178
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11179
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11180
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11181
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11182
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11183
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11184
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11185
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11186
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11187
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11188
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11189
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11190
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11191
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11192
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11193
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11194
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11195
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11196
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11197
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11198
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11199
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11200
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11201
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11202
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11203
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11204
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11205
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11206
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11207
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11208
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11209
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11210
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11211
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11212
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11213
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11214
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11215
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11216
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11217
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11218
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11219
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11220
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11221
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11222
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11223
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11224
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11225
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11226
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11227
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11228
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11229
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11230
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11231
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11232
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11233
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11234
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11235
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11236
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11237
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11238
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11239
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11240
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11241
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11242
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11243
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11244
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11245
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11246
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11247
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11248
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11249
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11250
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11251
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11252
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11253
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11254
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11255
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11256
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11257
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11258
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11259
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11260
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11261
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11262
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11263
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11264
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11265
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11266
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11267
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11268
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11269
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11270
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11271
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11272
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11273
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11274
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11275
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11276
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11277
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11278
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11279
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11280
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11281
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11282
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11283
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11284
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11285
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11286
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11287
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11288
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11289
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11290
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11291
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11292
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11293
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11294
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11295
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11296
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11297
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11298
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11299
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11300
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11301
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11302
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11303
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11304
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11305
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11306
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11307
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11308
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11309
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11310
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11311
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11312
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11313
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11314
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11315
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11316
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11317
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11318
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11319
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11320
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11321
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11322
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11323
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11324
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11325
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11326
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11327
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11328
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11329
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11330
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11331
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11332
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11333
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11334
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11335
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11336
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11337
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11338
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11339
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11340
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11341
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11342
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11343
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11344
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11345
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11346
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11347
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11348
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11349
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11350
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11351
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11352
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11353
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11354
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11355
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11356
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11357
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11358
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11359
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11360
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11361
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11362
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11363
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11364
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11365
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11366
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11367
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11368
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11369
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11370
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11371
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11372
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11373
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11374
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11375
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11376
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11377
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11378
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11379
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11380
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11381
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11382
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11383
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11384
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11385
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11386
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11387
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11388
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11389
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11390
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11391
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11392
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11393
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11394
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11395
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11396
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11397
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11398
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11399
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11400
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11401
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11402
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11403
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11404
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11405
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11406
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11407
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11408
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11409
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11410
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11411
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11412
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11413
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11414
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11415
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11416
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11417
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11418
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11419
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11420
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11421
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11422
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11423
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11424
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11425
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11426
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11427
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11428
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11429
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11430
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11431
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11432
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11433
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11434
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11435
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11436
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11437
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11438
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11439
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11440
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11441
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11442
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11443
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11444
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11445
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11446
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11447
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11448
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11449
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11450
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11451
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11452
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11453
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11454
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11455
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11456
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11457
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11458
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11459
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11460
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11461
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11462
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11463
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11464
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11465
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11466
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11467
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11468
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11469
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11470
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11471
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11472
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11473
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11474
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11475
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11476
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11477
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11478
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11479
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11480
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11481
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11482
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11483
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11484
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11485
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11486
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11487
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11488
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11489
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11490
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11491
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11492
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11493
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11494
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11495
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11496
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11497
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11498
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}
+    - id: 11499
+      name: A void
+      desc: Somewhere in the void of space.
+      exits: {}

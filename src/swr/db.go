@@ -93,14 +93,23 @@ func (d *GameDatabase) Unlock() {
 }
 
 func (d *GameDatabase) AddClient(client *MudClient) {
-	d.Lock()
-	defer d.Unlock()
 	d.clients = append(d.clients, client)
 }
 
 func (d *GameDatabase) RemoveClient(client *MudClient) {
-	d.Lock()
-	defer d.Unlock()
+	for _, e := range d.entities {
+		if e == nil {
+			continue
+		}
+		if e.IsPlayer() {
+			p := e.(*PlayerProfile)
+			if p.Client != nil {
+				if p.Client == client {
+					d.RemoveEntity(e)
+				}
+			}
+		}
+	}
 	index := -1
 	for i, c := range d.clients {
 		if c == nil {
@@ -137,7 +146,7 @@ func (d *GameDatabase) RemoveEntity(entity Entity) {
 		ret = append(ret, d.entities[index+1:]...)
 		d.entities = ret
 	} else {
-		ErrorCheck(Err(fmt.Sprintf("Can't find entity %s", entity.GetCharData().Name)))
+		ErrorCheck(Err(fmt.Sprintf("Can't find entity %s to remove.", entity.GetCharData().Name)))
 	}
 }
 func (d *GameDatabase) RemoveShip(ship Ship) {
@@ -157,6 +166,14 @@ func (d *GameDatabase) RemoveShip(ship Ship) {
 		d.ships = ret
 	} else {
 		ErrorCheck(Err(fmt.Sprintf("Can't find ship %s", ship.GetData().Name)))
+	}
+}
+
+func (d *GameDatabase) RemoveArea(area *AreaData) {
+	if a, ok := d.areas[area.Name]; ok {
+		for _, r := range a.Rooms {
+			delete(d.rooms, r.Id)
+		}
 	}
 }
 
@@ -252,6 +269,7 @@ func (d *GameDatabase) LoadItems() {
 				item := new(ItemData)
 				err = yaml.Unmarshal(fp, item)
 				ErrorCheck(err)
+				item.Filename = path
 				d.items[item.Id] = item
 			}
 			return nil
@@ -272,6 +290,7 @@ func (d *GameDatabase) LoadMobs() {
 				ch := new(CharData)
 				err = yaml.Unmarshal(fp, ch)
 				ErrorCheck(err)
+				ch.Filename = path
 				d.mobs[ch.Id] = ch
 			}
 			return nil

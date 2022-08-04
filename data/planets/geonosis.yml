@@ -1,0 +1,21 @@
+---
+name: Geonosis
+sector: Outer Rim
+grid: R-16
+position: [644.96, -673.297]
+stars:
+  1:
+    name: Geonosis Prime
+    type: Yellow Giant
+    radius: 100
+    position: [0.0, 0.0]
+orbits:
+  1:
+    name: Geonosis
+    type: Desert
+    radius: 10  # 10,465km
+    position: [1400, -1800]
+    spaceports: [13000]
+    market:
+      imports: []
+      exports: []
