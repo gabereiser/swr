@@ -66,7 +66,47 @@ func do_area_create(entity Entity, args ...string) {
 }
 
 func do_area_set(entity Entity, args ...string) {
-
+	if entity == nil {
+		return
+	}
+	if entity.IsPlayer() {
+		player := entity.(*PlayerProfile)
+		room := DB().GetRoom(player.RoomId(), player.ShipId())
+		if room.Area == nil {
+			entity.Send("\r\n&RNot in an area!&d\r\n")
+			return
+		}
+		if len(args) < 2 {
+			entity.Send("\r\nSyntax aset <field> <value>\r\n")
+			entity.Send("-------------------------------------\r\n")
+			entity.Send("Available Fields:\r\n")
+			entity.Send("name, levels, author, reset, resetMsg")
+			return
+		}
+		switch strings.ToLower(args[0]) {
+		case "name":
+			room.Area.Name = strings.TrimSpace(strings.Join(args[1:], " "))
+		case "levels":
+			if len(args) != 3 {
+				entity.Send("\r\nSyntax: aset levels <min> <max>\r\n")
+				return
+			} else {
+				min, _ := strconv.Atoi(args[1])
+				max, _ := strconv.Atoi(args[2])
+				room.Area.Levels[0] = uint16(min)
+				room.Area.Levels[1] = uint16(max)
+			}
+		case "author":
+			room.Area.Author = strings.TrimSpace(strings.Join(args[1:], " "))
+		case "reset":
+			r, _ := strconv.Atoi(args[1])
+			room.Area.Reset = uint(r)
+		case "resetMsg":
+			room.Area.ResetMsg = strings.TrimSpace(strings.Join(args[1:], " "))
+		default:
+			entity.Send("\r\n&RInvalid field.&d\r\n")
+		}
+	}
 }
 
 func do_area_remove(entity Entity, args ...string) {
@@ -94,13 +134,116 @@ func do_area_reset(entity Entity, args ...string) {
 		entity.Send("\r\n&RArea not found.&d\r\n")
 	}
 }
+func do_area_save(entity Entity, args ...string) {
+	if entity == nil {
+		return
+	}
+	if entity.IsPlayer() {
+		room := DB().GetRoom(entity.RoomId(), entity.ShipId())
+		if room.Area != nil {
+			DB().SaveArea(room.Area)
+			entity.Send("\r\n&YArea Save. Ok.&d\r\n")
+		} else {
+			entity.Send("\r\n&RNot in an area file!&d\r\n")
+		}
+	}
+}
 
 func do_room_create(entity Entity, args ...string) {
 
 }
 
 func do_room_set(entity Entity, args ...string) {
+	if entity == nil {
+		return
+	}
+	if !entity.IsPlayer() {
+		return
+	}
+	player := entity.(*PlayerProfile)
+	room := DB().GetRoom(player.RoomId(), player.ShipId())
+	if len(args) < 2 {
+		entity.Send("\r\nSyntax rset <field> <value>\r\n")
+		entity.Send("-------------------------------------\r\n")
+		entity.Send("Available Fields:\r\n")
+		entity.Send("name, desc, flags")
+		return
+	}
+	switch args[0] {
+	case "name":
+		room.Name = strings.TrimSpace(strings.Join(args[1:], " "))
+	case "desc":
+		room.Desc = consolify(strings.TrimSpace(strings.Join(args[1:], " ")))
+	case "flags":
+		if room.HasFlag(args[1]) {
+			room.RemoveFlag(args[1])
+		} else {
+			room.SetFlag(args[1])
+		}
+	default:
+		entity.Send("\r\n&RField invalid.&d\r\n")
+		return
+	}
+	// Set the data on the AreaRoom []Rooms slice so that when the area is saved, the changes to the room are too.
+	for i, r := range room.Area.Rooms {
+		if r.Id == room.Id {
+			room.Area.Rooms[i] = *room
+		}
+	}
+	entity.Send("\r\n&YSet. Ok.&d\r\n")
+}
 
+func do_room_make_exit(entity Entity, args ...string) {
+	if entity == nil {
+		return
+	}
+	if len(args) != 2 {
+		entity.Send("\r\nSyntax: rexit <dir> <roomId>\r\n")
+		entity.Send("--------------------------------------\r\n")
+		entity.Send("*NOTE* Rooms must be on the same ship/planet.\r\n")
+		entity.Send("Rooms cannot be joined across the galaxy.\r\n")
+		entity.Send("To delete an exit, supply roomId \"0\".\r\n")
+		return
+	}
+	dir := get_direction_string(args[0])
+	vnum, _ := strconv.Atoi(args[1])
+	room := DB().GetRoom(entity.RoomId(), entity.ShipId())
+	if room == nil {
+		entity.Send("\r\n&RFATAL! Unable to determine your room!!!&d\r\n")
+		log.Printf("FATAL: Unable to determine room for roomId %d and locationId %d", entity.RoomId(), entity.ShipId())
+		return
+	}
+	if vnum == 0 {
+		delete(room.Exits, dir)
+		for i, r := range room.Area.Rooms {
+			if r.Id == room.Id {
+				room.Area.Rooms[i] = *room
+			}
+		}
+		entity.Send("\r\n&YExit. Ok&d\r\n")
+		return
+	}
+	to_room := DB().GetRoom(uint(vnum), entity.ShipId())
+	if to_room == nil {
+		entity.Send("\r\n&RFATAL! Unable to find exit room!!!&d\r\n")
+		log.Printf("FATAL: Unable to determine room for roomId %d and locationId %d", vnum, entity.ShipId())
+		return
+	}
+	if room.Area != nil {
+		if to_room.Area != nil {
+			if to_room.Area.Name != room.Area.Name {
+				entity.Send("\r\n&RFATAL! Rooms are not in the same area!!!&d\r\n")
+				return
+			}
+		}
+	} else if room.ship > 0 {
+		if to_room.ship != room.ship {
+			entity.Send("\r\n&RFATAL! Rooms are not in the same area!!!&d\r\n")
+			return
+		}
+	}
+	room.Exits[dir] = to_room.Id
+	entity.Send("\r\n&YExit. Ok.&d\r\n")
 }
 
 func do_room_edit(entity Entity, args ...string) {
@@ -238,5 +381,72 @@ func do_advance(entity Entity, args ...string) {
 				entity_advance_level(p)
 			}
 		}
+	}
+}
+
+func do_dig(entity Entity, args ...string) {
+	if len(args) < 2 {
+		entity.Send("\r\nSyntax: dig <dir> <room name>\r\n")
+		return
+	}
+	if !entity.IsPlayer() {
+		return
+	}
+	player := entity.(*PlayerProfile)
+	if player.Priv != 100 {
+		entity.Send("\r\n&ROnly Immortals can dig, dig?&d\r\n")
+	}
+	db := DB()
+	room := db.GetRoom(player.RoomId(), player.ShipId())
+	dir := get_direction_string(strings.ToLower(args[0]))
+	if _, ok := room.Exits[dir]; ok {
+		entity.Send("\r\n&RRoom already exists in that direction!&d\r\n")
+	} else {
+		lastVnum := uint(0)
+		for _, r := range room.Area.Rooms {
+			if r.Id > lastVnum {
+				lastVnum = r.Id
+			}
+		}
+		next_id := db.GetNextRoomVnum(room.Id, room.ship)
+		if next_id == 0 {
+			entity.Send("\r\n&RUnable to determine next room vnum.&d\r\n")
+			return
+		}
+
+		log.Printf("Found next vnum of %d from room %d", next_id, room.Id)
+
+		room.Exits[dir] = next_id
+		next_room := db.GetRoom(next_id, room.ship)
+
+		if next_room == nil {
+			next_room = &RoomData{
+				Id:        next_id,
+				ship:      room.ship,
+				Name:      strings.TrimSpace(strings.Join(args[1:], " ")),
+				Desc:      sprintf("Room Dugged by %s", entity.GetCharData().Name),
+				Exits:     make(map[string]uint),
+				ExitFlags: make(map[string]*RoomExitFlag),
+				Flags:     []string{"prototype"},
+				RoomProgs: make(map[string]string),
+				Area:      room.Area,
+			}
+		}
+
+		next_room.Name = strings.TrimSpace(strings.Join(args[1:], " "))
+		next_room.Exits[direction_reverse(dir)] = room.Id
+		if next_room.ship > 0 {
+			ship := db.GetShip(next_room.ship)
+			s := ship.GetData()
+			s.Rooms[next_id] = next_room
+		} else {
+			db.rooms[next_id] = next_room
+			for i, r := range room.Area.Rooms {
+				if r.Id == next_room.Id {
+					room.Area.Rooms[i] = *next_room
+				}
+			}
+		}
+		entity.Send("\r\n&GDug a room to the %s&d\r\n", dir)
 	}
 }

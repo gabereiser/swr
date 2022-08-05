@@ -215,6 +215,16 @@
   keywords: [ "levels" ]
   level: 1
   func: do_levels
+-
+  name: board
+  keywords: [ "board" ]
+  level: 1
+  func: do_board_ship
+-
+  name: leave
+  keywords: [ "leave" ]
+  level: 1
+  func: do_leave_ship
 
 # Wiz Commands
 -
@@ -238,6 +248,11 @@
   level: 100
   func: do_area_reset
 -
+  name: asave
+  keywords: [ "asave" ]
+  level: 100
+  func: do_area_save
+-
   name: rcreate
   keywords: [ "rcreate" ]
   level: 100
@@ -252,6 +267,11 @@
   keywords: [ "redit" ]
   level: 100
   func: do_room_edit
+-
+  name: rexit
+  keywords: [ "rexit" ]
+  level: 100
+  func: do_room_make_exit
 -
   name: rfind
   keywords: [ "rfind" ]
@@ -339,7 +359,7 @@
   func: do_mob_stat
 -
   name: transfer
-  keywords: [ "mtransfer" ]
+  keywords: [ "transfer" ]
   level: 100
   func: do_transfer
 -
@@ -352,3 +372,8 @@
   keywords: [ "advance" ]
   level: 100
   func: do_advance
+-
+  name: dig
+  keywords: [ "dig" ]
+  level: 100
+  func: do_dig

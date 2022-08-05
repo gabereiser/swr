@@ -119,6 +119,8 @@ func tune_random_frequency() string {
 	}
 	return buf
 }
+
+// capitalize makes the first letter of each word... capitalized.
 func capitalize(str string) string {
 	parts := strings.Split(str, " ")
 	ret := ""
@@ -127,6 +129,30 @@ func capitalize(str string) string {
 	}
 	return strings.TrimSpace(ret)
 }
+
+// consolify takes a long string and chops it up by word to limit it to 80 character width.
+// useful for terminals and telnet.
+func consolify(str string) string {
+	if len(str) < 80 {
+		return str
+	}
+	words := strings.Split(str, " ")
+	cursor := 1
+	buf := ""
+	for _, w := range words {
+		wlen := len(w)
+		if cursor+wlen > 80 {
+			buf += "\r\n"
+			cursor = 1
+		}
+		buf += sprintf("%s ", w)
+		cursor += wlen + 1 // +1 for the space
+	}
+	return buf
+}
+
+// direction_reverse takes a direction string and returns its spacial opposite direction.
+// ex: east -> west   north -> south   up -> down
 func direction_reverse(direction string) string {
 	switch direction {
 	case "north":
@@ -154,6 +180,8 @@ func direction_reverse(direction string) string {
 	}
 }
 
+// get_gender_for_code takes a gender code (m/f/n) and returns a lowercase printable name.
+// Use [capitalize] if you want to make it pretty.
 func get_gender_for_code(gender string) string {
 	g := strings.ToLower(gender)
 	if g[0:1] == "m" {
@@ -168,19 +196,15 @@ func get_gender_for_code(gender string) string {
 	return "male"
 }
 
+// get_preface_for_name takes a proper noun and returns a prep
 func get_preface_for_name(name string) string {
 	sanitized := strings.ToLower(name)
 	switch sanitized[0:1] {
-	case "a":
-	case "e":
-	case "i":
-	case "o":
-	case "u":
+	case "a", "e", "i", "o", "u", "h", "y":
 		return "an"
 	default:
 		return "a"
 	}
-	return "a"
 }
 func sqrt32(v float32) float32 {
 	return float32(math.Sqrt(float64(v)))

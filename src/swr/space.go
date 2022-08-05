@@ -20,6 +20,7 @@ package swr
 import (
 	"fmt"
 	"math"
+	"strings"
 )
 
 type StarData struct {
@@ -102,12 +103,13 @@ type ShipData struct {
 	Position         []float32          `yaml:"position,flow"` // where is this ship in space? InSpace will be true when in space.
 	Heading          float32            `yaml:"-"`             // where are we going?
 	Speed            float32            `yaml:"-"`             // how fast are we going?
-	InHyper          bool               `yaml:"-"`
-	HyperDestination Starsystem         `yaml:"-"`
-	HyperOrigin      Starsystem         `yaml:"-"`
-	HyperTimeUntil   uint               `yaml:"-"`
-	Hp               []uint             `yaml:"hp,flow"`
-	Sp               []uint             `yaml:"sp,flow"`
+	MaxSpeed         float32            `yaml:"speed"`         // max speed the ship can go (base)
+	InHyper          bool               `yaml:"-"`             // are we in hyperspace? (used by the prompt to tell us how long we have to reach our destination)
+	HyperDestination Starsystem         `yaml:"-"`             // where are we going in hyperspace?
+	HyperOrigin      Starsystem         `yaml:"-"`             // where did we come from?
+	HyperTimeUntil   uint               `yaml:"-"`             // time in seconds until we exit hyperspace.
+	Hp               []uint             `yaml:"hp,flow"`       // ship hitpoints as an array of uint's. [0] is current hp, [1] is max hp. Always a len() of 2.
+	Sp               []uint             `yaml:"sp,flow"`       // ship shield points as an array of uint's. [0] is current sp, [1] is max sp. Always a len() of 2.
 }
 
 type Ship interface {
@@ -177,6 +179,7 @@ func ship_clone(ship Ship) *ShipData {
 		s.Position[1] = sp.Position[1]
 		s.Heading = sp.Heading
 		s.Speed = sp.Speed
+		s.MaxSpeed = sp.MaxSpeed
 		s.HyperOrigin = nil
 		s.HyperDestination = nil
 		s.HyperTimeUntil = 0
@@ -215,4 +218,61 @@ func do_starsystems(entity Entity, args ...string) {
 		entity.Send("&Y└──────────────────────────────────────────────────────────────────────────────┘&d\r\n")
 	}
 	entity.Send("\r\n")
+}
+
+func do_board_ship(entity Entity, args ...string) {
+	if entity == nil {
+		return
+	}
+	if len(args) == 0 {
+		entity.Send("\r\nSyntax: board <shipname>\r\n")
+		return
+	}
+	room := DB().GetRoom(entity.RoomId(), entity.ShipId())
+	shipname := strings.Join(args, " ")
+	ships := DB().GetShipsInRoom(entity.RoomId())
+	for _, s := range ships {
+		ship := s.GetData()
+		if strings.HasPrefix(ship.Name, shipname) {
+			ch := entity.GetCharData()
+			if ch.Mv[0] <= 0 {
+				entity.Send("\r\n&YYou are exhausted.&d\r\n")
+				return
+			}
+			ch.Room = ship.Ramp
+			ch.Ship = ship.Id
+			ship_ramp := DB().GetRoom(ship.Ramp, ship.Id)
+			ship_ramp.SendToOthers(entity, sprintf("\r\n%s has boarded the ship.\r\n", ch.Name))
+			room.SendToOthers(entity, sprintf("\r\n%s left boarding a ship.\r\n", ch.Name))
+			entity.Send("\r\nYou board the ship.\r\n")
+		}
+	}
+}
+
+func do_leave_ship(entity Entity, args ...string) {
+	if entity == nil {
+		return
+	}
+	room := DB().GetRoom(entity.RoomId(), entity.ShipId())
+	ship := DB().GetShip(entity.ShipId())
+	if ship.GetData().InSpace {
+		entity.Send("\r\n&RYou can't leave the airlock in space.&d\r\n")
+		return
+	}
+	if room.Id != ship.GetData().Ramp {
+		entity.Send("\r\n&cPlease make your way to the ramp to leave the ship.&d\r\n")
+		return
+	} else {
+		to_room := DB().GetRoom(ship.GetData().LocationId, 0)
+		ch := entity.GetCharData()
+		ch.Room = to_room.Id
+		ch.Ship = 0
+		room.SendToOthers(entity, sprintf("\r\n%s has left the ship.\r\n", ch.Name))
+		to_room.SendToOthers(entity, sprintf("\r\n%s has arrived.\r\n", ch.Name))
+		entity.Send("\r\nYou leave the ship.")
+		ServerQueue <- MudClientCommand{
+			Entity:  entity,
+			Command: "look",
+		}
+	}
 }

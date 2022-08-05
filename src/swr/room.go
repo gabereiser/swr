@@ -49,11 +49,11 @@ type RoomData struct {
 	Id        uint                     `yaml:"id"`
 	ship      uint                     `yaml:"shipId,omitempty"`
 	Name      string                   `yaml:"name"`
-	Desc      string                   `yaml:"desc,flow"`
-	Exits     map[string]uint          `yaml:"exits,flow"`
-	ExitFlags map[string]*RoomExitFlag `yaml:"exflags,flow,omitempty"`
+	Desc      string                   `yaml:"desc"`
+	Exits     map[string]uint          `yaml:"exits"`
+	ExitFlags map[string]*RoomExitFlag `yaml:"exflags,omitempty"`
 	Flags     []string                 `yaml:"flags,flow,omitempty"`
-	RoomProgs map[string]string        `yaml:"roomProgs,flow,omitempty"`
+	RoomProgs map[string]string        `yaml:"roomProgs,omitempty"`
 	Area      *AreaData                `yaml:"-"`
 	Items     []Item                   `yaml:"-"`
 }
@@ -115,6 +115,39 @@ func (r *RoomData) FindItem(keyword string) Item {
 	return nil
 }
 
+func (r *RoomData) HasFlag(flag string) bool {
+	for _, f := range r.Flags {
+		if strings.EqualFold(f, flag) {
+			return true
+		}
+	}
+	return false
+}
+func (r *RoomData) RemoveFlag(flag string) {
+	index := -1
+	for i, f := range r.Flags {
+		if strings.EqualFold(f, flag) {
+			index = i
+		}
+	}
+	if index > -1 {
+		ret := make([]string, 0)
+		ret = append(ret, r.Flags[:index]...)
+		ret = append(ret, r.Flags[index+1:]...)
+		r.Flags = ret
+	}
+}
+func (r *RoomData) SetFlag(flag string) {
+	found := false
+	for _, f := range r.Flags {
+		if strings.EqualFold(f, flag) {
+			found = true
+		}
+	}
+	if !found {
+		r.Flags = append(r.Flags, flag)
+	}
+}
 func (r *RoomData) GetExitFlags(direction string) *RoomExitFlag {
 	if _, ok := r.ExitFlags[direction]; ok {
 		return r.ExitFlags[direction]
@@ -264,7 +297,7 @@ func (r *RoomData) LockDoor(entity Entity, direction string, key Item) {
 	flags.Locked = true
 	flags.Key = key.GetTypeId()
 	if entity != nil {
-		entity.Send("\r\n&YWith a clunk you lock the door with %s %s.&d\r\n", get_preface_for_name(key.GetData().Name), key.GetData().Name)
+		entity.Send("\r\n&YWith a clunk you lock the door with %s %s.&d\r\n", key.GetData().Name, key.GetData().Name)
 	}
 }
 

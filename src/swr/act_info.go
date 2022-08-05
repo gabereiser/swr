@@ -215,7 +215,7 @@ func do_equip(entity Entity, args ...string) {
 	}
 
 	entity.GetCharData().Equipment[wearLoc] = data
-	entity.Send("\r\n&YYou equip %s %s&d\r\n", get_preface_for_name(data.Name), data.Name)
+	entity.Send("\r\n&YYou equip %s %s&d\r\n", data.Name, data.Name)
 	entity.GetCharData().RemoveItem(item)
 	others := DB().GetEntitiesInRoom(entity.RoomId(), entity.ShipId())
 	for _, e := range others {

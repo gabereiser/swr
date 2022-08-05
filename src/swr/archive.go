@@ -59,9 +59,7 @@ func DoBackup(t time.Time) {
 	log.Printf("***** BACKUP STARTED *****\r\n")
 	// Lock the database to prevent disk activity while we tar a backup archive
 	db := DB()
-	db.Lock()
-	defer db.Unlock()
-
+	db.Save()
 	if runtime.GOOS == "windows" {
 		_, err := exec.Command("tar", "-cJf", fmt.Sprintf("backup\\%s.tar.xz", t.Format("2006_01_02_15_04_05")), "data").Output()
 		ErrorCheck(err)

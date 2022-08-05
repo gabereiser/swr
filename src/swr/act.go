@@ -63,6 +63,7 @@ func do_look(entity Entity, args ...string) {
 	}
 	if entity.IsPlayer() {
 		ch := entity.GetCharData()
+		player := entity.(*PlayerProfile)
 		if ch.State == ENTITY_STATE_DEAD {
 			return
 		}
@@ -76,19 +77,26 @@ func do_look(entity Entity, args ...string) {
 			ship := entity.GetShip()
 			room := DB().GetRoom(roomId, shipId)
 			if room != nil {
-				entity.Send(fmt.Sprintf("\r\n%s\r\n",
-					MakeTitle(room.Name,
-						ANSI_TITLE_STYLE_NORMAL,
-						ANSI_TITLE_ALIGNMENT_CENTER)))
+				if player.Priv >= 100 {
+					entity.Send(fmt.Sprintf("\r\n%s\r\n",
+						MakeTitle(sprintf("%s [%d]", room.Name, room.Id),
+							ANSI_TITLE_STYLE_NORMAL,
+							ANSI_TITLE_ALIGNMENT_CENTER)))
+				} else {
+					entity.Send(fmt.Sprintf("\r\n%s\r\n",
+						MakeTitle(room.Name,
+							ANSI_TITLE_STYLE_NORMAL,
+							ANSI_TITLE_ALIGNMENT_CENTER)))
+				}
 				entity.Send(sprintf("&W%s&d\r\n", telnet_encode(room.Desc)))
 				for dir, to_room_id := range room.Exits {
 					to_room := DB().GetRoom(to_room_id, shipId)
 					if k, ok := room.ExitFlags[dir]; ok {
 						exit_flags := k
 						ext := room_get_exit_status(exit_flags)
-						entity.Send(sprintf("&G%s&W - &Y(&W%s&Y) &C%s&d\r\n", capitalize(dir), to_room.Name, ext))
+						entity.Send(sprintf("&G%s&W - &Y[&W%s&Y] &C%s&d\r\n", capitalize(dir), to_room.Name, ext))
 					} else {
-						entity.Send(sprintf("&G%s&W - &Y(&W%s&Y)&d\r\n", capitalize(dir), to_room.Name))
+						entity.Send(sprintf("&G%s&W - &Y[&W%s&Y]&d\r\n", capitalize(dir), to_room.Name))
 					}
 				}
 				entity.Send("\r\n")
@@ -98,9 +106,9 @@ func do_look(entity Entity, args ...string) {
 						continue
 					}
 					if item.IsCorpse() {
-						entity.Send("%s   &w%s %s&d\r\n", EMOJI_TOMBSTONE, get_preface_for_name(item.GetData().Name), item.GetData().Name)
+						entity.Send("%s   &w%s %s&d\r\n", EMOJI_TOMBSTONE, item.GetData().Name, item.GetData().Name)
 					} else {
-						entity.Send("&w%s %s&d\r\n", get_preface_for_name(item.GetData().Name), item.GetData().Name)
+						entity.Send("&w%s %s&d\r\n", item.GetData().Name, item.GetData().Name)
 					}
 
 				}
@@ -136,9 +144,9 @@ func do_look(entity Entity, args ...string) {
 									continue
 								}
 								if item.IsCorpse() {
-									entity.Send("%s   &w%s %s&d\r\n", EMOJI_TOMBSTONE, get_preface_for_name(item.GetData().Name), item.GetData().Name)
+									entity.Send("%s   &w%s %s&d\r\n", EMOJI_TOMBSTONE, item.GetData().Name, item.GetData().Name)
 								} else {
-									entity.Send("&w%s %s&d\r\n", get_preface_for_name(item.GetData().Name), item.GetData().Name)
+									entity.Send("&w%s %s&d\r\n", item.GetData().Name, item.GetData().Name)
 								}
 
 							}

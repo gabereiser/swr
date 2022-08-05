@@ -446,6 +446,15 @@ func (d *GameDatabase) GetShipsInSystem(system string) []Ship {
 	}
 	return ret
 }
+func (d *GameDatabase) GetShipsInRoom(roomId uint) []Ship {
+	ret := make([]Ship, 0)
+	for _, s := range d.ships {
+		if s.GetData().LocationId == roomId && !s.GetData().InSpace {
+			ret = append(ret, s)
+		}
+	}
+	return ret
+}
 func (d *GameDatabase) GetEntity(entity Entity) Entity {
 	for _, e := range d.entities {
 		if e == entity {
@@ -489,6 +498,39 @@ func (d *GameDatabase) GetRoom(roomId uint, shipId uint) *RoomData {
 		}
 	}
 	return nil
+}
+
+func (d *GameDatabase) GetNextRoomVnum(roomId uint, shipId uint) uint {
+	if shipId > 0 {
+		for _, s := range d.ships {
+			if s.GetData().Id == shipId {
+				lastVnum := uint(0)
+				for _, r := range s.GetData().Rooms {
+					if r.Name == "A void" { // return the first void prototype room...
+						return r.Id
+					}
+					if r.Id > lastVnum {
+						lastVnum = r.Id
+					}
+				}
+				return lastVnum + 1
+			}
+		}
+	} else {
+		lastVnum := uint(0)
+		// let's get the room's area
+		room := d.GetRoom(roomId, shipId)
+		for _, r := range room.Area.Rooms {
+			if r.Name == "A void" { // return the first void prototype room
+				return r.Id
+			}
+			if r.Id > lastVnum {
+				lastVnum = r.Id
+			}
+		}
+		return lastVnum + 1
+	}
+	return 0
 }
 
 func (d *GameDatabase) GetItem(itemId uint) Item {
