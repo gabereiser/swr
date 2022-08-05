@@ -263,11 +263,6 @@
   level: 100
   func: do_room_set
 -
-  name: redit
-  keywords: [ "redit" ]
-  level: 100
-  func: do_room_edit
--
   name: rexit
   keywords: [ "rexit" ]
   level: 100
@@ -277,11 +272,6 @@
   keywords: [ "rfind" ]
   level: 100
   func: do_room_find
--
-  name: rreset
-  keywords: [ "rreset" ]
-  level: 100
-  func: do_room_reset
 -
   name: rremove
   keywords: [ "rremove" ]
