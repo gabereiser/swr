@@ -1,0 +1,20 @@
+---
+name: World Building
+keywords: ["building", "world-building", "builders", "asave", "acreate", "dig", "rset", "rexit", "rremove", "rstat"]
+level: 100
+desc: |
+  Building worlds and creating iconic locations is no easy task. Players
+  of SWR are already well versed in the locations around the galaxy. To
+  make a compelling world, you'll have to be creative and have some
+  scripting skills. That said, it's incredibly easy to build worlds in
+  SWR. Here's a list of some helpful commands:
+
+  acreate - Creates a new area.
+  asave   - Saves an area (and all it's rooms). Use this frequently.
+
+  dig     - Creates a room or repurposes a prototype room. This allows one
+            to build out areas really quickly.
+  rset    - To set fields on a room. Name, Description, etc.
+  rexit   - To create an exit between rooms.
+  rremove - Removes a room from the game. Make sure you aren't inside.
+  rstat   - Displays room information, flags, etc.
