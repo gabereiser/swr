@@ -237,7 +237,6 @@ func acceptClient(con *net.TCPConn) {
 			time.Sleep(1 * time.Second)
 		}
 	}
-	db.RemoveEntity(entity)
 	log.Printf("Player %s has left the game.", entity.GetCharData().Name)
 	db.RemoveClient(client)
 	room := DB().GetRoom(entity.RoomId(), entity.ShipId())

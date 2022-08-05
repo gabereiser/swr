@@ -264,18 +264,22 @@ func (d *GameDatabase) LoadItems() {
 				return err
 			}
 			if !info.IsDir() {
-				fp, err := ioutil.ReadFile(path)
-				ErrorCheck(err)
-				item := new(ItemData)
-				err = yaml.Unmarshal(fp, item)
-				ErrorCheck(err)
-				item.Filename = path
-				d.items[item.Id] = item
+				d.LoadItem(path)
 			}
 			return nil
 		})
 	ErrorCheck(err)
 	log.Printf("%d items loaded.", len(d.items))
+}
+
+func (d *GameDatabase) LoadItem(path string) {
+	fp, err := ioutil.ReadFile(path)
+	ErrorCheck(err)
+	item := new(ItemData)
+	err = yaml.Unmarshal(fp, item)
+	ErrorCheck(err)
+	item.Filename = path
+	d.items[item.Id] = item
 }
 
 func (d *GameDatabase) LoadMobs() {
@@ -304,6 +308,8 @@ func (d *GameDatabase) Save() {
 	d.Lock()
 	defer d.Unlock()
 	d.SaveAreas()
+	d.SaveItems()
+	d.SaveShips()
 }
 
 func (d *GameDatabase) SaveAreas() {
@@ -311,11 +317,41 @@ func (d *GameDatabase) SaveAreas() {
 		d.SaveArea(area)
 	}
 }
+func (d *GameDatabase) SaveItems() {
+	for _, item := range d.items {
+		d.SaveItem(item)
+	}
+}
+
+func (d *GameDatabase) SaveShips() {
+	for _, ship := range d.ship_prototypes {
+		buf, err := yaml.Marshal(ship)
+		ErrorCheck(err)
+		err = ioutil.WriteFile(fmt.Sprintf("data/ships/prototypes/%s.yml", strings.ToLower(strings.ReplaceAll(ship.Name, " ", ""))), buf, 0755)
+		ErrorCheck(err)
+	}
+	for _, ship := range d.ships {
+		d.SaveShip(ship)
+	}
+}
+
+func (d *GameDatabase) SaveShip(ship Ship) {
+	buf, err := yaml.Marshal(ship)
+	ErrorCheck(err)
+	err = ioutil.WriteFile(fmt.Sprintf("data/ships/%s.yml", strings.ToLower(strings.ReplaceAll(ship.GetData().Name, " ", ""))), buf, 0755)
+	ErrorCheck(err)
+}
 
 func (d *GameDatabase) SaveArea(area *AreaData) {
 	buf, err := yaml.Marshal(area)
 	ErrorCheck(err)
 	err = ioutil.WriteFile(fmt.Sprintf("data/areas/%s.yml", area.Name), buf, 0755)
+	ErrorCheck(err)
+}
+func (d *GameDatabase) SaveItem(item *ItemData) {
+	buf, err := yaml.Marshal(item)
+	ErrorCheck(err)
+	err = ioutil.WriteFile(item.Filename, buf, 0755)
 	ErrorCheck(err)
 }
 
@@ -529,6 +565,14 @@ func (d *GameDatabase) GetNextRoomVnum(roomId uint, shipId uint) uint {
 			}
 		}
 		return lastVnum + 1
+	}
+	return 0
+}
+func (d *GameDatabase) GetNextItemVnum() uint {
+	for i := uint(1); i < (^uint(0)); i++ {
+		if _, ok := d.items[i]; !ok {
+			return i
+		}
 	}
 	return 0
 }

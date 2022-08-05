@@ -326,6 +326,9 @@ func (r *RoomData) SendToOthers(entity Entity, message string) {
 		e.Send(message)
 	}
 }
+func (r *RoomData) GetEntities() []Entity {
+	return DB().GetEntitiesInRoom(r.Id, r.ship)
+}
 func room_get_blocked_exit_flags(exitFlags *RoomExitFlag) (locked bool, closed bool) {
 	locked = false
 	closed = false

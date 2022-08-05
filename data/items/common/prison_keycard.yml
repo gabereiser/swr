@@ -1,21 +1,20 @@
----
 id: 1
 name: a keycard
-keywords: [key,keycard]
 desc: |
-  A simple keycard. There's some significant wear.
-     .------------------------.
-    /                         |
-   /    ID: X2F-492D-1001     |
-  |___________________________|
-  | Imperial Transport Ship   |
-  |---------------------------|
-  | -=[ CELL ACTIVATION A ]=- |
-  .---------------------------.
-  | ||  |   |    ||| |  |  || |
-  :::::::::::::::::::::::::::::
-  :::::::::::::::::::::::::::::
-  :::::::::::::::::::::::::::::
+    A simple keycard. There's some significant wear.
+       .------------------------.
+      /                         |
+     /    ID: X2F-492D-1001     |
+    |___________________________|
+    | Imperial Transport Ship   |
+    |---------------------------|
+    | -=[ CELL ACTIVATION A ]=- |
+    .---------------------------.
+    | ||  |   |    ||| |  |  || |
+    :::::::::::::::::::::::::::::
+    :::::::::::::::::::::::::::::
+    :::::::::::::::::::::::::::::
+keywords: [key, keycard]
 type: key
-weight: 0
 value: 0
+weight: 0

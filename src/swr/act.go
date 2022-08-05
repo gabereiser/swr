@@ -88,7 +88,8 @@ func do_look(entity Entity, args ...string) {
 							ANSI_TITLE_STYLE_NORMAL,
 							ANSI_TITLE_ALIGNMENT_CENTER)))
 				}
-				entity.Send(sprintf("&W%s&d\r\n", telnet_encode(room.Desc)))
+				entity.Send(sprintf("&W%s&d\r\n\r\n", telnet_encode(room.Desc)))
+				entity.Send("Exits: \r\n")
 				for dir, to_room_id := range room.Exits {
 					to_room := DB().GetRoom(to_room_id, shipId)
 					if k, ok := room.ExitFlags[dir]; ok {
@@ -144,9 +145,9 @@ func do_look(entity Entity, args ...string) {
 									continue
 								}
 								if item.IsCorpse() {
-									entity.Send("%s   &w%s %s&d\r\n", EMOJI_TOMBSTONE, item.GetData().Name, item.GetData().Name)
+									entity.Send("%s   &w%s&d\r\n", EMOJI_TOMBSTONE, item.GetData().Name)
 								} else {
-									entity.Send("&w%s %s&d\r\n", item.GetData().Name, item.GetData().Name)
+									entity.Send("&w%s&d\r\n", item.GetData().Name)
 								}
 
 							}

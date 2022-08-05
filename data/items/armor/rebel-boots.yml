@@ -1,10 +1,10 @@
----
 id: 105
 name: rebel boots
 desc: |
-  A pair of rebel alliance boots. They seem well worn.
+    A pair of rebel alliance boots. They seem well worn.
+keywords: []
 type: armor
-weight: 2
 value: 210
+weight: 2
 ac: 4
 wearLoc: feet

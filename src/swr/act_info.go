@@ -213,9 +213,13 @@ func do_equip(entity Entity, args ...string) {
 	if !item.IsWeapon() {
 		wearLoc = *data.WearLoc
 	}
-
+	if !item_is_wearable_slot(wearLoc) && wearLoc != "weapon" {
+		entity.Send("\r\n&RBUG: Item is wearable but on an invalid slot.&d\r\n")
+		log.Printf("BUG: Item OId[%d] is wearable but on an invalid slot.&d", item.GetData().OId)
+		return
+	}
 	entity.GetCharData().Equipment[wearLoc] = data
-	entity.Send("\r\n&YYou equip %s %s&d\r\n", data.Name, data.Name)
+	entity.Send("\r\n&YYou equip %s&d\r\n", data.Name)
 	entity.GetCharData().RemoveItem(item)
 	others := DB().GetEntitiesInRoom(entity.RoomId(), entity.ShipId())
 	for _, e := range others {

@@ -263,6 +263,11 @@
   level: 100
   func: do_room_set
 -
+  name: rstat
+  keywords: [ "rstat" ]
+  level: 100
+  func: do_room_stat
+-
   name: rexit
   keywords: [ "rexit" ]
   level: 100

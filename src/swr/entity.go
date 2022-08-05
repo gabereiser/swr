@@ -78,6 +78,7 @@ type Entity interface {
 	Weapon() Item                        // get the current weapon. nil means he's bruce lee and fights with his fists. bravo good sir, bravo.
 	FindItem(keyword string) Item        // find an item on this entity by keyword. If multiple are found, it will return the first found.
 	GetShip() Ship                       // get the current ship the player is in. Not that they own it, but physically inside.
+	GetRoom() *RoomData                  // get the room the entity is in.
 }
 
 type CharData struct {
@@ -261,7 +262,7 @@ func (c *CharData) DamageRoll(skillName string) uint {
 	} else {
 		skill += get_weapon_skill_stat("martial-arts", str, dex)
 	}
-	skill = umin(0, skill/10)
+	skill = umin(1, skill/10)
 	dmg := uint(roll_dice(d)) + uint(roll_dice(fmt.Sprintf("%dd4", skill)))
 	return dmg
 }
@@ -350,6 +351,10 @@ func (c *CharData) GetShip() Ship {
 		return DB().GetShip(c.Ship)
 	}
 	return nil
+}
+
+func (c *CharData) GetRoom() *RoomData {
+	return DB().GetRoom(c.Room, c.Ship)
 }
 
 // Return the backing CharData struct
@@ -490,6 +495,10 @@ func (p *PlayerProfile) GetShip() Ship {
 		return DB().GetShip(p.Char.Ship)
 	}
 	return nil
+}
+
+func (p *PlayerProfile) GetRoom() *RoomData {
+	return DB().GetRoom(p.Char.Room, p.Char.Ship)
 }
 
 // Clones an entity, generating a new ID, copying over the values, and returns the cloned [Entity]

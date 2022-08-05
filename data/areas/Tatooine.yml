@@ -2,11 +2,11 @@ name: Tatooine
 author: Admin
 levels: [1, 100]
 reset: 300
-reset_msg: The world seems to shift around you.
+reset_msg: Sands brush past your feet as a light wind picks up.
 rooms:
     - id: 1000
       name: Mos Eisley Spaceport
-      desc: Somewhere in the void of space.
+      desc: "You are inside Mos Eisley Spaceport. Travellers from all over the galaxy are \r\nhere going about their business. Some pilots over in the east corner are \r\nlaughing as they discuss their latest travel. To the north is the terminal, to \r\nthe northwest is the traders guild. If you're looking for a hauling contract, \r\nthat's where you'd find them. To the south is the Mos Eisley Landing Pad. "
       exits:
         north: 1003
         northwest: 1001
@@ -18,30 +18,31 @@ rooms:
         southeast: 1000
     - id: 1002
       name: Mos Eisley Landing Pad
-      desc: Somewhere in the void of space.
+      desc: "You are standing in a landing pad are of Mos Eisley Spaceport. It's pretty \r\nrough as the sands have deteriorated the walls and covered the magnetic landing \r\nlocks. Storage bins are deshuffled as the port droids seem preoccupied. To the \r\nnorth is the spaceport. Perhaps they'll be someone there that can clean up this \r\nplace. "
       exits:
         north: 1000
+      flags: [spaceport]
     - id: 1003
       name: Mos Eisley Spaceport Terminal
-      desc: Somewhere in the void of space.
+      desc: "Mos Eisley Spaceport. You are standing in the terminal building. It's dark. \r\nIt's musky. It's loud. Hundreds of travelers are trying to find their way \r\nthrough the spaceport and on their way. A few shady individuals are in the \r\ncorner discussing business. A couple slavers are taking a large Wookiee to a \r\nship. Only two imperial stormtroopers are anywhere to be seen. "
       exits:
         northwest: 1004
         south: 1000
     - id: 1004
       name: Mos Eisley Spaceport Terminal
-      desc: Somewhere in the void of space.
+      desc: "Mos Eisley Spaceport. You are standing in the terminal building. It's dark. \r\nIt's musky. It's loud. Hundreds of travelers are trying to find their way \r\nthrough the spaceport and on their way. A few shady individuals are in the \r\ncorner discussing business. A couple slavers are taking a large Wookiee to a \r\nship. Only two imperial stormtroopers are anywhere to be seen. "
       exits:
         north: 1005
         southeast: 1003
     - id: 1005
       name: Outside Mos Eisley Spaceport Security
-      desc: Somewhere in the void of space.
+      desc: "You're standing on the terminal side of Mos Eisley Spaceport Security. Security \r\nguards search through travelers belongings looking for contraband. If you have \r\nany, you should probably dispose of it here or hide it somehow. The fine for \r\npossession of contraband is severe. "
       exits:
         northeast: 1006
         south: 1004
     - id: 1006
       name: Mos Eisley Spaceport Security
-      desc: Somewhere in the void of space.
+      desc: "You're at Mos Eisley Spaceport Security. Guards search through travelers \r\nbelongings looking for contraband. They eye you and beckon you forward to the \r\ntable. One guard has a wand ready to pat you down. The fine for possession of \r\ncontraband is severe. "
       exits:
         north: 1007
         southwest: 1005

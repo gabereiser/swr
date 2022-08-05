@@ -1,9 +1,8 @@
----
 id: 3
 name: a small comlink
 desc: |
-  A small comlink.
-keywords: [comlink,com,small]
+    A small comlink.
+keywords: [comlink, com, small]
 type: comlink
-weight: 1
 value: 50
+weight: 1

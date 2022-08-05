@@ -86,6 +86,7 @@ var GMCommandFuncs = map[string]func(Entity, ...string){
 	"do_room_find":      do_room_find,
 	"do_room_remove":    do_room_remove,
 	"do_room_set":       do_room_set,
+	"do_room_stat":      do_room_stat,
 	"do_room_make_exit": do_room_make_exit,
 	"do_mob_create":     do_mob_create,
 	"do_mob_stat":       do_mob_stat,

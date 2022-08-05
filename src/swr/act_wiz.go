@@ -162,7 +162,45 @@ func do_area_save(entity Entity, args ...string) {
 func do_room_create(entity Entity, args ...string) {
 
 }
+func do_room_stat(entity Entity, args ...string) {
+	if len(args) > 2 {
+		entity.Send("\r\nSyntax: rstat <vnum?> <shipId?>     | vnum and shipId are optional, but vnum must be supplied with shipId.\r\n")
+		return
+	}
+	room := entity.GetRoom()
+	vnum := room.Id
+	shipId := room.ship
+	if len(args) == 2 {
+		value, _ := strconv.Atoi(args[0])
+		vnum = uint(value)
+		value, _ = strconv.Atoi(args[1])
+		shipId = uint(value)
+	}
+	if len(args) == 1 {
+		value, _ := strconv.Atoi(args[0])
+		vnum = uint(value)
+	}
+	room = DB().GetRoom(vnum, shipId)
+	ship := "None"
 
+	if shipId > 0 {
+		s := DB().GetShip(shipId)
+		ship = s.GetData().Name + " (" + s.GetData().Type + ")"
+	}
+	entity.Send("\r\n%s\r\n", MakeTitle("Room Stat", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
+	entity.Send("     &GName: &W\"%s\"&d\r\n", room.Name)
+	entity.Send("     &GVNum: &W%-7d &GShip: &W%s&d\r\n", room.Id, ship)
+	entity.Send("     &GArea: &W%s&d\r\n", room.Area.Name)
+	entity.Send("    &GFlags: &W%v&d\r\n", room.Flags)
+	entity.Send("     &GDesc: &W\"%s\"&d\r\n", room.Desc)
+	entity.Send("    &GExits: &W%+v&d\r\n", room.Exits)
+	entity.Send("&GExitFlags: &W%+v&d\r\n", room.ExitFlags)
+	entity.Send("&GRoomProgs: &d\r\n")
+	for name, value := range room.RoomProgs {
+		entity.Send("&y%s&w:%s&d\r\n", name, value)
+	}
+
+}
 func do_room_set(entity Entity, args ...string) {
 	if entity == nil {
 		return
@@ -171,7 +209,7 @@ func do_room_set(entity Entity, args ...string) {
 		return
 	}
 	player := entity.(*PlayerProfile)
-	room := DB().GetRoom(player.RoomId(), player.ShipId())
+	room := player.GetRoom()
 	if len(args) < 2 {
 		entity.Send("\r\nSyntax rset <field> <value>\r\n")
 		entity.Send("-------------------------------------\r\n")
@@ -291,11 +329,132 @@ func do_room_remove(entity Entity, args ...string) {
 }
 
 func do_item_create(entity Entity, args ...string) {
+	if entity == nil {
+		return
+	}
+	if len(args) != 3 {
+		entity.Send("\r\nSyntax: ocreate <filename> <itemtype> <item name>\r\n")
+		return
+	}
+	room := DB().GetRoom(entity.RoomId(), entity.ShipId())
+	if room.ship > 0 {
+		entity.Send("\r\n&RItem's must be created on planets. So we can use the area name in the filepath.&d\r\n&xsorry...&d\r\n")
+		return
+	}
+	filename := args[0]
+	// no need to use .yml in the filename, the path of the item will be /data/items/<area>/<file_name>.yml
+	if strings.HasSuffix(filename, ".yaml") || strings.HasSuffix(filename, ".yml") {
+		filename = strings.TrimSuffix(filename, ".yaml")
+		filename = strings.TrimSuffix(filename, ".yml")
+	}
+	itemtype := args[1]
+	if !item_is_item_type(itemtype) {
+		entity.Send("\r\n&RInvalid item type.&d\r\n")
+		return
+	}
+	itemname := strings.TrimSpace(strings.Join(args[2:], " "))
+	words := strings.Split(strings.ToLower(itemname), " ")
+	for i, s := range words {
+		if len(s) < 4 {
+			words[i] = ""
+			// simple words like a, or an, or the aren't good keywords.
+			// You can use the itemtype as a keyword to add a proper one after creation.
+		}
+	}
+	keywords := strings.Split(strings.Join(words, " "), " ")
+	item := new(ItemData)
+	item.Id = DB().GetNextItemVnum()
+	item.OId = DB().GetNextItemVnum()
+	item.Name = itemname
+	item.Keywords = make([]string, 0)
+	item.Keywords = append(item.Keywords, itemtype)
+	item.Keywords = append(item.Keywords, keywords...)
 
+	item.Desc = "A lob of goo."
+	item.Type = itemtype
+	item.Filename = sprintf("data/items/%s/%s.yml", strings.ToLower(strings.ReplaceAll(room.Area.Name, " ", "")), strings.ToLower(filename))
+	DB().SaveItem(item)
+	DB().LoadItem(item.Filename)
+	entity.Send("\r\n&YObject Create. Ok.&d\r\n")
+	room.AddItem(item_clone(item))
 }
 
 func do_item_set(entity Entity, args ...string) {
-
+	room := DB().GetRoom(entity.RoomId(), entity.ShipId())
+	if len(args) < 3 {
+		entity.Send("\r\nSyntax: oset <item> <field> <value>\r\n")
+		return
+	}
+	item := room.FindItem(args[0])
+	if item == nil {
+		entity.Send("\r\n&RUnable to find item &W%s&R!!&d\r\n", args[0])
+		return
+	}
+	i := item.GetData()
+	switch strings.ToLower(args[1]) {
+	case "name":
+		i.Name = strings.TrimSpace(strings.Join(args[2:], " "))
+	case "desc":
+		i.Desc = consolify(strings.TrimSpace(strings.Join(args[2:], " ")))
+	case "type":
+		if !item_is_item_type(args[2]) {
+			entity.Send("\r\n&RInvalid type.&d\r\n")
+			return
+		}
+		i.Type = args[2]
+	case "keywords":
+		switch args[2] {
+		case "add":
+			i.Keywords = append(i.Keywords, args[3])
+		case "rm":
+			ki := -1
+			for i, k := range i.Keywords {
+				if k == args[3] {
+					ki = i
+				}
+			}
+			if ki > -1 {
+				ret := make([]string, 0)
+				ret = append(ret, i.Keywords[:ki]...)
+				ret = append(ret, i.Keywords[ki+1:]...)
+				i.Keywords = ret
+			}
+		default:
+			entity.Send("\r\nSyntax oset <item> keywords <add/rm> <keyword>\r\n")
+			return
+		}
+	case "value":
+		value, _ := strconv.Atoi(args[2])
+		i.Value = value
+	case "wearloc":
+		if !item_is_wearable_slot(args[2]) {
+			entity.Send("\r\n&RInvalid wearLoc.&d\r\n")
+			return
+		}
+		i.WearLoc = &args[2]
+	case "weapontype":
+		if !item_is_weapon_type(args[2]) {
+			entity.Send("\r\n&RInvalid weapon type.&d\r\n")
+			return
+		}
+		i.WeaponType = &args[2]
+	case "weight":
+		value, _ := strconv.Atoi(args[2])
+		i.Weight = value
+	case "ac":
+		value, _ := strconv.Atoi(args[2])
+		i.AC = value
+	default:
+		entity.Send("\r\nSyntax: oset <item> <field> <value>\r\n")
+		entity.Send("--------------------------------------------\r\n")
+		entity.Send("Fields are:\r\n")
+		entity.Send("name, desc, type, keywords, value, wearLoc, weaponType, weight, ac\r\n")
+		return
+	}
+	i.Id = i.OId
+	DB().SaveItem(i)
+	DB().items[i.Id] = i
+	entity.Send("\r\nObject Set. Ok.&d\r\n")
 }
 
 func do_item_remove(entity Entity, args ...string) {
@@ -303,7 +462,44 @@ func do_item_remove(entity Entity, args ...string) {
 }
 
 func do_item_stat(entity Entity, args ...string) {
+	if len(args) != 1 {
+		entity.Send("\r\nSyntax: ostat <item>\r\n")
+		return
+	}
+	room := DB().GetRoom(entity.RoomId(), entity.ShipId())
+	var item Item
+	for _, i := range room.Items {
+		for _, k := range i.GetData().Keywords {
+			if strings.HasPrefix(k, args[0]) {
+				item = i
+			}
+		}
+	}
+	if item != nil {
+		i := item.GetData()
+		entity.Send("\r\n%s\r\n", MakeTitle("Object Stats", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
+		entity.Send("&GObject Name: &W%s&d", i.Name)
+		entity.Send("&GObject   ID: &W%-9d &GOID: &W%-9d&d\r\n", i.Id, i.OId)
+		entity.Send("&GObject Desc: &W%s&d\r\n", i.Desc)
+		entity.Send("--------------------------------------------")
+		entity.Send("&GType: &W%s &GValue: &W%-6d&d\r\n", i.Type, i.Value)
+		weaponType := ""
+		isWeapon := " "
+		if i.WeaponType != nil {
+			weaponType = *i.WeaponType
+			isWeapon = "x"
+		}
+		entity.Send("&G  IsWeapon: [%s]    Weapon Type: &W%s&d\r\n", isWeapon, weaponType)
+		wearLocation := ""
+		isWearable := " "
+		if i.WearLoc != nil {
+			wearLocation = *i.WearLoc
+			isWearable = "x"
+		}
+		entity.Send("&GIsWearable: [%s]  Wear Location: &W%s&d\r\n", isWearable, wearLocation)
+		entity.Send("&GWeight: &W%5d&G kg&d\r\n", i.Weight)
 
+	}
 }
 
 func do_item_find(entity Entity, args ...string) {
@@ -354,31 +550,12 @@ func do_transfer(entity Entity, args ...string) {
 		entity.Send("\r\n&RUnable to parse room_id!&d\r\n")
 		return
 	}
-	room := DB().GetRoom(target.RoomId(), target.ShipId())
-	for _, e := range DB().GetEntitiesInRoom(room.Id, target.ShipId()) {
-		if e == nil {
-			continue
-		}
-		if e != target {
-			e.Send("\r\n&C%s&d has left.\r\n")
-			if e.GetCharData().AI != nil {
-				e.GetCharData().AI.OnMove(entity)
-			}
-		}
-	}
+	room := target.GetRoom()
+	room.SendToOthers(target, sprintf("\r\n%s has left.\r\n", target.GetCharData().Name))
 	target.GetCharData().Room = uint(room_id)
 	room = DB().GetRoom(uint(room_id), 0)
-	for _, e := range DB().GetEntitiesInRoom(room.Id, 0) {
-		if e == nil {
-			continue
-		}
-		if e != target {
-			e.Send("\r\n&C%s&d has appeared.\r\n")
-			if e.GetCharData().AI != nil {
-				e.GetCharData().AI.OnGreet(entity)
-			}
-		}
-	}
+	room.SendToOthers(target, sprintf("\r\n%s has appeared.\r\n", target.GetCharData().Name))
+	target.Send("\r\nYou feel a rush of air as your surroundings quickly change.\r\n")
 }
 
 func do_advance(entity Entity, args ...string) {
@@ -388,7 +565,7 @@ func do_advance(entity Entity, args ...string) {
 	if len(args) == 0 {
 		// we are advancing ourselves...
 		ch := entity.GetCharData()
-		for i := ch.Level; i <= 100; i++ {
+		for i := ch.Level; i < 100; i++ {
 			entity_advance_level(entity)
 		}
 		log.Printf("ADMIN (ADVANCE): %s has been advanced a level!", ch.Name)
@@ -398,7 +575,7 @@ func do_advance(entity Entity, args ...string) {
 			entity.Send("\r\nSyntax: advance <charactername> <level>")
 			return
 		} else {
-			l, e := strconv.ParseInt(args[1], 10, 32)
+			l, e := strconv.Atoi(args[1])
 			ErrorCheck(e)
 			if e != nil {
 				entity.Send("\r\n&RUnable to parse <level>&d\r\n")
@@ -407,6 +584,10 @@ func do_advance(entity Entity, args ...string) {
 			p := DB().GetPlayerEntityByName(args[0])
 			if p == nil {
 				entity.Send("\r\n&RUnable to find player %s", args[0])
+				return
+			}
+			if p.GetCharData().Level > uint(l) {
+				entity.Send("\r\n&RCharacter is already level &W%d&R!&d\r\n", p.GetCharData().Level)
 				return
 			}
 			for i := p.GetCharData().Level; i <= uint(l); i++ {
@@ -429,7 +610,7 @@ func do_dig(entity Entity, args ...string) {
 		entity.Send("\r\n&ROnly Immortals can dig, dig?&d\r\n")
 	}
 	db := DB()
-	room := db.GetRoom(player.RoomId(), player.ShipId())
+	room := player.GetRoom()
 	dir := get_direction_string(strings.ToLower(args[0]))
 	if _, ok := room.Exits[dir]; ok {
 		entity.Send("\r\n&RRoom already exists in that direction!&d\r\n")

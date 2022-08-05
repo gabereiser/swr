@@ -1,9 +1,9 @@
----
 id: 1005
 name: a duracrete block
 desc: |
-  A duracrete block. A fluid that when poured and cured it hardens to any surface shape.
-  Used as a building material through out the galaxy.
+    A duracrete block. A fluid that when poured and cured it hardens to any surface shape.
+    Used as a building material through out the galaxy.
+keywords: []
 type: material
-weight: 5
 value: 75
+weight: 5

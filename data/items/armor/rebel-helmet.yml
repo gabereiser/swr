@@ -1,10 +1,10 @@
----
 id: 103
 name: a rebel helmet
 desc: |
-  A rebel alliance helmet. It smells of sweat and sulfer.
+    A rebel alliance helmet. It smells of sweat and sulfer.
+keywords: []
 type: armor
-weight: 2
 value: 100
+weight: 2
 ac: 4
 wearLoc: head

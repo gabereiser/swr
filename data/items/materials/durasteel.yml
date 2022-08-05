@@ -1,8 +1,8 @@
----
 id: 1003
 name: a durasteel plate
 desc: |
-  A durasteel plate. Useful in crafting armor and weapon frames.
+    A durasteel plate. Useful in crafting armor and weapon frames.
+keywords: []
 type: material
-weight: 8
 value: 145
+weight: 8

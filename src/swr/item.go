@@ -34,6 +34,15 @@ const (
 	ITEM_TYPE_MATERIAL  = "material"
 )
 
+func item_is_item_type(str string) bool {
+	switch str {
+	case "generic", "comlink", "weapon", "weapon-2h", "container", "armor", "bin", "key", "material", "corpse":
+		return true
+	default:
+		return false
+	}
+}
+
 const (
 	ITEM_WEAPON_TYPE_KNIFE      = "vibro-blade"
 	ITEM_WEAPON_TYPE_BLASTER    = "blaster"
@@ -46,6 +55,24 @@ const (
 	ITEM_WEAPON_TYPE_CLAYMORE   = "claymore"
 	ITEM_WEAPON_TYPE_LIGHTSABER = "lightsaber"
 )
+
+func item_is_weapon_type(str string) bool {
+	switch str {
+	case "vibro-blade", "blaster", "rifle", "repeater", "bowcaster", "force-pike", "grenade", "mine", "claymore", "lightsaber":
+		return true
+	default:
+		return false
+	}
+}
+
+func item_is_wearable_slot(str string) bool {
+	switch str {
+	case "head", "torso", "waist", "legs", "feet", "hands":
+		return true
+	default:
+		return false
+	}
+}
 
 type ItemData struct {
 	Id         uint     `yaml:"id"`                      // instance id of the item
