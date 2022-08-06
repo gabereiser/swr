@@ -48,14 +48,11 @@ progs:
     greet: |
         delay(1);
         emote("snores as he sleeps...");
-        delay(4);
+        delay(1);
         emote("whistles a bit as he snores...");
         delay(2);
         say("mmm I don't wanna momma....");
         emote("curls over as he drifts back to sleep");
-        delay(5);
-        stand();
-        kill($n);
 flags:
     - npc
     - sentinel
