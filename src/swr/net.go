@@ -92,7 +92,6 @@ func (c *TCPClient) Read() string {
 		if c.Editing {
 			break
 		}
-		c.Con.SetReadDeadline(time.Now().Add(1 * time.Hour).Add(1 * time.Second))
 		i, err := c.Con.Read(b)
 		if err == io.EOF {
 			c.Close()
@@ -134,7 +133,6 @@ func (c *TCPClient) BufferEditor(str *string) {
 }
 
 func (c *TCPClient) Raw(buffer []byte) {
-	c.Con.SetWriteDeadline(time.Now().Add(10 * time.Second))
 	_, e := c.Con.Write(buffer)
 	if e == io.EOF {
 		c.Close()
@@ -311,72 +309,55 @@ func processIdleClients() {
 }
 
 //lint:ignore U1000 useful code
-func run_editor(entity Entity, buffer *string) {
-	//client := entity.(*PlayerProfile).Client.(*MudClient)
-	//telnet_disable_local_echo(client.Con)
-	//telnet_suppress_ga(client.Con)
-	value := editor(entity, *buffer)
-	if value == "" {
-		log.Printf("Editor has no contents, not setting buffer")
-	}
-	p := entity.(*PlayerProfile)
-	c := p.Client
-	c.SetEditing(false)
-	c.SendQueue()
-	c.ClearQueue()
-
-	//telnet_unsuppress_ga(client.Con)
-	//telnet_enable_local_echo(client.Con)
-}
-
-//lint:ignore U1000 useful code
-func telnet_suppress_ga(con *net.TCPConn) {
-	_, err := con.Write([]byte{NET_IAC, NET_WILL, NET_GA})
-	if err != nil {
+func telnet_suppress_ga(con Client) {
+	con.Raw([]byte{NET_IAC, NET_WILL, NET_GA})
+	/*resp := make([]byte, 3)
+	n, e := con.ReadRaw(resp)
+	if e != nil {
 		con.Close()
 	}
-	resp := make([]byte, 3)
-	con.Read(resp)
-	if resp[0] != NET_IAC || resp[1] != NET_DO || resp[2] != NET_GA {
+	if n != 3 {
 		panic(fmt.Sprintf("%v", resp))
 	}
-}
-
-//lint:ignore U1000 useful code
-func telnet_unsuppress_ga(con *net.TCPConn) {
-	_, err := con.Write([]byte{NET_IAC, NET_WONT, NET_GA})
-	if err != nil {
-		con.Close()
-	}
-	resp := make([]byte, 3)
-	con.Read(resp)
 	if resp[0] != NET_IAC || resp[1] != NET_DONT || resp[2] != NET_GA {
 		panic(fmt.Sprintf("%v", resp))
-	}
+	} else {
+		log.Printf("SUPGA: %v", resp)
+	}*/
 }
 
 //lint:ignore U1000 useful code
-func telnet_disable_local_echo(con *net.TCPConn) {
-	_, err := con.Write([]byte{NET_IAC, NET_WILL, NET_ECHO})
-	if err != nil {
-		con.Close()
-	}
+func telnet_unsuppress_ga(con Client) {
+	con.Raw([]byte{NET_IAC, NET_WONT, NET_GA})
+	/*resp := make([]byte, 3)
+	con.ReadRaw(resp)
+	if resp[0] != NET_IAC || resp[1] != NET_DO || resp[2] != NET_GA {
+		panic(fmt.Sprintf("%v", resp))
+	} else {
+		log.Printf("SUPGA: %v", resp)
+	}*/
+}
+
+//lint:ignore U1000 useful code
+func telnet_disable_local_echo(con Client) {
+	con.Raw([]byte{NET_IAC, NET_WILL, NET_ECHO})
 	resp := make([]byte, 3)
-	con.Read(resp)
+	con.ReadRaw(resp)
 	if resp[0] != NET_IAC || resp[1] != NET_DO || resp[2] != NET_ECHO {
 		panic(fmt.Sprintf("%v", resp))
+	} else {
+		log.Printf("WILLECHO: %v", resp)
 	}
 }
 
 //lint:ignore U1000 useful code
-func telnet_enable_local_echo(con *net.TCPConn) {
-	_, err := con.Write([]byte{NET_IAC, NET_WONT, NET_ECHO})
-	if err != nil {
-		con.Close()
-	}
+func telnet_enable_local_echo(con Client) {
+	con.Raw([]byte{NET_IAC, NET_WONT, NET_ECHO})
 	resp := make([]byte, 3)
-	con.Read(resp)
+	con.ReadRaw(resp)
 	if resp[0] != NET_IAC || resp[1] != NET_DONT || resp[2] != NET_ECHO {
 		panic(fmt.Sprintf("%v", resp))
+	} else {
+		log.Printf("WONTECHO: %v", resp)
 	}
 }

@@ -38,8 +38,7 @@ func do_say(entity Entity, args ...string) {
 	if entity.IsPlayer() {
 		entity.Send("You say \"%s\"\n", words)
 	}
-	entities := DB().GetEntitiesInRoom(speaker.RoomId(), speaker.ShipId())
-	for _, ex := range entities {
+	for _, ex := range speaker.GetRoom().GetEntities() {
 		if ex == nil {
 			continue
 		}
@@ -47,14 +46,11 @@ func do_say(entity Entity, args ...string) {
 			continue
 		}
 		if ex != entity {
-			if ex.IsPlayer() {
-				listener := ex.GetCharData()
-				ex.Send("%s says \"%s\"\n", speaker.Name, language_spoken(speaker, listener, words))
-			} else {
-				ex.Send("%s says \"%s\"\n", speaker.Name, words)
-				if ex.GetCharData().AI != nil {
-					ex.GetCharData().AI.OnSay(speaker, words)
-				}
+			listener := ex.GetCharData()
+			lwords := language_spoken(speaker, listener, words)
+			ex.Send("%s says \"%s\"\n", speaker.Name, lwords)
+			if ex.GetCharData().AI != nil {
+				ex.GetCharData().AI.OnSay(speaker, lwords)
 			}
 		}
 	}
@@ -91,7 +87,7 @@ func yell(entity Entity, words string, roomId uint, dist uint, visited []uint) {
 	if !visited_already {
 		speaker := entity.GetCharData()
 		room := DB().GetRoom(roomId, speaker.Ship)
-		for _, ex := range DB().GetEntitiesInRoom(room.Id, speaker.Ship) {
+		for _, ex := range room.GetEntities() {
 			if ex == nil {
 				continue
 			}
@@ -121,18 +117,7 @@ func do_emote(entity Entity, args ...string) {
 		entity.Send("\r\n&dYou are %s.&d\r\n", entity_unspeakable_reason(entity))
 		return
 	}
-	entities := DB().GetEntitiesInRoom(speaker.Room, speaker.Ship)
-	for _, ex := range entities {
-		if ex == nil {
-			continue
-		}
-		if entity_unspeakable_state(ex) {
-			continue
-		}
-		if ex.IsPlayer() {
-			ex.Send("&d%s %s&d\r\n", speaker.Name, emote)
-		}
-	}
+	speaker.GetRoom().SendToRoom(sprintf("&d%s %s&d\r\n", speaker.Name, emote))
 }
 func do_say_comlink(entity Entity, args ...string) {
 	words := strings.Join(args, " ")
@@ -168,6 +153,25 @@ func do_say_comlink(entity Entity, args ...string) {
 				if listener_freq == speaker_freq {
 					ex.Send("&CYou're comlink crackles to life with a voice that says...&d\r\n\"&W%s&Y:&d %s\"\r\n", speaker.Name, language_spoken(speaker, listener, words))
 				}
+			}
+		}
+	}
+}
+
+//lint:ignore U1000 useful code
+func do_broadcast_comlink(freq string, message string) {
+	db := DB()
+	for _, ex := range db.entities {
+		if ex == nil {
+			continue
+		}
+		if entity_unspeakable_state(ex) {
+			continue
+		}
+		if ex.IsPlayer() {
+			listener_freq := ex.(*PlayerProfile).Frequency
+			if listener_freq == freq {
+				ex.Send("&CYou're comlink crackles to life with a voice that says...&d\r\n\"%s\"\r\n", message)
 			}
 		}
 	}

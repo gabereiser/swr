@@ -107,14 +107,14 @@ func do_look(entity Entity, args ...string) {
 						continue
 					}
 					if item.IsCorpse() {
-						entity.Send("%s   &w%s %s&d\r\n", EMOJI_TOMBSTONE, item.GetData().Name, item.GetData().Name)
+						entity.Send("%s   &w%s %s&d\r\n", EMOJI_TOMBSTONE, item.GetData().Name)
 					} else {
-						entity.Send("&w%s %s&d\r\n", item.GetData().Name, item.GetData().Name)
+						entity.Send("&w%s %s&d\r\n", item.GetData().Name)
 					}
 
 				}
 
-				for _, e := range DB().GetEntitiesInRoom(room.Id, shipId) {
+				for _, e := range room.GetEntities() {
 					if e != entity {
 						entity.Send("&P%s&d\r\n", e.GetCharData().Name)
 					}
@@ -152,7 +152,7 @@ func do_look(entity Entity, args ...string) {
 
 							}
 
-							for _, e := range DB().GetEntitiesInRoom(room.Id, 0) {
+							for _, e := range room.GetEntities() {
 								if e != entity {
 									entity.Send("&P%s&d\r\n", e.GetCharData().Name)
 								}
@@ -166,7 +166,8 @@ func do_look(entity Entity, args ...string) {
 			}
 
 		} else {
-			for _, e := range DB().GetEntitiesInRoom(entity.RoomId(), entity.ShipId()) {
+			room := entity.GetRoom()
+			for _, e := range room.GetEntities() {
 				if e != entity {
 					ch := e.GetCharData()
 					for _, keyword := range ch.Keywords {
@@ -177,7 +178,6 @@ func do_look(entity Entity, args ...string) {
 					}
 				}
 			}
-			room := DB().GetRoom(entity.RoomId(), entity.ShipId())
 			item := room.FindItem(args[0])
 			if item != nil {
 				entity.Send("You look at %s and see...\r\n%s\r\n", item.GetData().Name, item.GetData().Desc)
@@ -264,7 +264,7 @@ func do_direction(entity Entity, direction string) {
 			}
 			if entity.CurrentMv() > 0 {
 				entity.GetCharData().Mv[0]--
-				for _, e := range db.GetEntitiesInRoom(room.Id, entity.ShipId()) {
+				for _, e := range room.GetEntities() {
 					if entity_unspeakable_state(e) {
 						continue
 					}
@@ -277,7 +277,7 @@ func do_direction(entity Entity, direction string) {
 				}
 				go room_prog_exec(entity, "leave", direction)
 				entity.GetCharData().Room = to_room.Id
-				for _, e := range db.GetEntitiesInRoom(to_room.Id, entity.ShipId()) {
+				for _, e := range to_room.GetEntities() {
 					if entity_unspeakable_state(e) {
 						continue
 					}
@@ -312,14 +312,7 @@ func do_stand(entity Entity, args ...string) {
 	}
 	if ch.State == ENTITY_STATE_SITTING || ch.State == ENTITY_STATE_SLEEPING {
 		ch.State = ENTITY_STATE_NORMAL
-		for _, e := range DB().GetEntitiesInRoom(entity.RoomId(), entity.ShipId()) {
-			if entity_unspeakable_state(e) {
-				continue
-			}
-			if e != entity {
-				e.Send("\r\n&d%s stands up.\r\n", ch.Name)
-			}
-		}
+		entity.GetRoom().SendToOthers(entity, sprintf("\r\n&d%s stands up.\r\n", ch.Name))
 		entity.Send("\r\n&dYou spring to your feet.\r\n")
 		return
 	} else {
@@ -338,17 +331,7 @@ func do_sit(entity Entity, args ...string) {
 		return
 	} else if ch.State == ENTITY_STATE_NORMAL {
 		ch.State = ENTITY_STATE_SITTING
-		for _, e := range DB().GetEntitiesInRoom(entity.RoomId(), entity.ShipId()) {
-			if e == nil {
-				continue
-			}
-			if entity_unspeakable_state(e) {
-				continue
-			}
-			if e != entity {
-				e.Send("\r\n&d%s sits down.\r\n", ch.Name)
-			}
-		}
+		entity.GetRoom().SendToOthers(entity, sprintf("\r\n&d%s sits down.\r\n", ch.Name))
 		entity.Send("\r\n&dYou sit down.\r\n")
 	} else if ch.State == ENTITY_STATE_SITTING {
 		entity.Send("\r\n&dYou are already sitting.\r\n")
@@ -381,14 +364,7 @@ func do_sleep(entity Entity, args ...string) {
 	}
 	ch.State = ENTITY_STATE_SLEEPING
 	entity.Send("\r\n&dYou lay down and fall asleep.\r\n")
-	for _, e := range DB().GetEntitiesInRoom(entity.RoomId(), entity.ShipId()) {
-		if entity_unspeakable_state(e) {
-			continue
-		}
-		if e != entity {
-			e.Send("\r\n&d%s lays down and falls asleep.\r\n", ch.Name)
-		}
-	}
+	entity.GetRoom().SendToOthers(entity, sprintf("\r\n&d%s lays down and falls asleep.\r\n", ch.Name))
 }
 
 func do_open(entity Entity, args ...string) {
@@ -457,16 +433,9 @@ func do_get(entity Entity, args ...string) {
 				return
 			}
 			room.RemoveItem(item)
-			for _, e := range db.GetEntitiesInRoom(ch.Room, ch.Ship) {
-				if e == nil {
-					continue
-				}
-				if e != entity {
-					e.Send("\r\n&P%s&d picks up %s &Y%s&d.\r\n", ch.Name, get_preface_for_name(item.GetData().Name), item.GetData().Name)
-				}
-			}
-			entity.Send("\r\n&dYou pick up %s &Y%s&d.\r\n", get_preface_for_name(item.GetData().Name), item.GetData().Name)
-			go room_prog_exec(entity, "get", item)
+			room.SendToOthers(entity, sprintf("\r\n&P%s&d picks up &Y%s&d.\r\n", ch.Name, item.GetData().Name))
+			entity.Send("\r\n&dYou pick up &Y%s&d.\r\n", item.GetData().Name)
+			go room_prog_exec(entity, "get", item) // indiana jones...
 			return
 		}
 	}
@@ -558,7 +527,7 @@ func do_drop(entity Entity, args ...string) {
 	entity.GetCharData().RemoveItem(item)
 	entity.Send("\r\n&YYou drop %s &W%s&Y.&d\r\n", get_preface_for_name(item.GetData().Name), item.GetData().Name)
 	ch := entity.GetCharData()
-	for _, e := range db.GetEntitiesInRoom(ch.Room, ch.Ship) {
+	for _, e := range room.GetEntities() {
 		if e == nil {
 			continue
 		}

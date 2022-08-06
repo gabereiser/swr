@@ -32,7 +32,6 @@ func do_fight(entity Entity, args ...string) {
 		entity.Send("\r\n&RFight who?&d\r\n")
 		return
 	}
-	db := DB()
 	if entity.IsFighting() {
 		entity.Send("\r\n&RYou are already fighting!&d\r\n")
 		return
@@ -67,7 +66,10 @@ func do_fight(entity Entity, args ...string) {
 			return
 		}
 		found := false
-		for _, e := range db.GetEntitiesInRoom(entity.RoomId(), entity.ShipId()) {
+		for _, e := range entity.GetRoom().GetEntities() {
+			if e == nil {
+				continue
+			}
 			if e == entity {
 				continue
 			}
@@ -285,7 +287,7 @@ func make_corpse(entity Entity) {
 		}
 		corpse.Keywords = append(corpse.Keywords, "corpse")
 		corpse.Items = items
-		room := DB().GetRoom(ch.Room, ch.Ship)
+		room := ch.GetRoom()
 		room.AddItem(corpse)
 		if entity.IsPlayer() {
 			entity.Send("\r\n&R %s You have been killed. %s&d\r\n\r\n\r\n", EMOJI_SKULL, EMOJI_SKULL)
@@ -296,15 +298,3 @@ func make_corpse(entity Entity) {
 		}
 	}
 }
-
-// Respawn an entity in a room.
-/*
-func respawn_entity(entity Entity, roomId uint) {
-	ch := entity.GetCharData()
-	ch.Attacker = nil
-	ch.Room = roomId
-	ch.Hp[0] = ch.Hp[1]
-	ch.State = ENTITY_STATE_NORMAL
-	do_look(entity)
-	entity.Prompt()
-}*/

@@ -16,13 +16,10 @@ jobs:
         include:
           - os: ubuntu-latest
             asset_name: swr-release-linux-${{ github.ref_name }}.tar.xz
-            client_name: client-${{ github.ref_name }}.tar.xz
           - os: macos-latest
             asset_name: swr-release-macos-${{ github.ref_name }}.tar.xz
-            client_name: client-${{ github.ref_name }}.tar.xz
           - os: windows-latest
             asset_name: swr-release-win64-${{ github.ref_name }}.zip
-            client_name: client-${{ github.ref_name }}.zip
 
     steps:
     - uses: actions/checkout@v3
@@ -39,5 +36,4 @@ jobs:
       run: |
         make all VERSION=${{ github.ref_name }}
         tar -cJf ${{ matrix.asset_name }} data docs bin web LICENSE
-        tar -cJf ${{ matrix.client_name }} bin/client
     

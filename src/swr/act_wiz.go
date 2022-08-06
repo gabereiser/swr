@@ -356,7 +356,7 @@ func do_item_create(entity Entity, args ...string) {
 	itemname := strings.TrimSpace(strings.Join(args[2:], " "))
 	words := strings.Split(strings.ToLower(itemname), " ")
 	for i, s := range words {
-		if len(s) < 4 {
+		if len(s) < 3 {
 			words[i] = ""
 			// simple words like a, or an, or the aren't good keywords.
 			// You can use the itemtype as a keyword to add a proper one after creation.
@@ -596,7 +596,7 @@ func do_mob_create(entity Entity, args ...string) {
 	mob.Keywords = make([]string, 0)
 	words := strings.Split(strings.ToLower(mob.Name), " ")
 	for i, s := range words {
-		if len(s) < 4 {
+		if len(s) < 3 {
 			words[i] = ""
 			// simple words like a, or an, or the aren't good keywords.
 			// You can use the itemtype as a keyword to add a proper one after creation.

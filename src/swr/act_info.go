@@ -29,11 +29,15 @@ func do_quit(entity Entity, args ...string) {
 			entity.Send("\r\n&RYou can't quit while fighting!&d\r\n")
 			return
 		}
-		entity.GetCharData().State = ENTITY_STATE_SLEEPING
 		player := entity.(*PlayerProfile)
 		DB().SavePlayerData(player)
-		player.Client.Close()
 		entity.Send("\r\n&CThe world slowly fades away as you close your eyes and leave the game...&d\r\n\r\n")
+		entity.GetCharData().State = ENTITY_STATE_SLEEPING
+		ScheduleFunc(func() {
+			player.Send("\r\n%s Thank you for playing! %s\r\n", EMOJI_ALERT, EMOJI_ALERT)
+			time.Sleep(100 * time.Millisecond)
+			player.Client.Close()
+		}, false, 1)
 	}
 }
 

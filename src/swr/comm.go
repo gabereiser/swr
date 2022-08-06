@@ -70,7 +70,6 @@ var CommandFuncs = map[string]func(Entity, ...string){
 	"do_remove":         do_remove,
 	"do_statsys":        do_statsys,
 	"do_commands":       do_commands,
-	"do_editor":         do_editor,
 	"do_time":           do_time,
 	"do_levels":         do_levels,
 	"do_board_ship":     do_board_ship,
@@ -103,6 +102,7 @@ var GMCommandFuncs = map[string]func(Entity, ...string){
 	"do_transfer":       do_transfer,
 	"do_advance":        do_advance,
 	"do_dig":            do_dig,
+	"do_editor":         do_editor,
 }
 
 var Commands []*Command = make([]*Command, 0)

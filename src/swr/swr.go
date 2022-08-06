@@ -45,7 +45,6 @@ func Main() {
 	CommandsLoad()
 	LanguageLoad()
 	StartBackup()
-	EditorStart()
 	log.Printf("Server took %s seconds to boot.", time.Since(startup).String())
 	ServerStart(Config().Addr)
 

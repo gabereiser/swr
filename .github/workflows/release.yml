@@ -15,13 +15,10 @@ jobs:
         include:
           - os: ubuntu-latest
             asset_name: swr-release-linux-${{ github.ref_name }}.tar.xz
-            client_name: client-linux-${{ github.ref_name }}.tar.xz
           - os: macos-latest
             asset_name: swr-release-macos-${{ github.ref_name }}.tar.xz
-            client_name: client-macos-${{ github.ref_name }}.tar.xz
           - os: windows-latest
             asset_name: swr-release-win64-${{ github.ref_name }}.zip
-            client_name: client-win64-${{ github.ref_name }}.zip
 
     steps:
     - name: Checkout
@@ -35,13 +32,11 @@ jobs:
       run: |
         make all VERSION=${{ github.ref_name }}
         tar -czf ${{ matrix.asset_name }} data docs bin web LICENSE
-        tar -czf ${{ matrix.client_name }} bin\\client.exe
     - name: Build BSD
       if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macos')
       run: |
         make all VERSION=${{ github.ref_name }}
         tar -cJf ${{ matrix.asset_name }} data docs bin web LICENSE
-        tar -cJf ${{ matrix.client_name }} bin/client
         
     - name: Publish Server Archive
       uses: svenstaro/upload-release-action@v2
@@ -50,12 +45,3 @@ jobs:
         file: ${{ matrix.asset_name }}
         asset_name: ${{ matrix.asset_name }}
         tag: ${{ github.ref }}
-
-    - name: Publish Client Archive
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ matrix.client_name }}
-        asset_name: ${{ matrix.client_name }}
-        tag: ${{ github.ref }}
-    

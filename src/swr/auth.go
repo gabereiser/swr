@@ -50,9 +50,9 @@ Login:
 	if FileExists(path) {
 		player := DB().ReadPlayerData(path)
 		client.Send("\r\n&GPassword:&d ")
-		//telnet_disable_local_echo(client.(*MudClient).Con)
+		telnet_disable_local_echo(client)
 		password := client.Read()
-		//telnet_enable_local_echo(client.(*MudClient).Con)
+		telnet_enable_local_echo(client)
 		if encrypt_string(password) != player.Password {
 			fmt.Printf("%s\n", password)
 			client.Send("\r\n}RInvalid password!&d\r\n")
@@ -89,14 +89,14 @@ Login:
 				Entity:  player,
 				Command: "look",
 			}
-			for _, e := range DB().GetEntitiesInRoom(player.Char.Room, player.Char.Ship) {
+			for _, e := range room.GetEntities() {
 				if e.GetCharData().AI != nil {
 					e.GetCharData().AI.OnGreet(player)
 				}
 			}
 		}
 	} else {
-		client.Send(fmt.Sprintf("\r\n&RHrm, it seems there isn't a record of &Y%s&R in the galactic databank.\r\n\r\n&RAre you new? &G[&Wy&G/&Wn&G]&d ", username))
+		client.Send("\r\n&rHrm, it seems there isn't a record of you in the galactic databank.\r\n\r\n&rAre you &Wnew&r? &G[&Wy&G/&Wn&G]&d ")
 		are_new := strings.ToLower(client.Read())
 		if strings.HasPrefix(are_new, "y") {
 			player := new(PlayerProfile)
@@ -128,7 +128,7 @@ Name:
 	client.Sendf("\r\n&GWelcome &W%s&G.\r\n", name)
 Password:
 	client.Sendf("&GPlease enter a &Wpassword&G:&d ")
-	//telnet_disable_local_echo(client.(*MudClient).Con)
+	telnet_disable_local_echo(client)
 	password := client.Read()
 	if strings.ContainsAny(password, " \x00\t") {
 		client.Sendf("\r\n&RInvalid password, passwords cannot contain spaces or control chars.&d\r\n")
@@ -136,7 +136,7 @@ Password:
 	}
 	client.Send("\r\n&GRepeat your &Wpassword&G:&d ")
 	password2 := client.Read()
-	//telnet_enable_local_echo(client.(*MudClient).Con)
+	telnet_enable_local_echo(client)
 	if password != password2 {
 		client.Send("\r\n}RError! Password mismatch!&d\r\n")
 		goto Password

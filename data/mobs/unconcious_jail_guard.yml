@@ -23,7 +23,7 @@ equipment: {}
 inventory:
     - id: 1
       itemId: 1
-      name: keycard
+      name: a keycard
       desc: |
         A simple keycard. There's some significant wear.
            .------------------------.

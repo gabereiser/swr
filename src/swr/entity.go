@@ -579,7 +579,7 @@ func entity_clone(entity Entity) Entity {
 func player_prompt(player *PlayerProfile) string {
 	mc := player.Client
 	if mc.IsClosed() {
-		return sprintf("Thank you for playing! %s\r\n", EMOJI_ALERT)
+		return ""
 	}
 	if player.Char.State == ENTITY_STATE_DEAD {
 		return "&R*DEAD&d\r\n"

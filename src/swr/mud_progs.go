@@ -84,24 +84,27 @@ func (b *GenericBrain) Update() {
 				move = false
 			}
 		}
-		if roll_dice("1d20") == 20 && move {
+		if roll_dice("1d50") == 50 && move {
 			// let's try to move...
-			room := b.Entity.GetRoom()
-			total_exits := len(room.Exits)
-			exit := rand_min_max(0, total_exits)
-			count := 0
-			for i, e := range room.Exits {
-				if count == exit {
-					// only move if the room has an exit
-					// this prevents mobs getting stuck in "turbolift" rooms
-					to_room := DB().GetRoom(e, room.ship)
-					if len(to_room.Exits) > 0 {
-						do_direction(b.Entity, i)
-					}
-				}
-				count++
+			b.Move()
+		}
+	}
+}
+func (b *GenericBrain) Move() {
+	room := b.Entity.GetRoom()
+	total_exits := len(room.Exits)
+	exit := rand_min_max(0, total_exits)
+	count := 0
+	for i, e := range room.Exits {
+		if count == exit {
+			// only move if the room has an exit
+			// this prevents mobs getting stuck in "turbolift" rooms
+			to_room := DB().GetRoom(e, room.ship)
+			if len(to_room.Exits) > 0 {
+				do_direction(b.Entity, i)
 			}
 		}
+		count++
 	}
 }
 

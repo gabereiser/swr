@@ -15,11 +15,6 @@ clean:
 	go clean; \
 	rm -rf ../bin/*
 	@echo 'Done'
-client:
-	@echo 'Building client'
-	@cd src/client; \
-	go build -ldflags="-X 'main.version=$(VERSION)'" -o ../../bin/client${ext};
-	@echo 'Done'
 dependencies:
 	@echo 'Downloading dependencies'
 	@cd src; \
@@ -27,4 +22,4 @@ dependencies:
 	go mod download
 	@echo 'Done'
 
-all: clean dependencies build client
+all: clean dependencies build

@@ -1,16 +1,54 @@
 package swr
 
 import (
+	"io/ioutil"
 	"log"
+	"os/exec"
 	"strings"
 )
 
 func do_editor(entity Entity, args ...string) {
-	client := entity.(*PlayerProfile).Client
-	buffer := strings.Join(args, " ")
-	client.BufferEditor(&buffer)
+	result := run_editor(entity, strings.Join(args, " "))
+	entity.Send("\r\nResult: %s\r\n", result)
 }
 
+//lint:ignore U1000 useful code
+func run_editor(entity Entity, buffer string) string {
+	client := entity.(*PlayerProfile).Client
+	//telnet_disable_local_echo(client.Con)
+	telnet_suppress_ga(client)
+	value := editor(entity, buffer)
+	if value == "" {
+		log.Printf("Editor has no contents, not setting buffer")
+	}
+	p := entity.(*PlayerProfile)
+	c := p.Client
+	c.SetEditing(false)
+	c.SendQueue()
+	c.ClearQueue()
+	telnet_unsuppress_ga(client)
+	return value
+	//telnet_enable_local_echo(client.Con)
+}
+func editor(entity Entity, contents string) string {
+	player := entity.(*PlayerProfile)
+	client := player.Client.(*TCPClient)
+	filename := sprintf("/tmp/%s", strings.ToLower(strings.ReplaceAll(entity.GetCharData().Name, " ", "")))
+	e := ioutil.WriteFile(filename, []byte(contents), 0755)
+	ErrorCheck(e)
+	cmd := exec.Command("vim", "-Z", filename)
+	cmd.Env = append(cmd.Env, "TERM=xterm256-color")
+	cmd.Stdin = client.fd
+	cmd.Stdout = client.Con
+	cmd.Stderr = client.Con
+	err := cmd.Run()
+	ErrorCheck(err)
+	buf, _ := ioutil.ReadFile(filename)
+	return string(buf)
+
+}
+
+/*
 func editor(entity Entity, args ...string) string {
 	player := entity.(*PlayerProfile)
 	client := player.Client
@@ -92,3 +130,4 @@ func print_editor(con Client, buffer []byte) {
 	con.Raw([]byte("-------------------------------------------------------------------------\r\n"))
 	con.Raw([]byte("Quit: \\q  |  Write: \\w \r\n"))
 }
+*/
