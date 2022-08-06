@@ -40,7 +40,6 @@ func Init() {
 func Main() {
 	log.Printf("Starting version %s\n", version)
 	assert(is_skill("martial-arts"))
-	log.Printf("Max Space Region is: %.9f", MAX_DISTANCE)
 	DB().Load()
 	DB().ResetAll()
 	CommandsLoad()

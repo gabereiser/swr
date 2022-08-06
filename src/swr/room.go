@@ -64,6 +64,10 @@ type RoomExitFlag struct {
 	Key    uint `yaml:"key,omitempty"`
 }
 
+func (e *RoomExitFlag) String() string {
+	return sprintf("closed: %v, locked: %v, key: %d", e.Closed, e.Locked, e.Key)
+}
+
 func (r *RoomData) String() string {
 	return fmt.Sprintf("ROOM:[%d-%s]", r.Id, r.Name)
 }

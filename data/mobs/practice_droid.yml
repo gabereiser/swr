@@ -1,33 +1,35 @@
----
 id: 1
-room: 0
 name: a practice droid
-keywords: [ "droid" ]
-flags: [ npc, sentinel, droid, nofight ]
+keywords: [droid]
 desc: |
-  A simple, practice droid floats here ready to train you in combat.
+    A simple, practice droid floats here ready to train you in combat.
 race: Droid
-gender: n
+gender: "n"
 level: 1
 xp: 100
-gold: 0
 hp: [100, 100]
 mp: [0, 0]
 mv: [10, 10]
-stats: [ 10, 10, 10, 10, 10, 10 ]
+stats: [10, 10, 10, 10, 10, 10]
 skills: {}
-languages: {basic: 100, binary: 100}
+languages:
+    basic: 100
+    binary: 100
 speaking: binary
-state: normal
-brain: generic
 equipment: {}
 inventory: []
+state: normal
+brain: generic
 progs:
-  greet: |
-    say("Hello there!");
-    delay(1);
-    say("How are you?");
-    delay(1);
-    say("Want to play?");
-  death: |
-    say("Oh no! You got me!")
+    death: say("Oh no! You got me!")
+    greet: |
+        say("Hello there!");
+        delay(1);
+        say("How are you?");
+        delay(1);
+        say("Want to play?");
+flags:
+    - npc
+    - sentinel
+    - droid
+    - nofight

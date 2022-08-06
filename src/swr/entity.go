@@ -428,7 +428,7 @@ func (p *PlayerProfile) MaxMv() int {
 
 // Prompt the player, show's their stats, and readies for input next turn.
 func (p *PlayerProfile) Prompt() {
-	if p.NeedPrompt && p.Char.State != ENTITY_STATE_DEAD && !p.Client.(*MudClient).Editing {
+	if p.NeedPrompt && p.Char.State != ENTITY_STATE_DEAD && !p.Client.IsEditing() {
 		prompt := player_prompt(p)
 		p.Send("%s\r\n", prompt)
 		p.NeedPrompt = false
@@ -577,8 +577,8 @@ func entity_clone(entity Entity) Entity {
 
 // Builds a player prompt to send to the player using pretty ANSI colors and ASCII glyphs.
 func player_prompt(player *PlayerProfile) string {
-	mc := player.Client.(*MudClient)
-	if mc.Closed {
+	mc := player.Client
+	if mc.IsClosed() {
 		return sprintf("Thank you for playing! %s\r\n", EMOJI_ALERT)
 	}
 	if player.Char.State == ENTITY_STATE_DEAD {
@@ -640,6 +640,7 @@ func processEntities() {
 				e.Prompt()
 			}
 		}
+
 		if roll_dice("1d10") == 10 {
 			if ch.Mp[0] < ch.Mp[1] {
 				ch.Mp[0]++
@@ -655,6 +656,9 @@ func processEntities() {
 			}
 		}
 
+		if ch.AI != nil {
+			ch.AI.Update()
+		}
 	}
 }
 

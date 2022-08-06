@@ -1,13 +1,10 @@
----
 id: 3
-room: 0
 name: an imperial guard
-keywords: [ "guard", "guy", "human", "imperial" ]
-flags: [ npc ]
+keywords: [guard, guy, human, imperial]
 desc: |
-  An Imperial guard. He's dressed in a typical imperial uniform. Grey long-sleeved
-  shirt, matching pants, tucked into his boots. He wears a small cap upon his head
-  and no clear rankings are visible on his uniform. He's pretty upset you're here.
+    An Imperial guard. He's dressed in a typical imperial uniform. Grey long-sleeved
+    shirt, matching pants, tucked into his boots. He wears a small cap upon his head
+    and no clear rankings are visible on his uniform. He's pretty upset you're here.
 race: Human
 gender: m
 level: 5
@@ -16,37 +13,39 @@ gold: 50
 hp: [100, 100]
 mp: [0, 0]
 mv: [12, 12]
-stats: [ 10, 10, 10, 10, 10, 10 ]
+stats: [10, 10, 10, 10, 10, 10]
 skills:
-  vibro-blades: 20
+    vibro-blades: 20
 languages:
-  basic: 100
+    basic: 100
 speaking: basic
+equipment:
+    weapon:
+        id: 200
+        name: vibro-blade
+        desc: |
+            A basic looking vibro-blade.
+        keywords: [blade, vibro, vibro-blade]
+        type: weapon
+        value: 100
+        weight: 3
+        wearLoc: weapon
+        weaponType: vibro-blades
+        dmgRoll: 1d3
+inventory: []
 state: normal
 brain: generic
-equipment:
-  weapon:
-    id: 200
-    typeId: 200
-    name: vibro-blade
-    desc: |
-      A basic looking vibro-blade.
-    keywords: [blade,vibro,vibro-blade]
-    type: weapon
-    weaponType: vibro-blades
-    wearLoc: weapon
-    dmgRoll: 1d3
-    value: 100
-    weight: 3
-inventory: []
 progs:
-  greet: |
-    delay(3);
-    say("What are you doing here? HALT!!");
-    delay(1);
-    kill($n);
-  move: |
-    delay(2);
-    shout("HALT!! GUARDS!!");
-  death: |
-    emote("hits the floor in a bloody mess.");
+    death: |
+        emote("hits the floor in a bloody mess.");
+    greet: |
+        delay(3);
+        say("What are you doing here? HALT!!");
+        delay(1);
+        kill($n);
+    move: |
+        delay(2);
+        shout("HALT!! GUARDS!!");
+flags:
+    - npc
+    - sentinel

@@ -1,0 +1,27 @@
+id: 6
+mobId: 6
+room: 1018
+name: a female citizen
+keywords: ["", female, citizen, human]
+title: a Human a female citizen
+desc: A female citizen stands here dressed in desert rags it seems.
+race: Human
+gender: f
+level: 10
+xp: 50000
+hp: [50, 50]
+mp: [0, 0]
+mv: [50, 50]
+stats: [10, 10, 10, 10, 10, 10]
+skills:
+    martial-arts: 10
+languages:
+    basic: 100
+    jawa: 50
+speaking: basic
+equipment: {}
+inventory: []
+state: normal
+brain: generic
+flags:
+    - npc

@@ -21,50 +21,51 @@ import (
 	"fmt"
 	"math"
 	"strings"
+	"time"
 )
 
 type StarData struct {
-	Name     string    `yaml:"name"`
-	Type     string    `yaml:"type"`
-	Radius   int       `yaml:"radius"`
-	Position []float32 `yaml:"position,flow"`
+	Name     string    `yaml:"name"`          // name of the star
+	Type     string    `yaml:"type"`          // type of the star (roughly follows astronomy star types)
+	Radius   int       `yaml:"radius"`        // radius of the star (1,000km)
+	Position []float32 `yaml:"position,flow"` // position of the star within the star system
 }
 type StarSystemData struct {
-	Name     string                 `yaml:"name"`
-	Sector   string                 `yaml:"sector"`
-	Grid     string                 `yaml:"grid"`
-	Position []float32              `yaml:"position,flow"`
-	Stars    map[int]StarData       `yaml:"stars"`
-	Orbits   map[int]OribitalObject `yaml:"orbits"`
+	Name     string                 `yaml:"name"`          // name of the starsystem (often named after the main planet)
+	Sector   string                 `yaml:"sector"`        // the sector of space the starsystem is in
+	Grid     string                 `yaml:"grid"`          // the grid space for the Star Wars Starmap from Wookieepedia
+	Position []float32              `yaml:"position,flow"` // the location of the starsystem (in parsecs)
+	Stars    map[int]StarData       `yaml:"stars"`         // stars in the system
+	Orbits   map[int]OribitalObject `yaml:"orbits"`        // orbiting bodies in the system
 }
 
 type OribitalObject struct {
-	Name       string    `yaml:"name"`
-	Type       string    `yaml:"type"`
-	Radius     uint      `yaml:"radius"`
-	Position   []float32 `yaml:"position,flow"`
-	Spaceports []uint16  `yaml:"spaceports,flow,omitempty"`
+	Name       string    `yaml:"name"`                      // name of the orbital
+	Type       string    `yaml:"type"`                      // type of the orbital
+	Radius     uint      `yaml:"radius"`                    // radius of orbital object in 1,000km
+	Position   []float32 `yaml:"position,flow"`             // position within the star system of orbital object
+	Spaceports []uint16  `yaml:"spaceports,flow,omitempty"` // spaceports is a list of roomId's one can land a ship at, len(0) and it's not landable.
 }
 
 const (
-	SHIP_MODULE_HYPERDRIVE  = "hyperdrive"
-	SHIP_MODULE_CARGO       = "cargo"
-	SHIP_MODULE_SHIELD      = "shield"
-	SHIP_MODULE_DOCKING_BAY = "dock"
-	SHIP_MODULE_AI          = "ai"
-	SHIP_MODULE_RADAR       = "radar"
-	SHIP_MODULE_ENGINE      = "engine"
-	SHIP_MODULE_ENGINE_2    = "engine2"
-	SHIP_MODULE_ENGINE_3    = "engine3"
-	SHIP_MODULE_ENGINE_4    = "engine4"
-	SHIP_MODULE_TURRET      = "turret"
-	SHIP_MODULE_TURRET_2    = "turret2"
-	SHIP_MODULE_TURRET_3    = "turret3"
-	SHIP_MODULE_TURRET_4    = "turret4"
-	SHIP_MODULE_WEAPON      = "weapon"
-	SHIP_MODULE_WEAPON_2    = "weapon2"
-	SHIP_MODULE_WEAPON_3    = "weapon3"
-	SHIP_MODULE_WEAPON_4    = "weapon4"
+	SHIP_MODULE_HYPERDRIVE  = "hyperdrive" // hyperdrive const
+	SHIP_MODULE_CARGO       = "cargo"      // cargo const
+	SHIP_MODULE_SHIELD      = "shield"     // shield const
+	SHIP_MODULE_DOCKING_BAY = "dock"       // dock const
+	SHIP_MODULE_AI          = "ai"         // ai const
+	SHIP_MODULE_RADAR       = "radar"      // radar const
+	SHIP_MODULE_ENGINE      = "engine"     // engine 1 const
+	SHIP_MODULE_ENGINE_2    = "engine2"    // engine 2 const
+	SHIP_MODULE_ENGINE_3    = "engine3"    // engine 3 const
+	SHIP_MODULE_ENGINE_4    = "engine4"    // engine 4 const
+	SHIP_MODULE_TURRET      = "turret"     // turret 1 const
+	SHIP_MODULE_TURRET_2    = "turret2"    // turret 2 const
+	SHIP_MODULE_TURRET_3    = "turret3"    // turret 3 const
+	SHIP_MODULE_TURRET_4    = "turret4"    // turret 4 const
+	SHIP_MODULE_WEAPON      = "weapon"     // weapon 1 const
+	SHIP_MODULE_WEAPON_2    = "weapon2"    // weapon 2 const
+	SHIP_MODULE_WEAPON_3    = "weapon3"    // weapon 3 const
+	SHIP_MODULE_WEAPON_4    = "weapon4"    // weapon 4 const
 )
 const (
 	SHIP_ROOM_FLAGS_COCKPIT    = "cockpit"
@@ -75,13 +76,13 @@ const (
 )
 
 type ShipData struct {
-	Id               uint               `yaml:"id"`     // instance id when loaded into memory
-	OId              uint               `yaml:"shipId"` // global unique type id
-	Name             string             `yaml:"name"`
-	Desc             string             `yaml:"desc"`
-	Type             string             `yaml:"type"`       // class of the ship
-	LocationId       uint               `yaml:"locationId"` // roomId where we are docked or where we took off from if in space.
-	InSpace          bool               `yaml:"-"`
+	Id               uint               `yaml:"id"`                      // instance id when loaded into memory
+	OId              uint               `yaml:"shipId"`                  // global unique type id
+	Name             string             `yaml:"name"`                    // name of the ship (without the type at the end)
+	Desc             string             `yaml:"desc"`                    // description of the ship (comes from the ship prototype)
+	Type             string             `yaml:"type"`                    // class of the ship
+	LocationId       uint               `yaml:"locationId"`              // roomId where we are docked or where we took off from if in space.
+	InSpace          bool               `yaml:"-"`                       // returns true if the ship is currently in space
 	CurrentSystem    string             `yaml:"currentSystem,omitempty"` // name of the current system its in
 	ShipyardId       uint               `yaml:"shipyardId"`              // where the ship came from.
 	Permission       uint               `yaml:"permission"`              // 0 - owner, 1 - group, 2 - guild/clan, 3 - faction, 4 - public
@@ -91,25 +92,25 @@ type ShipData struct {
 	Rooms            map[uint]*RoomData `yaml:"rooms"`                   // the ship needs rooms... at the very least a cockpit with a hatch
 	Modules          map[string]uint    `yaml:"modules"`                 // ship module healths
 	HighSlots        []*ItemData        `yaml:"highSlots,omitempty"`     // loaded ship slots (not all ships have slots)
-	LowSlots         []*ItemData        `yaml:"lowSlots,omitempty"`
-	Blueprint        uint               `yaml:"blueprintId"`   // the item that an engineer needs to make this ship
-	Ramp             uint               `yaml:"ramp"`          // the room that is the ramp (entrance/exit) to the ship
-	Cockpit          uint               `yaml:"cockpit"`       // the rooms that are considered cockpits
-	EngineRoom       uint               `yaml:"engineRoom"`    // engine rooms (technicians will love these)
-	CargoRoom        uint               `yaml:"cargoRoom"`     // storages for kessel runs
-	Pilot            Entity             `yaml:"-"`             // who is currently piloting
-	CoPilot          Entity             `yaml:"-"`             // who is currently copiloting
-	Target           Ship               `yaml:"-"`             // who is this ship targeting
-	Position         []float32          `yaml:"position,flow"` // where is this ship in space? InSpace will be true when in space.
-	Heading          float32            `yaml:"-"`             // where are we going?
-	Speed            float32            `yaml:"-"`             // how fast are we going?
-	MaxSpeed         float32            `yaml:"speed"`         // max speed the ship can go (base)
-	InHyper          bool               `yaml:"-"`             // are we in hyperspace? (used by the prompt to tell us how long we have to reach our destination)
-	HyperDestination Starsystem         `yaml:"-"`             // where are we going in hyperspace?
-	HyperOrigin      Starsystem         `yaml:"-"`             // where did we come from?
-	HyperTimeUntil   uint               `yaml:"-"`             // time in seconds until we exit hyperspace.
-	Hp               []uint             `yaml:"hp,flow"`       // ship hitpoints as an array of uint's. [0] is current hp, [1] is max hp. Always a len() of 2.
-	Sp               []uint             `yaml:"sp,flow"`       // ship shield points as an array of uint's. [0] is current sp, [1] is max sp. Always a len() of 2.
+	LowSlots         []*ItemData        `yaml:"lowSlots,omitempty"`      // loaded ship slots (not all ships have slots)
+	Blueprint        uint               `yaml:"blueprintId"`             // the item that an engineer needs to make this ship
+	Ramp             uint               `yaml:"ramp"`                    // the room that is the ramp (entrance/exit) to the ship
+	Cockpit          uint               `yaml:"cockpit"`                 // the rooms that are considered cockpits
+	EngineRoom       uint               `yaml:"engineRoom"`              // engine rooms (technicians will love these)
+	CargoRoom        uint               `yaml:"cargoRoom"`               // storages for kessel runs
+	Pilot            Entity             `yaml:"-"`                       // who is currently piloting
+	CoPilot          Entity             `yaml:"-"`                       // who is currently copiloting
+	Target           Ship               `yaml:"-"`                       // who is this ship targeting
+	Position         []float32          `yaml:"position,flow"`           // where is this ship in space? InSpace will be true when in space.
+	Heading          float32            `yaml:"-"`                       // where are we going?
+	Speed            float32            `yaml:"-"`                       // how fast are we going?
+	MaxSpeed         float32            `yaml:"speed"`                   // max speed the ship can go (base)
+	InHyper          bool               `yaml:"-"`                       // are we in hyperspace? (used by the prompt to tell us how long we have to reach our destination)
+	HyperDestination Starsystem         `yaml:"-"`                       // where are we going in hyperspace?
+	HyperOrigin      Starsystem         `yaml:"-"`                       // where did we come from?
+	HyperTimeUntil   uint               `yaml:"-"`                       // time in seconds until we exit hyperspace.
+	Hp               []uint             `yaml:"hp,flow"`                 // ship hitpoints as an array of uint's. [0] is current hp, [1] is max hp. Always a len() of 2.
+	Sp               []uint             `yaml:"sp,flow"`                 // ship shield points as an array of uint's. [0] is current sp, [1] is max sp. Always a len() of 2.
 }
 
 type Ship interface {
@@ -121,21 +122,19 @@ func (s *ShipData) GetData() *ShipData {
 }
 
 func (s *ShipData) JumpHyperspace(target Starsystem, pos []float32) {
-	if s.Pilot != nil || s.CoPilot != nil {
-		db := DB()
-		s.HyperDestination = target
+	db := DB()
+	s.HyperDestination = target
 
-		for _, star := range db.starsystems {
-			if star.GetData().Name == s.CurrentSystem {
-				s.HyperOrigin = star
-			}
+	for _, star := range db.starsystems {
+		if star.GetData().Name == s.CurrentSystem {
+			s.HyperOrigin = star
 		}
-		p1 := s.HyperOrigin.GetData().Position
-		p2 := target.GetData().Position
-		distance := distance_between_points(p1, p2)
-		s.HyperTimeUntil = uint(math.Round(float64(distance)))
-		s.Heading = float32(rand_min_max(0, 360))
 	}
+	p1 := s.HyperOrigin.GetData().Position
+	p2 := target.GetData().Position
+	distance := distance_between_points(p1, p2)
+	s.HyperTimeUntil = uint(math.Round(float64(distance)))
+	s.Heading = float32(rand_min_max(0, 360))
 }
 
 func ship_clone(ship Ship) *ShipData {
@@ -275,4 +274,10 @@ func do_leave_ship(entity Entity, args ...string) {
 			Command: "look",
 		}
 	}
+}
+
+//lint:ignore U1000 useful calculation
+func hyperdrive_time_calculation(origin Starsystem, destination Starsystem) (time.Duration, int) {
+	distance := distance_between_points(origin.GetData().Position, destination.GetData().Position)
+	return time.Duration(distance) * time.Second, int(math.Round(float64(distance)))
 }

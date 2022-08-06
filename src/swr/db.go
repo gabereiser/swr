@@ -52,7 +52,7 @@ type HelpData struct {
 
 type GameDatabase struct {
 	m               *sync.Mutex
-	clients         []*MudClient
+	clients         []Client
 	entities        []Entity
 	areas           map[string]*AreaData // pointers to the [AreaData] of the game.
 	rooms           map[uint]*RoomData   // pointers to the room structs in [AreaData]
@@ -69,7 +69,7 @@ func DB() *GameDatabase {
 		log.Printf("Starting Database.")
 		_db = new(GameDatabase)
 		_db.m = &sync.Mutex{}
-		_db.clients = make([]*MudClient, 0, 64)
+		_db.clients = make([]Client, 0, 64)
 		_db.entities = make([]Entity, 0)
 		_db.areas = make(map[string]*AreaData)
 		_db.rooms = make(map[uint]*RoomData)
@@ -92,11 +92,11 @@ func (d *GameDatabase) Unlock() {
 	d.m.Unlock()
 }
 
-func (d *GameDatabase) AddClient(client *MudClient) {
+func (d *GameDatabase) AddClient(client Client) {
 	d.clients = append(d.clients, client)
 }
 
-func (d *GameDatabase) RemoveClient(client *MudClient) {
+func (d *GameDatabase) RemoveClient(client Client) {
 	for _, e := range d.entities {
 		if e == nil {
 			continue
@@ -115,12 +115,12 @@ func (d *GameDatabase) RemoveClient(client *MudClient) {
 		if c == nil {
 			continue
 		}
-		if c.Id == client.Id {
+		if c.GetId() == client.GetId() {
 			index = i
 		}
 	}
 	if index > -1 {
-		ret := make([]*MudClient, len(d.clients)-1)
+		ret := make([]Client, len(d.clients)-1)
 		ret = append(ret, d.clients[:index]...)
 		ret = append(ret, d.clients[index+1:]...)
 		d.clients = ret
@@ -181,7 +181,7 @@ func (d *GameDatabase) RemoveArea(area *AreaData) {
 func (d *GameDatabase) Load() {
 	d.Lock()
 	defer d.Unlock()
-
+	log.Printf("Loading Database...")
 	// Load Help files
 	d.LoadHelps()
 
@@ -200,6 +200,7 @@ func (d *GameDatabase) Load() {
 }
 
 func (d *GameDatabase) LoadHelps() {
+	log.Print("Loading help files.")
 	flist, err := ioutil.ReadDir("docs")
 	ErrorCheck(err)
 	for _, help_file := range flist {
@@ -215,6 +216,7 @@ func (d *GameDatabase) LoadHelps() {
 }
 
 func (d *GameDatabase) LoadAreas() {
+	log.Print("Loading area files.")
 	flist, err := ioutil.ReadDir("data/areas")
 	ErrorCheck(err)
 	count := 0
@@ -244,6 +246,7 @@ func (d *GameDatabase) LoadArea(name string) {
 }
 
 func (d *GameDatabase) LoadPlanets() {
+	log.Printf("Loading planet files.")
 	flist, err := ioutil.ReadDir("data/planets")
 	ErrorCheck(err)
 	for _, f := range flist {
@@ -255,9 +258,11 @@ func (d *GameDatabase) LoadPlanets() {
 		ErrorCheck(err)
 		d.starsystems = append(d.starsystems, p)
 	}
+	log.Printf("%d total planets loaded.", len(d.starsystems))
 }
 
 func (d *GameDatabase) LoadItems() {
+	log.Print("Loading item files.")
 	err := filepath.Walk("data/items",
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -283,33 +288,40 @@ func (d *GameDatabase) LoadItem(path string) {
 }
 
 func (d *GameDatabase) LoadMobs() {
+	log.Print("Loading mob files.")
 	err := filepath.Walk("data/mobs",
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
 			if !info.IsDir() {
-				fp, err := ioutil.ReadFile(path)
-				ErrorCheck(err)
-				ch := new(CharData)
-				err = yaml.Unmarshal(fp, ch)
-				ErrorCheck(err)
-				ch.Filename = path
-				d.mobs[ch.Id] = ch
+				d.LoadMob(path)
 			}
 			return nil
 		})
 	ErrorCheck(err)
 	log.Printf("%d mobs loaded.", len(d.mobs))
 }
+func (d *GameDatabase) LoadMob(path string) {
+	fp, err := ioutil.ReadFile(path)
+	ErrorCheck(err)
+	ch := new(CharData)
+	err = yaml.Unmarshal(fp, ch)
+	ErrorCheck(err)
+	ch.Filename = path
+	d.mobs[ch.Id] = ch
+}
 
 // The Mother of all save functions
 func (d *GameDatabase) Save() {
 	d.Lock()
 	defer d.Unlock()
+	echo_all("\r\n}xSaving Game World&d\r\n")
 	d.SaveAreas()
+	d.SaveMobs()
 	d.SaveItems()
 	d.SaveShips()
+	echo_all("\r\n}xWorld Save Complete.&d\r\n")
 }
 
 func (d *GameDatabase) SaveAreas() {
@@ -320,6 +332,11 @@ func (d *GameDatabase) SaveAreas() {
 func (d *GameDatabase) SaveItems() {
 	for _, item := range d.items {
 		d.SaveItem(item)
+	}
+}
+func (d *GameDatabase) SaveMobs() {
+	for _, mob := range d.mobs {
+		d.SaveMob(mob)
 	}
 }
 
@@ -346,12 +363,30 @@ func (d *GameDatabase) SaveArea(area *AreaData) {
 	buf, err := yaml.Marshal(area)
 	ErrorCheck(err)
 	err = ioutil.WriteFile(fmt.Sprintf("data/areas/%s.yml", area.Name), buf, 0755)
+	for _, m := range area.Mobs {
+		mob := d.mobs[m.Mob]
+		d.SaveMob(mob)
+	}
+	for _, i := range area.Items {
+		item := d.items[i.Item]
+		d.SaveItem(item)
+	}
 	ErrorCheck(err)
 }
 func (d *GameDatabase) SaveItem(item *ItemData) {
 	buf, err := yaml.Marshal(item)
 	ErrorCheck(err)
+	dir := filepath.Dir(item.Filename)
+	os.MkdirAll(dir, 0755)
 	err = ioutil.WriteFile(item.Filename, buf, 0755)
+	ErrorCheck(err)
+}
+func (d *GameDatabase) SaveMob(mob *CharData) {
+	buf, err := yaml.Marshal(mob)
+	ErrorCheck(err)
+	dir := filepath.Dir(mob.Filename)
+	os.MkdirAll(dir, 0755)
+	err = ioutil.WriteFile(mob.Filename, buf, 0755)
 	ErrorCheck(err)
 }
 
@@ -576,6 +611,14 @@ func (d *GameDatabase) GetNextItemVnum() uint {
 	}
 	return 0
 }
+func (d *GameDatabase) GetNextMobVnum() uint {
+	for i := uint(1); i < (^uint(0)); i++ {
+		if _, ok := d.mobs[i]; !ok {
+			return i
+		}
+	}
+	return 0
+}
 
 func (d *GameDatabase) GetItem(itemId uint) Item {
 	for _, i := range d.items {
@@ -636,5 +679,11 @@ func (d *GameDatabase) ResetAll() {
 	for area_name, area := range d.areas {
 		log.Printf("Resetting Area %s", area_name)
 		area_reset(area)
+	}
+}
+
+func echo_all(msg string) {
+	for _, c := range DB().clients {
+		c.Send(msg)
 	}
 }

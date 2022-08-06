@@ -253,11 +253,6 @@
   level: 100
   func: do_area_save
 -
-  name: rcreate
-  keywords: [ "rcreate" ]
-  level: 100
-  func: do_room_create
--
   name: rset
   keywords: [ "rset" ]
   level: 100
@@ -288,6 +283,11 @@
   level: 100
   func: do_item_create
 -
+  name: ospawn
+  keywords: [ "ospawn" ]
+  level: 100
+  func: do_item_spawn
+-
   name: oset
   keywords: [ "oset" ]
   level: 100
@@ -317,6 +317,11 @@
   keywords: [ "mcreate" ]
   level: 100
   func: do_mob_create
+-
+  name: mspawn
+  keywords: [ "mspawn" ]
+  level: 100
+  func: do_mob_spawn
 -
   name: mset
   keywords: [ "mset" ]

@@ -4134,3 +4134,20 @@ rooms:
       name: A void
       desc: Somewhere in the void of space.
       exits: {}
+mobs:
+    - mob: 5
+      room: 1000
+    - mob: 5
+      room: 1003
+    - mob: 5
+      room: 1005
+    - mob: 5
+      room: 1007
+    - mob: 5
+      room: 1012
+    - mob: 5
+      room: 1014
+    - mob: 5
+      room: 1015
+    - mob: 6
+      room: 1002

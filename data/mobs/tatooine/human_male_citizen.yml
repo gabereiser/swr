@@ -1,0 +1,32 @@
+id: 5
+mobId: 5
+room: 1000
+name: a male citizen
+keywords: ["", male, citizen]
+title: a Human a male citizen
+desc: "A citizen stands here waiting for something. He's dressed in rugged tatooine \r\ngarments that look as uncomfortable as they appear. He seems a little uneasy. "
+race: Human
+gender: m
+level: 10
+xp: 50000
+gold: 45
+hp: [50, 50]
+mp: [0, 0]
+mv: [24, 24]
+stats: [10, 10, 10, 10, 10, 10]
+skills:
+    martial-arts: 20
+    vibro-blades: 10
+languages:
+    basic: 100
+    bothan: 99
+    hutt: 99
+    jawa: 99
+    wookiee: 50
+speaking: basic
+equipment: {}
+inventory: []
+state: normal
+brain: generic
+flags:
+    - npc

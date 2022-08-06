@@ -20,6 +20,7 @@ package swr
 import (
 	"math/rand"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/robertkrimen/otto"
@@ -76,7 +77,32 @@ func (b *GenericBrain) OnSay(entity Entity, words string) {
 	go mud_prog_exec("say", b.Entity, entity, words)
 }
 func (b *GenericBrain) Update() {
-
+	if b.Entity.GetCharData().State == ENTITY_STATE_NORMAL {
+		move := true
+		for _, f := range b.Entity.GetCharData().Flags {
+			if strings.ToLower(f) == "sentinel" {
+				move = false
+			}
+		}
+		if roll_dice("1d20") == 20 && move {
+			// let's try to move...
+			room := b.Entity.GetRoom()
+			total_exits := len(room.Exits)
+			exit := rand_min_max(0, total_exits)
+			count := 0
+			for i, e := range room.Exits {
+				if count == exit {
+					// only move if the room has an exit
+					// this prevents mobs getting stuck in "turbolift" rooms
+					to_room := DB().GetRoom(e, room.ship)
+					if len(to_room.Exits) > 0 {
+						do_direction(b.Entity, i)
+					}
+				}
+				count++
+			}
+		}
+	}
 }
 
 func mud_prog_exec(prog string, entity Entity, any ...interface{}) error {

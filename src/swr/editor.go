@@ -2,23 +2,22 @@ package swr
 
 import (
 	"log"
-	"net"
 	"strings"
 )
 
 func do_editor(entity Entity, args ...string) {
-	client := entity.(*PlayerProfile).Client.(*MudClient)
+	client := entity.(*PlayerProfile).Client
 	buffer := strings.Join(args, " ")
 	client.BufferEditor(&buffer)
 }
 
 func editor(entity Entity, args ...string) string {
 	player := entity.(*PlayerProfile)
-	client := player.Client.(*MudClient)
-	client.Editing = true
-	con := client.Con
+	client := player.Client
+	client.SetEditing(true)
+	con := client
 
-	con.Write([]byte("\x1b[2J\x1b[H"))
+	con.Raw([]byte("\x1b[2J\x1b[H"))
 	contents := strings.Join(args, " ")
 	curX := 0
 	curY := 0
@@ -29,7 +28,7 @@ func editor(entity Entity, args ...string) string {
 		print_editor(con, buf)
 		client.Raw([]byte(sprintf("\x1b[H\x1b[%d;%dH", curY+1, curX+5)))
 		var b [1]byte
-		n, e := con.Read(b[:])
+		n, e := con.ReadRaw(b[:])
 		ErrorCheck(e)
 		if n > 0 {
 			k := b[0]
@@ -41,11 +40,10 @@ func editor(entity Entity, args ...string) string {
 				client.Raw([]byte("q"))
 				log.Printf("Exiting edit mode...")
 				client.Raw([]byte("\x1b[999;1H"))
-				player.NeedPrompt = true
 				break
 			} else if k == 27 {
 				if ctrl {
-					con.Write([]byte("\x1b[u"))
+					con.Raw([]byte("\x1b[u"))
 					ctrl = false
 				}
 				esc = true
@@ -80,17 +78,17 @@ func editor(entity Entity, args ...string) string {
 	return ""
 }
 
-func print_editor(con net.Conn, buffer []byte) {
-	con.Write([]byte("\x1b[2J\x1b[H"))
+func print_editor(con Client, buffer []byte) {
+	con.Raw([]byte("\x1b[2J\x1b[H"))
 	str := string(buffer)
 	lines := strings.Split(str, "\n")
 	for i := 0; i < 9; i++ {
-		con.Write([]byte(sprintf("\x1b[1;32m%1d\x1b[m ", i)))
+		con.Raw([]byte(sprintf("\x1b[1;32m%1d\x1b[m ", i)))
 		if i < len(lines) {
-			con.Write([]byte(lines[i]))
+			con.Raw([]byte(lines[i]))
 		}
-		con.Write([]byte("\r\n"))
+		con.Raw([]byte("\r\n"))
 	}
-	con.Write([]byte("-------------------------------------------------------------------------\r\n"))
-	con.Write([]byte("Quit: \\q  |  Write: \\w \r\n"))
+	con.Raw([]byte("-------------------------------------------------------------------------\r\n"))
+	con.Raw([]byte("Quit: \\q  |  Write: \\w \r\n"))
 }

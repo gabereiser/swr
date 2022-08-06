@@ -77,8 +77,8 @@ Login:
 				if player.Client != nil {
 					// disconnect old client.
 					player.Client.Send("\r\n&RAnother player has logged in as this character!!!\r\n")
-					player.Client.(*MudClient).Con.Close()
-					DB().RemoveClient(player.Client.(*MudClient))
+					player.Client.Close()
+					DB().RemoveClient(player.Client)
 					time.Sleep(1 * time.Second) // sleep a little to make sure they're kicked...
 				}
 				player.Client = client

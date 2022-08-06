@@ -19,6 +19,7 @@ package swr
 
 import (
 	"log"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -132,7 +133,8 @@ func do_area_remove(entity Entity, args ...string) {
 
 func do_area_reset(entity Entity, args ...string) {
 	if len(args) == 0 {
-		DB().ResetAll()
+		entity.Send("\r\nSyntax: areset <areaname>\r\n")
+		return
 	} else {
 		for i, area := range DB().areas {
 			if strings.EqualFold(area.Name, args[0]) {
@@ -149,6 +151,8 @@ func do_area_save(entity Entity, args ...string) {
 		return
 	}
 	if entity.IsPlayer() {
+		DB().SaveMobs()
+		DB().SaveItems()
 		room := DB().GetRoom(entity.RoomId(), entity.ShipId())
 		if room.Area != nil {
 			DB().SaveArea(room.Area)
@@ -159,9 +163,6 @@ func do_area_save(entity Entity, args ...string) {
 	}
 }
 
-func do_room_create(entity Entity, args ...string) {
-
-}
 func do_room_stat(entity Entity, args ...string) {
 	if len(args) > 2 {
 		entity.Send("\r\nSyntax: rstat <vnum?> <shipId?>     | vnum and shipId are optional, but vnum must be supplied with shipId.\r\n")
@@ -458,7 +459,53 @@ func do_item_set(entity Entity, args ...string) {
 }
 
 func do_item_remove(entity Entity, args ...string) {
+	if len(args) != 1 {
+		entity.Send("\r\nSyntax: oremove <item>\r\n")
+		return
+	}
+	room := entity.GetRoom()
+	item := room.FindItem(args[0])
+	if item == nil {
+		entity.Send("\r\n&RUnable to find item.")
+	}
+	item_id := item.GetData().OId
+	room.RemoveItem(item)
+	delete(DB().items, item_id)
+	for _, a := range DB().areas {
+		for i, isp := range a.Items {
+			if isp.Item == item_id {
+				// remove the mobspawn that has this mob listed
+				ret := make([]ItemSpawn, 0)
+				ret = append(ret, a.Items[:i]...)
+				ret = append(ret, a.Items[i+1:]...)
+				a.Items = ret
+			}
+		}
+	}
+}
 
+func do_item_spawn(entity Entity, args ...string) {
+	if len(args) == 0 {
+		entity.Send("\r\nSyntax: ospawn <item_vnum>\r\n")
+		return
+	}
+	vnum, err := strconv.Atoi(args[0])
+	if err != nil {
+		entity.Send("\r\n&RUnable to parse argument as number.&d\r\n")
+		return
+	}
+	item := DB().items[uint(vnum)]
+	if item == nil {
+		entity.Send("\r\n&RUnable to find item with vnum: &W%d&d\r\n", vnum)
+		return
+	} else {
+		room := entity.GetRoom()
+		room.Area.Items = append(room.Area.Items, ItemSpawn{
+			Item: item.OId,
+			Room: room.Id,
+		})
+	}
+	entity.Send("\r\n&YObject Spawn. Ok.&d\r\n")
 }
 
 func do_item_stat(entity Entity, args ...string) {
@@ -466,15 +513,8 @@ func do_item_stat(entity Entity, args ...string) {
 		entity.Send("\r\nSyntax: ostat <item>\r\n")
 		return
 	}
-	room := DB().GetRoom(entity.RoomId(), entity.ShipId())
-	var item Item
-	for _, i := range room.Items {
-		for _, k := range i.GetData().Keywords {
-			if strings.HasPrefix(k, args[0]) {
-				item = i
-			}
-		}
-	}
+	room := entity.GetRoom()
+	item := room.FindItem(args[0])
 	if item != nil {
 		i := item.GetData()
 		entity.Send("\r\n%s\r\n", MakeTitle("Object Stats", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
@@ -511,15 +551,360 @@ func do_room_find(entity Entity, args ...string) {
 }
 
 func do_mob_create(entity Entity, args ...string) {
+	if entity == nil {
+		return
+	}
+	if len(args) < 2 {
+		entity.Send("\r\nSyntax: mcreate <filename> <mobname>\r\n")
+		return
+	}
+	room := DB().GetRoom(entity.RoomId(), entity.ShipId())
+	if room.ship > 0 {
+		entity.Send("\r\n&RMobs's must be created on planets. So we can use the area name in the filepath.&d\r\n&xsorry...&d\r\n")
+		return
+	}
+	filename := args[0]
+	// no need to use .yml in the filename, the path of the item will be /data/items/<area>/<file_name>.yml
+	if strings.HasSuffix(filename, ".yaml") || strings.HasSuffix(filename, ".yml") {
+		filename = strings.TrimSuffix(filename, ".yaml")
+		filename = strings.TrimSuffix(filename, ".yml")
+	}
+	mob := new(CharData)
+	mob.Id = DB().GetNextMobVnum()
+	mob.OId = mob.Id
+	mob.Name = strings.TrimSpace(strings.Join(args[1:], " "))
+	mob.Desc = "An unfinished creature stands here staring blankly off into the distance."
+	mob.Brain = "generic"
+	mob.Gender = "n"
+	mob.Hp = []int{10, 10}
+	mob.Mp = []int{0, 0}
+	mob.Mv = []int{10, 10}
+	mob.Skills = make(map[string]int)
+	mob.Languages = make(map[string]int)
+	mob.Languages["basic"] = 100
+	mob.Speaking = "basic"
+	mob.Race = "Human"
+	mob.Equipment = make(map[string]*ItemData)
+	mob.Inventory = make([]*ItemData, 0)
+	mob.Stats = []int{5, 5, 5, 5, 5, 5}
+	mob.Flags = make([]string, 0)
+	mob.Flags = append(mob.Flags, "npc")
+	mob.Filename = sprintf("data/mobs/%s/%s.yml", strings.ToLower(strings.ReplaceAll(room.Area.Name, " ", "")), filename)
+	mob.State = ENTITY_STATE_NORMAL
+	mob.Gold = 0
+	mob.Bank = 0
+	mob.Keywords = make([]string, 0)
+	words := strings.Split(strings.ToLower(mob.Name), " ")
+	for i, s := range words {
+		if len(s) < 4 {
+			words[i] = ""
+			// simple words like a, or an, or the aren't good keywords.
+			// You can use the itemtype as a keyword to add a proper one after creation.
+		}
+	}
+	keywords := strings.Split(strings.Join(words, " "), " ")
+	mob.Keywords = append(mob.Keywords, keywords...)
+	mob.Level = 1
+	mob.XP = 0
+	mob.Progs = make(map[string]string)
+	mob.Title = sprintf("a %s %s", mob.Race, mob.Name)
+	mob.Room = room.Id
+	mob.Ship = room.ship
 
+	DB().SaveMob(mob)
+	DB().LoadMob(mob.Filename)
+	DB().SpawnEntity(mob)
+	entity.Send("\r\n&YMob Create. Ok.&d\r\n")
 }
 
+func do_mob_spawn(entity Entity, args ...string) {
+	if len(args) == 0 {
+		entity.Send("\r\nSyntax: mspawn <mob_vnum>\r\n")
+		return
+	}
+	vnum, err := strconv.Atoi(args[0])
+	if err != nil {
+		entity.Send("\r\n&RUnable to parse argument as number.&d\r\n")
+		return
+	}
+	mob := DB().mobs[uint(vnum)]
+	if mob == nil {
+		entity.Send("\r\n&RUnable to find mob with vnum: &W%d&d\r\n", vnum)
+		return
+	} else {
+		room := entity.GetRoom()
+		room.Area.Mobs = append(room.Area.Mobs, MobSpawn{
+			Mob:  mob.OId,
+			Room: room.Id,
+		})
+	}
+	DB().SpawnEntity(mob)
+	entity.Send("\r\n&YMob Spawn. Ok.&d\r\n")
+}
 func do_mob_set(entity Entity, args ...string) {
-
+	if entity == nil {
+		return
+	}
+	if len(args) < 2 {
+		entity.Send("\r\nSyntax: mset <mob> <field> <value>\r\n")
+		return
+	}
+	room := entity.GetRoom()
+	var target Entity
+	found := false
+	for _, e := range room.GetEntities() {
+		if found {
+			break
+		}
+		for _, k := range e.GetCharData().Keywords {
+			if strings.HasPrefix(k, strings.ToLower(args[0])) {
+				target = e
+				found = true
+				break
+			}
+		}
+	}
+	if target == nil {
+		entity.Send("\r\n&RUnable to find mob &W%s&R here.&d\r\n", args[0])
+		return
+	}
+	tch := target.GetCharData()
+	switch strings.ToLower(args[1]) {
+	case "name":
+		tch.Name = strings.TrimSpace(strings.Join(args[2:], " "))
+	case "desc":
+		tch.Desc = consolify(strings.TrimSpace(strings.Join(args[2:], " ")))
+	case "race":
+		found := false
+		for _, r := range race_list {
+			if strings.EqualFold(r, args[2]) {
+				found = true
+				tch.Race = r
+			}
+		}
+		if !found {
+			entity.Send("\r\n&RInvalid race.&d\r\n")
+			return
+		}
+	case "keywords":
+		switch args[2] {
+		case "add":
+			tch.Keywords = append(tch.Keywords, args[3])
+		case "rm":
+			ki := -1
+			for i, k := range tch.Keywords {
+				if k == args[3] {
+					ki = i
+				}
+			}
+			if ki > -1 {
+				ret := make([]string, 0)
+				ret = append(ret, tch.Keywords[:ki]...)
+				ret = append(ret, tch.Keywords[ki+1:]...)
+				tch.Keywords = ret
+			}
+		default:
+			entity.Send("\r\nSyntax mset <mob> keywords <add/rm> <keyword>\r\n")
+			return
+		}
+	case "gender":
+		g := strings.ToLower(args[2][0:1])
+		if g != "m" && g != "n" && g != "f" {
+			entity.Send("\r\n&RInvalid gender.&d\r\n")
+			return
+		}
+		tch.Gender = g
+	case "level":
+		lvl, _ := strconv.Atoi(args[2])
+		if lvl <= 0 && lvl >= 100 {
+			entity.Send("\r\n&RInvalid level. 1-99.&d\r\n")
+			return
+		}
+		tch.Level = uint(lvl)
+		tch.XP = get_xp_for_level(tch.Level)
+	case "xp":
+		xp, _ := strconv.Atoi(args[2])
+		if xp <= 0 {
+			entity.Send("\r\n&RInvalid xp. Must be positive number.&d\r\n")
+			return
+		}
+		tch.XP = uint(xp)
+		tch.Level = get_level_for_xp(tch.XP)
+	case "money":
+		gp, _ := strconv.Atoi(args[2])
+		if gp <= 0 {
+			entity.Send("\r\n&RInvalid money. Must be positive number.&d\r\n")
+			return
+		}
+		tch.Gold = uint(gp)
+	case "str":
+		value, _ := strconv.Atoi(args[2])
+		tch.Stats[0] = value
+	case "int":
+		value, _ := strconv.Atoi(args[2])
+		tch.Stats[1] = value
+	case "dex":
+		value, _ := strconv.Atoi(args[2])
+		tch.Stats[2] = value
+	case "wis":
+		value, _ := strconv.Atoi(args[2])
+		tch.Stats[3] = value
+	case "con":
+		value, _ := strconv.Atoi(args[2])
+		tch.Stats[4] = value
+	case "cha":
+		value, _ := strconv.Atoi(args[2])
+		tch.Stats[5] = value
+	case "hp":
+		value, _ := strconv.Atoi(args[2])
+		tch.Hp[0] = value
+		tch.Hp[1] = value
+	case "mp":
+		value, _ := strconv.Atoi(args[2])
+		tch.Mp[0] = value
+		tch.Mp[1] = value
+	case "mv":
+		value, _ := strconv.Atoi(args[2])
+		tch.Mv[0] = value
+		tch.Mv[1] = value
+	case "skill":
+		skill := args[2]
+		found := false
+		for _, s := range skill_list {
+			if s == skill {
+				found = true
+			}
+		}
+		if !found {
+			entity.Send("\r\n&RInvalid skill.&d\r\n")
+			return
+		}
+		if len(args) != 4 {
+			entity.Send("\r\nSyntax: mset <mob> skill <skillname> <value>")
+			return
+		}
+		value, _ := strconv.Atoi(args[3])
+		tch.Skills[skill] = value
+	case "languages":
+		language := args[2]
+		found := false
+		for _, l := range Languages {
+			if strings.EqualFold(l.Name, language) {
+				found = true
+			}
+		}
+		if !found {
+			entity.Send("\r\n&RInvalid language.&d\r\n")
+			return
+		}
+		if len(args) != 4 {
+			entity.Send("\r\nSyntax: mset <mob> languages <language> <value>")
+			return
+		}
+		value, _ := strconv.Atoi(args[3])
+		tch.Languages[language] = value
+	case "speaking":
+		language := args[2]
+		found := false
+		for _, l := range Languages {
+			if strings.EqualFold(l.Name, language) {
+				found = true
+			}
+		}
+		if !found {
+			entity.Send("\r\n&RInvalid language.&d\r\n")
+			return
+		}
+		tch.Speaking = language
+	case "brain":
+		tch.Brain = args[2]
+		if tch.Brain == "generic" {
+			tch.AI = MakeGenericBrain(tch)
+		}
+	case "flags":
+		flag := args[2]
+		for i, f := range tch.Flags {
+			if f == flag {
+				ret := make([]string, 0)
+				ret = append(ret, tch.Flags[:i]...)
+				ret = append(ret, tch.Flags[i+1:]...)
+				tch.Flags = ret
+				entity.Send("\r\n&YMob Set. Ok.&d\r\n")
+				return
+			}
+		}
+		tch.Flags = append(tch.Flags, flag)
+		entity.Send("\r\n&YMob Set. Ok.&d\r\n")
+	default:
+		entity.Send("\r\nField values are:\r\n")
+		entity.Send("-----------------------------------------\r\n")
+		entity.Send("name, desc, keywords, race, gender, level, xp, money,\r\n")
+		entity.Send("str, int, dex, wis, cha, con, hp, mp, mv, skill,\r\n")
+		entity.Send("languages, speaking, brain\r\n")
+	}
+	tch.Id = tch.OId // make it an original mob. Not a clone.
+	DB().SaveMob(tch)
+	DB().LoadMob(tch.Filename)
+	entity.Send("\r\n&YMob Set. Ok.&d\r\n")
 }
 
 func do_mob_remove(entity Entity, args ...string) {
-
+	if entity == nil {
+		return
+	}
+	if len(args) < 1 {
+		entity.Send("\r\nSyntax: mremove <mob>\r\n")
+		return
+	}
+	room := entity.GetRoom()
+	var target Entity
+	found := false
+	for _, e := range room.GetEntities() {
+		if found {
+			break
+		}
+		for _, k := range e.GetCharData().Keywords {
+			if strings.HasPrefix(k, strings.ToLower(args[0])) {
+				target = e
+				found = true
+				break
+			}
+		}
+	}
+	if target == nil {
+		// let's try by vnum from the mobs list (maybe we want to remove a mob entirely!)
+		vnum, err := strconv.Atoi(args[0])
+		if err != nil {
+			entity.Send("\r\n&RUnable to find mob &W%s&R here.&d\r\n", args[0])
+			return
+		}
+		for _, m := range DB().mobs {
+			if m.OId == uint(vnum) || m.Id == uint(vnum) {
+				target = m
+			}
+		}
+	}
+	if target == nil {
+		entity.Send("\r\n&RUnable to find mob &W%s&R here.&d\r\n", args[0])
+		return
+	}
+	tch := target.GetCharData()
+	DB().RemoveEntity(target)
+	delete(DB().mobs, tch.OId)
+	err := os.Remove(tch.Filename)
+	ErrorCheck(err)
+	for _, a := range DB().areas {
+		for i, msp := range a.Mobs {
+			if msp.entity == target || msp.Mob == tch.OId {
+				// remove the mobspawn that has this mob listed
+				ret := make([]MobSpawn, 0)
+				ret = append(ret, a.Mobs[:i]...)
+				ret = append(ret, a.Mobs[i+1:]...)
+				a.Mobs = ret
+			}
+		}
+	}
+	entity.Send("\r\n&YMob Delete. Ok.&d\r\n")
 }
 
 func do_mob_reset(entity Entity, args ...string) {
@@ -590,11 +975,12 @@ func do_advance(entity Entity, args ...string) {
 				entity.Send("\r\n&RCharacter is already level &W%d&R!&d\r\n", p.GetCharData().Level)
 				return
 			}
-			for i := p.GetCharData().Level; i <= uint(l); i++ {
+			for i := p.GetCharData().Level; i < uint(l); i++ {
 				entity_advance_level(p)
 			}
 		}
 	}
+	entity.Send("\r\n&YAdvance. Ok.&d\r\n")
 }
 
 func do_dig(entity Entity, args ...string) {
