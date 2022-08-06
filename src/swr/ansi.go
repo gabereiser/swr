@@ -99,9 +99,10 @@ const (
 │ ├──┬──┤           │▒
 │ └──┴──┘           │▒
 └───────────────────┘▒
- ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
 
- ░ ▒ ▓ █
+	▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+
+	░ ▒ ▓ █
 */
 const (
 	ANSI_DBOX_TOP_LEFT     = "╔"
@@ -118,7 +119,8 @@ const (
 	ANSI_BOX_BOTTOM_RIGHT  = "┘"
 )
 
-/* The following are the tags used for adding color in your text.
+/*
+	The following are the tags used for adding color in your text.
 
 Foreground text tag: &
 Tokens for foreground text are:
@@ -168,7 +170,8 @@ of colors for your typed text, include that at the end of your prompt set.
 Example (assuming current h.p.'s of 43 and mana of 23):
 
 Prompt &Y^b<%h/&x^r%m>&w^x = <43/23>
-        {A}     {B}       {C}
+
+	{A}     {B}       {C}
 
 A) Yellow with blue background.
 B) Black with dark red background.
@@ -484,4 +487,45 @@ func MakeTunerBar(freq string, size int) string {
 	}
 	ret += ""
 	return ret
+}
+
+func StitchParagraphs(paragraph1 string, paragraph2 string) string {
+	p1_parts := strings.Split(paragraph1, "\r\n")
+	p1_width := 0
+	for _, p := range p1_parts {
+		if p1_width < len(p) {
+			p1_width = len(p)
+		}
+	}
+	if p1_width < 80 {
+		p1_width = 80
+	}
+	p2_parts := strings.Split(paragraph2, "\r\n")
+	p2_width := 0
+	for _, p := range p2_parts {
+		if p2_width < len(p) {
+			p2_width = len(p)
+		}
+	}
+	p1_len := len(p1_parts)
+	p2_len := len(p2_parts)
+
+	tallest := p1_len
+	if p2_len > p1_len {
+		tallest = p2_len
+	}
+
+	buf := ""
+	for row := 0; row < tallest; row++ {
+		a_side := ""
+		b_side := ""
+		if row < p1_len {
+			a_side = p1_parts[row]
+		}
+		if row < p2_len {
+			b_side = p2_parts[row]
+		}
+		buf += sprintf("%-"+sprintf("%d", p1_width)+"s %-"+sprintf("%d", p2_width)+"s\r\n", a_side, b_side)
+	}
+	return buf
 }

@@ -20,7 +20,6 @@ package swr
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -201,11 +200,11 @@ func (d *GameDatabase) Load() {
 
 func (d *GameDatabase) LoadHelps() {
 	log.Print("Loading help files.")
-	flist, err := ioutil.ReadDir("docs")
+	flist, err := os.ReadDir("docs")
 	ErrorCheck(err)
 	for _, help_file := range flist {
 		fpath := fmt.Sprintf("docs/%s", help_file.Name())
-		fp, err := ioutil.ReadFile(fpath)
+		fp, err := os.ReadFile(fpath)
 		ErrorCheck(err)
 		help := new(HelpData)
 		err = yaml.Unmarshal(fp, help)
@@ -217,7 +216,7 @@ func (d *GameDatabase) LoadHelps() {
 
 func (d *GameDatabase) LoadAreas() {
 	log.Print("Loading area files.")
-	flist, err := ioutil.ReadDir("data/areas")
+	flist, err := os.ReadDir("data/areas")
 	ErrorCheck(err)
 	count := 0
 	for _, area_file := range flist {
@@ -231,7 +230,7 @@ func (d *GameDatabase) LoadAreas() {
 
 func (d *GameDatabase) LoadArea(name string) {
 	fpath := fmt.Sprintf("data/areas/%s", name)
-	fp, err := ioutil.ReadFile(fpath)
+	fp, err := os.ReadFile(fpath)
 	ErrorCheck(err)
 	area := new(AreaData)
 	err = yaml.Unmarshal(fp, area)
@@ -247,11 +246,11 @@ func (d *GameDatabase) LoadArea(name string) {
 
 func (d *GameDatabase) LoadPlanets() {
 	log.Printf("Loading planet files.")
-	flist, err := ioutil.ReadDir("data/planets")
+	flist, err := os.ReadDir("data/planets")
 	ErrorCheck(err)
 	for _, f := range flist {
 		fpath := fmt.Sprintf("data/planets/%s", f.Name())
-		fp, err := ioutil.ReadFile(fpath)
+		fp, err := os.ReadFile(fpath)
 		ErrorCheck(err)
 		p := new(StarSystemData)
 		err = yaml.Unmarshal(fp, p)
@@ -278,7 +277,7 @@ func (d *GameDatabase) LoadItems() {
 }
 
 func (d *GameDatabase) LoadItem(path string) {
-	fp, err := ioutil.ReadFile(path)
+	fp, err := os.ReadFile(path)
 	ErrorCheck(err)
 	item := new(ItemData)
 	err = yaml.Unmarshal(fp, item)
@@ -303,7 +302,7 @@ func (d *GameDatabase) LoadMobs() {
 	log.Printf("%d mobs loaded.", len(d.mobs))
 }
 func (d *GameDatabase) LoadMob(path string) {
-	fp, err := ioutil.ReadFile(path)
+	fp, err := os.ReadFile(path)
 	ErrorCheck(err)
 	ch := new(CharData)
 	err = yaml.Unmarshal(fp, ch)
@@ -344,7 +343,7 @@ func (d *GameDatabase) SaveShips() {
 	for _, ship := range d.ship_prototypes {
 		buf, err := yaml.Marshal(ship)
 		ErrorCheck(err)
-		err = ioutil.WriteFile(fmt.Sprintf("data/ships/prototypes/%s.yml", strings.ToLower(strings.ReplaceAll(ship.Name, " ", ""))), buf, 0755)
+		err = os.WriteFile(fmt.Sprintf("data/ships/prototypes/%s.yml", strings.ToLower(strings.ReplaceAll(ship.Name, " ", ""))), buf, 0755)
 		ErrorCheck(err)
 	}
 	for _, ship := range d.ships {
@@ -355,14 +354,14 @@ func (d *GameDatabase) SaveShips() {
 func (d *GameDatabase) SaveShip(ship Ship) {
 	buf, err := yaml.Marshal(ship)
 	ErrorCheck(err)
-	err = ioutil.WriteFile(fmt.Sprintf("data/ships/%s.yml", strings.ToLower(strings.ReplaceAll(ship.GetData().Name, " ", ""))), buf, 0755)
+	err = os.WriteFile(fmt.Sprintf("data/ships/%s.yml", strings.ToLower(strings.ReplaceAll(ship.GetData().Name, " ", ""))), buf, 0755)
 	ErrorCheck(err)
 }
 
 func (d *GameDatabase) SaveArea(area *AreaData) {
 	buf, err := yaml.Marshal(area)
 	ErrorCheck(err)
-	err = ioutil.WriteFile(fmt.Sprintf("data/areas/%s.yml", area.Name), buf, 0755)
+	err = os.WriteFile(fmt.Sprintf("data/areas/%s.yml", area.Name), buf, 0755)
 	for _, m := range area.Mobs {
 		mob := d.mobs[m.Mob]
 		d.SaveMob(mob)
@@ -378,7 +377,7 @@ func (d *GameDatabase) SaveItem(item *ItemData) {
 	ErrorCheck(err)
 	dir := filepath.Dir(item.Filename)
 	os.MkdirAll(dir, 0755)
-	err = ioutil.WriteFile(item.Filename, buf, 0755)
+	err = os.WriteFile(item.Filename, buf, 0755)
 	ErrorCheck(err)
 }
 func (d *GameDatabase) SaveMob(mob *CharData) {
@@ -386,7 +385,7 @@ func (d *GameDatabase) SaveMob(mob *CharData) {
 	ErrorCheck(err)
 	dir := filepath.Dir(mob.Filename)
 	os.MkdirAll(dir, 0755)
-	err = ioutil.WriteFile(mob.Filename, buf, 0755)
+	err = os.WriteFile(mob.Filename, buf, 0755)
 	ErrorCheck(err)
 }
 
@@ -413,7 +412,7 @@ func (d *GameDatabase) GetPlayer(name string) *PlayerProfile {
 }
 
 func (d *GameDatabase) ReadPlayerData(filename string) *PlayerProfile {
-	fp, err := ioutil.ReadFile(filename)
+	fp, err := os.ReadFile(filename)
 	ErrorCheck(err)
 	p_data := new(PlayerProfile)
 	err = yaml.Unmarshal(fp, p_data)
@@ -435,7 +434,7 @@ func (d *GameDatabase) SavePlayerData(player *PlayerProfile) {
 	filename := fmt.Sprintf("data/accounts/%s/%s.yml", name[0:1], name)
 	buf, err := yaml.Marshal(player)
 	ErrorCheck(err)
-	err = ioutil.WriteFile(filename, buf, 0755)
+	err = os.WriteFile(filename, buf, 0755)
 	ErrorCheck(err)
 }
 
@@ -454,7 +453,7 @@ func (d *GameDatabase) GetPlayerEntityByName(name string) Entity {
 	return nil
 }
 func (d *GameDatabase) ReadCharData(filename string) *CharData {
-	fp, err := ioutil.ReadFile(filename)
+	fp, err := os.ReadFile(filename)
 	ErrorCheck(err)
 	char_data := new(CharData)
 	yaml.Unmarshal(fp, char_data)
@@ -464,7 +463,7 @@ func (d *GameDatabase) ReadCharData(filename string) *CharData {
 func (d *GameDatabase) SaveCharData(char_data *CharData, filename string) {
 	buf, err := yaml.Marshal(char_data)
 	ErrorCheck(err)
-	err = ioutil.WriteFile(filename, buf, 0755)
+	err = os.WriteFile(filename, buf, 0755)
 	ErrorCheck(err)
 }
 

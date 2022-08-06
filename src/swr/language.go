@@ -19,9 +19,9 @@ package swr
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
+	"os"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -40,10 +40,10 @@ var Languages = []Language{}
 func LanguageLoad() {
 	if len(Languages) == 0 {
 		log.Printf("Loading languages.")
-		flist, err := ioutil.ReadDir("data/languages")
+		flist, err := os.ReadDir("data/languages")
 		ErrorCheck(err)
 		for _, file := range flist {
-			fp, err := ioutil.ReadFile("data/languages/" + file.Name())
+			fp, err := os.ReadFile("data/languages/" + file.Name())
 			ErrorCheck(err)
 			l := new(Language)
 			yaml.Unmarshal(fp, l)

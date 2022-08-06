@@ -18,8 +18,8 @@
 package swr
 
 import (
-	"io/ioutil"
 	"log"
+	"os"
 	"sort"
 	"strings"
 	"time"
@@ -116,7 +116,7 @@ type Command struct {
 
 func CommandsLoad() {
 	log.Printf("Loading commands list.")
-	fp, err := ioutil.ReadFile("data/sys/commands.yml")
+	fp, err := os.ReadFile("data/sys/commands.yml")
 	ErrorCheck(err)
 	err = yaml.Unmarshal(fp, &Commands)
 	ErrorCheck(err)

@@ -196,16 +196,6 @@ func get_gender_for_code(gender string) string {
 	return "male"
 }
 
-// get_preface_for_name takes a proper noun and returns a prep
-func get_preface_for_name(name string) string {
-	sanitized := strings.ToLower(name)
-	switch sanitized[0:1] {
-	case "a", "e", "i", "o", "u", "h", "y":
-		return "an"
-	default:
-		return "a"
-	}
-}
 func sqrt32(v float32) float32 {
 	return float32(math.Sqrt(float64(v)))
 }

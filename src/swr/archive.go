@@ -19,7 +19,6 @@ package swr
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -72,7 +71,7 @@ func DoBackup(t time.Time) {
 }
 
 func DoBackupCleanup(t time.Time) {
-	archives, err := ioutil.ReadDir("backup")
+	archives, err := os.ReadDir("backup")
 	ErrorCheck(err)
 	for _, archive := range archives {
 		if strings.HasSuffix(archive.Name(), ".tar.xz") {

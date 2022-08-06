@@ -1,8 +1,8 @@
 package swr
 
 import (
-	"io/ioutil"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -34,7 +34,7 @@ func editor(entity Entity, contents string) string {
 	player := entity.(*PlayerProfile)
 	client := player.Client.(*TCPClient)
 	filename := sprintf("/tmp/%s", strings.ToLower(strings.ReplaceAll(entity.GetCharData().Name, " ", "")))
-	e := ioutil.WriteFile(filename, []byte(contents), 0755)
+	e := os.WriteFile(filename, []byte(contents), 0755)
 	ErrorCheck(e)
 	cmd := exec.Command("vim", "-Z", filename)
 	cmd.Env = append(cmd.Env, "TERM=xterm256-color")
@@ -43,7 +43,7 @@ func editor(entity Entity, contents string) string {
 	cmd.Stderr = client.Con
 	err := cmd.Run()
 	ErrorCheck(err)
-	buf, _ := ioutil.ReadFile(filename)
+	buf, _ := os.ReadFile(filename)
 	return string(buf)
 
 }

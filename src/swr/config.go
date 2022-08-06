@@ -18,8 +18,8 @@
 package swr
 
 import (
-	"io/ioutil"
 	"log"
+	"os"
 	"runtime"
 
 	"gopkg.in/yaml.v3"
@@ -40,7 +40,7 @@ func Config() *Configuration {
 		if runtime.GOOS == "windows" {
 			path = "data\\sys\\config.yml"
 		}
-		fp, err := ioutil.ReadFile(path)
+		fp, err := os.ReadFile(path)
 		ErrorCheck(err)
 		err = yaml.Unmarshal(fp, &_config)
 		ErrorCheck(err)

@@ -18,7 +18,7 @@ rooms:
         southeast: 1000
     - id: 1002
       name: Mos Eisley Landing Pad
-      desc: "You are standing in a landing pad are of Mos Eisley Spaceport. It's pretty \r\nrough as the sands have deteriorated the walls and covered the magnetic landing \r\nlocks. Storage bins are deshuffled as the port droids seem preoccupied. To the \r\nnorth is the spaceport. Perhaps they'll be someone there that can clean up this \r\nplace. "
+      desc: "You are standing in a landing pad area of Mos Eisley Spaceport. It's pretty \r\nrough as the sands have deteriorated the walls and covered the magnetic landing \r\nlocks. Storage bins are deshuffled as the port droids seem preoccupied. To the \r\nnorth is the spaceport. Perhaps they'll be someone there that can clean up this \r\nplace. "
       exits:
         north: 1000
       flags: [spaceport]

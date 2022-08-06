@@ -84,7 +84,7 @@ func (b *GenericBrain) Update() {
 				move = false
 			}
 		}
-		if roll_dice("1d50") == 50 && move {
+		if roll_dice("1d30") == 30 && move {
 			// let's try to move...
 			b.Move()
 		}

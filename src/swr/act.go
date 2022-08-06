@@ -88,7 +88,7 @@ func do_look(entity Entity, args ...string) {
 							ANSI_TITLE_STYLE_NORMAL,
 							ANSI_TITLE_ALIGNMENT_CENTER)))
 				}
-				entity.Send(sprintf("&W%s&d\r\n\r\n", telnet_encode(room.Desc)))
+				entity.Send(sprintf("&W%s&d\r\n\r\n", StitchParagraphs(telnet_encode(room.Desc), build_map(room))))
 				entity.Send("Exits: \r\n")
 				for dir, to_room_id := range room.Exits {
 					to_room := DB().GetRoom(to_room_id, shipId)
@@ -127,7 +127,7 @@ func do_look(entity Entity, args ...string) {
 								MakeTitle(room.Name,
 									ANSI_TITLE_STYLE_NORMAL,
 									ANSI_TITLE_ALIGNMENT_CENTER)))
-							entity.Send(sprintf("&W%s&d\r\n", telnet_encode(room.Desc)))
+							entity.Send(sprintf("&W%s&d\r\n", StitchParagraphs(telnet_encode(room.Desc), build_map(room))))
 							for dir, to_room_id := range room.Exits {
 								to_room := DB().GetRoom(to_room_id, shipId)
 								if k, ok := room.ExitFlags[dir]; ok {
@@ -470,7 +470,7 @@ func do_get(entity Entity, args ...string) {
 						return
 					}
 					item.GetData().RemoveItem(i)
-					entity.Send("\r\n&dYou pick up %s &Y%s&d from &Y%s&d.\r\n", get_preface_for_name(i.GetData().Name), i.GetData().Name, item.GetData().Name)
+					entity.Send("\r\n&dYou pick up &Y%s&d from &Y%s&d.\r\n", i.GetData().Name, item.GetData().Name)
 					return
 				}
 			}
@@ -525,14 +525,14 @@ func do_drop(entity Entity, args ...string) {
 	room := db.GetRoom(entity.RoomId(), entity.ShipId())
 	room.AddItem(item)
 	entity.GetCharData().RemoveItem(item)
-	entity.Send("\r\n&YYou drop %s &W%s&Y.&d\r\n", get_preface_for_name(item.GetData().Name), item.GetData().Name)
+	entity.Send("\r\n&YYou drop &W%s&Y.&d\r\n", item.GetData().Name)
 	ch := entity.GetCharData()
 	for _, e := range room.GetEntities() {
 		if e == nil {
 			continue
 		}
 		if e != entity {
-			e.Send("\r\n&P%s&d drops %s &Y%s&d.\r\n", ch.Name, get_preface_for_name(item.GetData().Name), item.GetData().Name)
+			e.Send("\r\n&P%s&d drops &Y%s&d.\r\n", ch.Name, item.GetData().Name)
 			if e.GetCharData().AI != nil {
 				e.GetCharData().AI.OnDrop(entity, item)
 			}
