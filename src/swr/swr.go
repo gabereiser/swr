@@ -41,14 +41,13 @@ func Main() {
 	log.Printf("Starting version %s\n", version)
 	assert(is_skill("martial-arts"))
 	DB().Load()
+	defer DB().Save()
 	DB().ResetAll()
 	CommandsLoad()
 	LanguageLoad()
 	StartBackup()
 	log.Printf("Server took %s seconds to boot.", time.Since(startup).String())
 	ServerStart(Config().Addr)
-
-	DB().Save()
 }
 
 func GetVersion() string {

@@ -18,10 +18,14 @@
 package swr
 
 import (
+	"archive/tar"
+	"compress/gzip"
 	"fmt"
+	"io"
+	"io/fs"
 	"log"
 	"os"
-	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -56,16 +60,9 @@ func StartBackup() {
 
 func DoBackup(t time.Time) {
 	log.Printf("***** BACKUP STARTED *****\r\n")
-	// Lock the database to prevent disk activity while we tar a backup archive
-	db := DB()
-	db.Save()
-	if runtime.GOOS == "windows" {
-		_, err := exec.Command("tar", "-cJf", fmt.Sprintf("backup\\%s.tar.xz", t.Format("2006_01_02_15_04_05")), "data").Output()
-		ErrorCheck(err)
-	} else {
-		_, err := exec.Command("tar", "-cJf", fmt.Sprintf("backup/%s.tar.xz", t.Format("2006_01_02_15_04_05")), "data").Output()
-		ErrorCheck(err)
-	}
+
+	DB().Save()
+	create_backup(t)
 	runtime.GC()
 	log.Printf("***** BACKUP COMPLETE *****\r\n")
 }
@@ -74,9 +71,9 @@ func DoBackupCleanup(t time.Time) {
 	archives, err := os.ReadDir("backup")
 	ErrorCheck(err)
 	for _, archive := range archives {
-		if strings.HasSuffix(archive.Name(), ".tar.xz") {
+		if strings.HasSuffix(archive.Name(), ".tar.gz") {
 			p := archive.Name()
-			p = strings.ReplaceAll(p, ".tar.xz", "")
+			p = strings.ReplaceAll(p, ".tar.gz", "")
 			ar_time, err := time.Parse("2006_01_02_15_04_05", p)
 			ErrorCheck(err)
 			cut_time := t.Add(-72 * time.Hour) // 3 days worth of backups are stored.
@@ -93,4 +90,88 @@ func DoBackupCleanup(t time.Time) {
 		}
 
 	}
+}
+func create_backup(t time.Time) {
+	files := []string{}
+	filepath.Walk("data", func(path string, info fs.FileInfo, err error) error {
+		if !info.IsDir() {
+			files = append(files, path)
+		}
+		return nil
+	})
+	// Create output file
+	out, err := os.Create(sprintf("backup/%s.tar.gz", t.Format("2006_01_02_15_04_05")))
+	if err != nil {
+		log.Fatalln("Error writing archive:", err)
+	}
+	defer out.Close()
+
+	// Create the archive and write the output to the "out" Writer
+	err = create_archive(files, out)
+	if err != nil {
+		log.Fatalln("Error creating archive:", err)
+	}
+
+	fmt.Println("Archive created successfully")
+}
+func create_archive(files []string, buf io.Writer) error {
+	// Create new Writers for gzip and tar
+	// These writers are chained. Writing to the tar writer will
+	// write to the gzip writer which in turn will write to
+	// the "buf" writer
+	gw := gzip.NewWriter(buf)
+	defer gw.Close()
+	tw := tar.NewWriter(gw)
+	defer tw.Close()
+
+	// Iterate over files and add them to the tar archive
+	for _, file := range files {
+		err := archive_add(tw, file)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func archive_add(tw *tar.Writer, filename string) error {
+	// Open the file which will be written into the archive
+	file, err := os.Open(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Get FileInfo about our file providing file size, mode, etc.
+	info, err := file.Stat()
+	if err != nil {
+		return err
+	}
+
+	// Create a tar Header from the FileInfo data
+	header, err := tar.FileInfoHeader(info, info.Name())
+	if err != nil {
+		return err
+	}
+
+	// Use full path as name (FileInfoHeader only takes the basename)
+	// If we don't do this the directory strucuture would
+	// not be preserved
+	// https://golang.org/src/archive/tar/common.go?#L626
+	header.Name = filename
+
+	// Write file header to the tar archive
+	err = tw.WriteHeader(header)
+	if err != nil {
+		return err
+	}
+
+	// Copy file content to tar archive
+	_, err = io.Copy(tw, file)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

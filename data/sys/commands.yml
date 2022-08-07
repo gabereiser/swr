@@ -288,6 +288,11 @@
   level: 100
   func: do_item_create
 -
+  name: ostat
+  keywords: [ "ostat" ]
+  level: 100
+  func: do_item_stat
+-
   name: ospawn
   keywords: [ "ospawn" ]
   level: 100

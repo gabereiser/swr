@@ -44,6 +44,33 @@ type AreaData struct {
 	Mobs     []MobSpawn  `yaml:"mobs,omitempty"`
 	Items    []ItemSpawn `yaml:"items,omitempty"`
 }
+type Area interface {
+	Delete() error
+	DeleteRoom(index uint)
+	DeleteMobSpawn(index uint)
+	DeleteObjectSpawn(index uint)
+	GetName() string
+	GetAuthor() string
+	GetLevels() []uint16
+	GetReset() uint
+	GetResetMsg() string
+	GetRooms() []Room
+	GetMobSpawns() []MobSpawn
+	GetObjectSpawns() []ItemSpawn
+	GetEntities() []Entity
+	Reset() error
+	Save() error
+	SetName(name string)
+	SetAuthor(author string)
+	SetReset(seconds uint)
+	SetResetMsg(message string)
+	SetRooms(rooms []Room)
+	SetRoom(id uint, room Room)
+	SetMobSpawns(mob_spawns []MobSpawn)
+	SetMobSpawn(index uint, mob_id uint, room_id uint)
+	SetObjectSpawns(obj_spawns []ItemSpawn)
+	SetObjectSpawn(index uint, obj_id uint, room_id uint)
+}
 
 type RoomData struct {
 	Id        uint                     `yaml:"id"`
@@ -56,6 +83,28 @@ type RoomData struct {
 	RoomProgs map[string]string        `yaml:"roomProgs,omitempty"`
 	Area      *AreaData                `yaml:"-"`
 	Items     []Item                   `yaml:"-"`
+}
+
+type Room interface {
+	GetId() uint
+	GetShip() Ship
+	GetName() string
+	GetDesc() string
+	GetExits() []Exit
+	GetFlags() []string
+	GetRoomProgs() map[string]string
+	GetArea() Area
+	GetObjects() []Item
+}
+
+type Exit interface {
+	GetDirection() string
+	GetRoom() Room
+	GetShip() Ship
+	GetTarget() Room
+	IsClosed() bool
+	IsLocked() bool
+	GetKeyId() uint
 }
 
 type RoomExitFlag struct {

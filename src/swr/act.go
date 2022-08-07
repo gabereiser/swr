@@ -102,19 +102,27 @@ func do_look(entity Entity, args ...string) {
 					}
 				}
 				entity.Send("\r\n")
+				if room.HasFlag("spaceport") || room.HasFlag("shipyard") || room.HasFlag("hangar") {
+					for _, ship := range DB().ships {
+						s := ship.GetData()
+						if s.LocationId == roomId && !s.InSpace {
+							entity.Send("&b%-25s &w(&d%s&w)&d", s.Name, s.Type)
+						}
+					}
+					entity.Send("\r\n")
+				}
 				for i := range room.Items {
 					item := room.Items[i]
 					if item == nil {
 						continue
 					}
 					if item.IsCorpse() {
-						entity.Send("%s   &w%s %s&d\r\n", EMOJI_TOMBSTONE, item.GetData().Name)
+						entity.Send("%s   &w%s&d\r\n", EMOJI_TOMBSTONE, item.GetData().Name)
 					} else {
-						entity.Send("&w%s %s&d\r\n", item.GetData().Name)
+						entity.Send("&w%s&d\r\n", item.GetData().Name)
 					}
 
 				}
-
 				for _, e := range room.GetEntities() {
 					if e != entity {
 						entity.Send("&P%s&d\r\n", e.GetCharData().Name)

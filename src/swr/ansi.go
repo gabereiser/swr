@@ -497,8 +497,8 @@ func StitchParagraphs(paragraph1 string, paragraph2 string) string {
 			p1_width = len(p)
 		}
 	}
-	if p1_width < 80 {
-		p1_width = 80
+	if p1_width < 70 { // 80 - 10char-wide ascii map.
+		p1_width = 70
 	}
 	p2_parts := strings.Split(paragraph2, "\r\n")
 	p2_width := 0

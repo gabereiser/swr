@@ -377,7 +377,7 @@ func do_item_create(entity Entity, args ...string) {
 	if entity == nil {
 		return
 	}
-	if len(args) != 3 {
+	if len(args) < 3 {
 		entity.Send("\r\nSyntax: ocreate <filename> <itemtype> <item name>\r\n")
 		return
 	}
@@ -412,11 +412,14 @@ func do_item_create(entity Entity, args ...string) {
 	item.OId = DB().GetNextItemVnum()
 	item.Name = itemname
 	item.Keywords = make([]string, 0)
-	item.Keywords = append(item.Keywords, itemtype)
 	item.Keywords = append(item.Keywords, keywords...)
 
 	item.Desc = "A lob of goo."
 	item.Type = itemtype
+	if itemtype == ITEM_TYPE_CONTAINER {
+		item.Desc = "A box of goo."
+		item.Items = make([]Item, 0)
+	}
 	item.Filename = sprintf("data/items/%s/%s.yml", strings.ToLower(strings.ReplaceAll(room.Area.Name, " ", "")), strings.ToLower(filename))
 	DB().SaveItem(item)
 	DB().LoadItem(item.Filename)
@@ -562,26 +565,37 @@ func do_item_stat(entity Entity, args ...string) {
 	if item != nil {
 		i := item.GetData()
 		entity.Send("\r\n%s\r\n", MakeTitle("Object Stats", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
-		entity.Send("&GObject Name: &W%s&d", i.Name)
-		entity.Send("&GObject   ID: &W%-9d &GOID: &W%-9d&d\r\n", i.Id, i.OId)
-		entity.Send("&GObject Desc: &W%s&d\r\n", i.Desc)
-		entity.Send("--------------------------------------------")
+		entity.Send("&GFilename: &W%s&d\r\n", i.Filename)
+		entity.Send("&GID: &W%-9d &GOID: &W%-9d&d\r\n", i.Id, i.OId)
+		entity.Send("&GName: &W%s&d\r\n", i.Name)
+		entity.Send("&GDesc: &W%s&d\r\n", i.Desc)
+		entity.Send("&c--------------------------------------------&d\r\n")
 		entity.Send("&GType: &W%s &GValue: &W%-6d&d\r\n", i.Type, i.Value)
+		entity.Send("&GWeight: &W%5d&G kg&d\r\n", i.Weight)
 		weaponType := ""
 		isWeapon := " "
 		if i.WeaponType != nil {
 			weaponType = *i.WeaponType
 			isWeapon = "x"
 		}
-		entity.Send("&G  IsWeapon: [%s]    Weapon Type: &W%s&d\r\n", isWeapon, weaponType)
+		entity.Send("&G   IsWeapon: [%s]    Weapon Type: &W%s&d\r\n", isWeapon, weaponType)
 		wearLocation := ""
 		isWearable := " "
 		if i.WearLoc != nil {
 			wearLocation = *i.WearLoc
 			isWearable = "x"
 		}
-		entity.Send("&GIsWearable: [%s]  Wear Location: &W%s&d\r\n", isWearable, wearLocation)
-		entity.Send("&GWeight: &W%5d&G kg&d\r\n", i.Weight)
+		isContainer := " "
+		if i.Type == ITEM_TYPE_CONTAINER {
+			isContainer = "x"
+		}
+		entity.Send("&G IsWearable: [%s]  Wear Location: &W%s&d\r\n", isWearable, wearLocation)
+		entity.Send("&GIsContainer: [%s]&d\r\n", isContainer)
+		if i.Type == ITEM_TYPE_CONTAINER {
+			for _, i := range i.Items {
+				entity.Send("&Y[&W%d&Y]&w%s&d\r\n", i.GetData().Name)
+			}
+		}
 
 	}
 }
@@ -621,7 +635,7 @@ func do_room_find(entity Entity, args ...string) {
 			if i < len(rlist3) {
 				r3 = sprintf("%-26s", rlist3[i])
 			}
-			entity.Send("%-26s %-26s %-26s\r\n", r1, r2, r3)
+			entity.Send(sprintf("%-26s %-26s %-26s\r\n", r1, r2, r3))
 		}
 	}
 }
@@ -1024,6 +1038,7 @@ func do_mob_stat(entity Entity, args ...string) {
 	tch := target.GetCharData()
 	entity.Send("\r\n%s\r\n", MakeTitle("Mob Stats", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
 	entity.Send("&GFilename: &W%s&d\r\n", tch.Filename)
+	entity.Send("&GID: &W%d &GOID: &W%s&d\r\n", tch.Id, tch.OId)
 	entity.Send("&GName: &W%-26s &GLevel: &W%d&d\r\n", tch.Name, tch.Level)
 	entity.Send("&GTitle: &W%-26s &GXP: &W%d&d\r\n", tch.Title, tch.XP)
 	entity.Send("&GRace: &W%s &GGender: &W%s&d\r\n", tch.Race, capitalize(get_gender_for_code(tch.Gender)))
@@ -1037,8 +1052,12 @@ func do_mob_stat(entity Entity, args ...string) {
 	entity.Send("&GLanguages: &W%+v&d\r\n", tch.Languages)
 	entity.Send("&GSpeaking: &W%s&d\r\n", tch.Speaking)
 	entity.Send("&GPrograms:&d\r\n")
+	player := entity.(*PlayerProfile)
 	for evt, prog := range tch.Progs {
-		entity.Send("&c%s&c: |\r\n&W%s&d\r\n", evt, prog)
+
+		entity.Send("&c%s&c: |\r\n&W", evt)
+		player.Client.Raw([]byte(prog)) // used to bypass colorization and any formatting.
+		entity.Send("&d\r\n")
 	}
 
 }
@@ -1141,8 +1160,6 @@ func do_dig(entity Entity, args ...string) {
 			return
 		}
 
-		log.Printf("Found next vnum of %d from room %d", next_id, room.Id)
-
 		room.Exits[dir] = next_id
 		next_room := db.GetRoom(next_id, room.ship)
 
@@ -1167,7 +1184,7 @@ func do_dig(entity Entity, args ...string) {
 			s := ship.GetData()
 			s.Rooms[next_id] = next_room
 		} else {
-			db.rooms[next_id] = next_room
+			db.SetRoom(next_id, next_room)
 			for i, r := range room.Area.Rooms {
 				if r.Id == next_room.Id {
 					room.Area.Rooms[i] = *next_room

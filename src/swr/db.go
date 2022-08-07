@@ -63,6 +63,14 @@ type GameDatabase struct {
 	helps           []*HelpData
 }
 
+// TODO: Flesh out the interfaces and wrap the GameDatabase behind this...
+type Database interface {
+	SaveArea(area *AreaData) error
+	SaveEntity(entity Entity) error
+	SaveObject(object Item) error
+	SaveShip(ship Ship) error
+}
+
 func DB() *GameDatabase {
 	if _db == nil {
 		log.Printf("Starting Database.")
@@ -320,6 +328,7 @@ func (d *GameDatabase) Save() {
 	d.SaveMobs()
 	d.SaveItems()
 	d.SaveShips()
+	d.SavePlayers()
 	echo_all("\r\n}xWorld Save Complete.&d\r\n")
 }
 
@@ -348,6 +357,15 @@ func (d *GameDatabase) SaveShips() {
 	}
 	for _, ship := range d.ships {
 		d.SaveShip(ship)
+	}
+}
+
+func (d *GameDatabase) SavePlayers() {
+	for _, e := range d.entities {
+		if e.IsPlayer() {
+			player := e.(*PlayerProfile)
+			d.SavePlayerData(player)
+		}
 	}
 }
 
@@ -526,6 +544,8 @@ func (d *GameDatabase) GetShipsInRoom(roomId uint) []Ship {
 	return ret
 }
 func (d *GameDatabase) GetEntity(entity Entity) Entity {
+	d.Lock()
+	defer d.Unlock()
 	for _, e := range d.entities {
 		if e == entity {
 			return e
@@ -547,6 +567,8 @@ func (d *GameDatabase) GetEntitiesInRoom(roomId uint, shipId uint) []Entity {
 }
 
 func (d *GameDatabase) GetRoom(roomId uint, shipId uint) *RoomData {
+	d.Lock()
+	defer d.Unlock()
 	if shipId > 0 {
 		for _, s := range d.ships {
 			if s.GetData().Id == shipId {
@@ -672,6 +694,12 @@ func (d *GameDatabase) GetHelp(help string) []*HelpData {
 		}
 	}
 	return ret
+}
+
+func (d *GameDatabase) SetRoom(id uint, room *RoomData) {
+	d.Lock()
+	defer d.Unlock()
+	d.rooms[id] = room
 }
 
 func (d *GameDatabase) ResetAll() {

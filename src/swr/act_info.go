@@ -126,13 +126,17 @@ func do_inventory(entity Entity, args ...string) {
 func do_levels(entity Entity, args ...string) {
 	ch := entity.GetCharData()
 	entity.Send("\r\n%s\r\n", MakeTitle("Levels / Experience", ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_LEFT))
-	entity.Send("&YLevel: &W%3d&Y Exp: &W%d&Y/&W%d&d\r\n", ch.Level, ch.XP, get_xp_for_level(ch.Level))
+	entity.Send("&YLevel: &W%3d&Y Exp: &W%d&Y/&W%d&d\r\n\r\n", ch.Level, ch.XP, get_xp_for_level(ch.Level))
 	level := ch.Level
 	if level > 100-5 {
 		level -= 5
 	}
+	m := " " // used to mark our level in the list.
 	for i := 1; i < 6; i++ {
-		entity.Send("&YLevel: &W%3d&Y Exp: &W%d&d\r\n", level+uint(i), get_xp_for_level(level+uint(i)))
+		if uint(i) == ch.Level {
+			m = "}b>&d&Y" // pretty >...
+		}
+		entity.Send("%s&YLevel: &W%3d&Y Exp: &W%d&d\r\n", m, level+uint(i), get_xp_for_level(level+uint(i)))
 	}
 }
 
@@ -142,7 +146,7 @@ func do_description(entity Entity, args ...string) {
 		return
 	}
 	ch := entity.GetCharData()
-	ch.Desc = args[0]
+	ch.Desc = consolify(args[0])
 	entity.Send("\r\n&YDescription set.&d\r\n")
 }
 
@@ -158,9 +162,9 @@ func do_examine(entity Entity, args ...string) {
 		object = room.FindItem(object_name)
 	}
 	if object == nil {
-		for _, e := range DB().GetEntitiesInRoom(room.Id, entity.ShipId()) {
+		for _, e := range room.GetEntities() {
 			if strings.HasPrefix(e.GetCharData().Name, object_name) {
-				entity.Send("You look at %s and see...\r\n%s\r\n", e.GetCharData().Name, e.GetCharData().Desc)
+				entity.Send("&dYou look at &W%s&d and see...\r\n%s\r\n", e.GetCharData().Name, e.GetCharData().Desc)
 				entity.Send("&YEquipment:\r\n-------------------------------------&d\r\n")
 				if len(e.GetCharData().Equipment) == 0 {
 					entity.Send("Nothing\r\n")

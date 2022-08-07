@@ -90,18 +90,18 @@ func random_float() float64 {
 	return rand.Float64()
 }
 func gen_player_char_id() uint {
-	return uint(rand.Intn(9000000000)) + 9000000000
+	return uint(rand.Intn(1000000000)) + 900000000 // 900000000-999999999
 }
 func gen_ship_id() uint {
-	return uint(rand.Intn(8000000000)) + 8000000000
+	return uint(rand.Intn(1000000000)) + 300000000 // 300000000-399999999
 }
 
 func gen_npc_char_id() uint {
-	return uint(rand.Intn(1000000000)) + 1000000000
+	return uint(rand.Intn(1000000000)) + 100000000 // 100000000-199999999
 }
 
 func gen_item_id() uint {
-	return uint(rand.Intn(2000000000)) + 2000000000
+	return uint(rand.Intn(1000000000)) + 200000000 // 200000000-299999999
 }
 
 func tune_random_frequency() string {
@@ -136,7 +136,7 @@ func capitalize(str string) string {
 // consolify takes a long string and chops it up by word to limit it to 80 character width.
 // useful for terminals and telnet.
 func consolify(str string) string {
-	if len(str) < 80 {
+	if len(str) < 70 {
 		return str
 	}
 	words := strings.Split(str, " ")
@@ -144,7 +144,7 @@ func consolify(str string) string {
 	buf := ""
 	for _, w := range words {
 		wlen := len(w)
-		if cursor+wlen > 80 {
+		if cursor+wlen > 70 {
 			buf += "\r\n"
 			cursor = 1
 		}

@@ -1,0 +1,16 @@
+id: 6
+itemId: 6
+name: a departures and arrivals board
+desc: |
+    &WThe terminal departures and arrivals board displays various
+    timetables of ships arrival times and departure times. Listed below
+    are the upcoming flights.&d
+    ---------------------------------------------------------------------
+    &bCoruscant   &W10:20    &bNaboo     &W14:00
+    &bBespin      &W10:30    &bSullust   &W14:20
+    &bKuat        &W11:00    &bKessel    &W16:00
+    &bOrd Mantell &W11:15    &bCorellia  &W16:30&d
+keywords: [departures, and, arrivals, board]
+type: generic
+value: 0
+weight: 100000

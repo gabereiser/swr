@@ -1,0 +1,8 @@
+id: 4
+itemId: 4
+name: a trade guild terminal
+desc: "A trade guild terminal sits here waiting for use. It lists the \r\ncurrent trade contracts available on this planet offered by the \r\nTraders Guild. "
+keywords: [generic, terminal, guild, trade]
+type: generic
+value: 0
+weight: 1000000
