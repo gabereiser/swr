@@ -127,8 +127,12 @@ func do_levels(entity Entity, args ...string) {
 	ch := entity.GetCharData()
 	entity.Send("\r\n%s\r\n", MakeTitle("Levels / Experience", ANSI_TITLE_STYLE_NORMAL, ANSI_TITLE_ALIGNMENT_LEFT))
 	entity.Send("&YLevel: &W%3d&Y Exp: &W%d&Y/&W%d&d\r\n", ch.Level, ch.XP, get_xp_for_level(ch.Level))
+	level := ch.Level
+	if level > 100-5 {
+		level -= 5
+	}
 	for i := 1; i < 6; i++ {
-		entity.Send("&YLevel: &W%3d&Y Exp: &W%d&d\r\n", ch.Level+uint(i), get_xp_for_level(ch.Level+uint(i)))
+		entity.Send("&YLevel: &W%3d&Y Exp: &W%d&d\r\n", level+uint(i), get_xp_for_level(level+uint(i)))
 	}
 }
 

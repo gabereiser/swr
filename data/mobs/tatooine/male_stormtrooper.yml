@@ -1,0 +1,39 @@
+id: 8
+mobId: 8
+room: 1006
+name: '&Ba stormtrooper&d'
+keywords: ["", stormtrooper, trooper, storm, human]
+title: a Human a stormtrooper
+desc: "A general purpose, all imperial, all in white, stormtrooper. His voice sounds \r\nas robotic as his thoughts. "
+race: Human
+gender: m
+level: 10
+xp: 50000
+gold: 500
+hp: [75, 75]
+mp: [0, 0]
+mv: [75, 75]
+stats: [5, 7, 7, 7, 7, 7]
+skills: {}
+languages:
+    basic: 100
+speaking: basic
+equipment: {}
+inventory: []
+state: normal
+brain: generic
+progs:
+    greet: |
+        {
+            delay(2);
+            say("Let's see some identification.");
+            delay(1);
+            say("Move along, move along");
+        }
+    move: |-
+        {
+            shout("Someone control that beast!");
+        }
+flags:
+    - npc
+    - sentinel

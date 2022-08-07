@@ -246,16 +246,18 @@ func do_room_make_exit(entity Entity, args ...string) {
 	if entity == nil {
 		return
 	}
-	if len(args) != 2 {
+	if len(args) < 2 {
 		entity.Send("\r\nSyntax: rexit <dir> <roomId>\r\n")
 		entity.Send("--------------------------------------\r\n")
 		entity.Send("*NOTE* Rooms must be on the same ship/planet.\r\n")
 		entity.Send("Rooms cannot be joined across the galaxy.\r\n")
 		entity.Send("To delete an exit, supply roomId \"0\".\r\n")
+		entity.Send("To close an exit, rexit <dir> <roomId> 1.\r\n")
 		return
 	}
 	dir := get_direction_string(args[0])
 	vnum, _ := strconv.Atoi(args[1])
+
 	room := DB().GetRoom(entity.RoomId(), entity.ShipId())
 	if room == nil {
 		entity.Send("\r\n&RFATAL! Unable to determine your room!!!&d\r\n")
@@ -264,6 +266,9 @@ func do_room_make_exit(entity Entity, args ...string) {
 	}
 	if vnum == 0 {
 		delete(room.Exits, dir)
+		if room.ExitFlags != nil {
+			delete(room.ExitFlags, dir)
+		}
 		for i, r := range room.Area.Rooms {
 			if r.Id == room.Id {
 				room.Area.Rooms[i] = *room
@@ -283,6 +288,16 @@ func do_room_make_exit(entity Entity, args ...string) {
 		return
 	}
 	room.Exits[dir] = to_room.Id
+	if len(args) == 3 {
+		if args[2] == "1" {
+			if room.ExitFlags == nil {
+				room.ExitFlags = make(map[string]*RoomExitFlag)
+			}
+			room.ExitFlags[dir] = &RoomExitFlag{
+				Closed: true,
+			}
+		}
+	}
 	entity.Send("\r\n&YExit. Ok.&d\r\n")
 }
 
@@ -823,18 +838,19 @@ func do_mob_set(entity Entity, args ...string) {
 		}
 	case "flags":
 		flag := args[2]
+		found := false
 		for i, f := range tch.Flags {
 			if f == flag {
 				ret := make([]string, 0)
 				ret = append(ret, tch.Flags[:i]...)
 				ret = append(ret, tch.Flags[i+1:]...)
 				tch.Flags = ret
-				entity.Send("\r\n&YMob Set. Ok.&d\r\n")
-				return
+				found = true
 			}
 		}
-		tch.Flags = append(tch.Flags, flag)
-		entity.Send("\r\n&YMob Set. Ok.&d\r\n")
+		if !found {
+			tch.Flags = append(tch.Flags, flag)
+		}
 	default:
 		entity.Send("\r\nField values are:\r\n")
 		entity.Send("-----------------------------------------\r\n")
@@ -912,6 +928,41 @@ func do_mob_reset(entity Entity, args ...string) {
 }
 
 func do_mob_stat(entity Entity, args ...string) {
+	if len(args) == 0 {
+		entity.Send("\r\nSyntax: mstat <mob>\r\n")
+		return
+	}
+	is_vnum := true
+	vnum, e := strconv.Atoi(args[0])
+	if e != nil {
+		is_vnum = false
+	}
+	keyword := args[0]
+	room := entity.GetRoom()
+	var target Entity
+	if is_vnum {
+		if _, ok := DB().mobs[uint(vnum)]; ok {
+			target = DB().mobs[uint(vnum)]
+		} else {
+			entity.Send("\r\n&RUnable to find mob with vnum &W%d&d\r\n", vnum)
+			return
+		}
+	} else {
+		for _, e := range room.GetEntities() {
+			for _, k := range e.GetCharData().Keywords {
+				if strings.HasPrefix(k, keyword) {
+					target = e
+				}
+			}
+		}
+	}
+	if target == nil {
+		entity.Send("\r\n&RUnable to find mob with keyword &W%s&d\r\n", keyword)
+		return
+	}
+	tch := target.GetCharData()
+	entity.Send("\r\n%s\r\n", MakeTitle("Mob Stats", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
+	entity.Send("&GName: &W%-36s &GLevel: &W%d&d\r\n", tch.Name, tch.Level)
 
 }
 

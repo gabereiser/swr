@@ -13,7 +13,7 @@ rooms:
         south: 1002
     - id: 1001
       name: Mos Eisley Traders Guild
-      desc: Somewhere in the void of space.
+      desc: "Merchants from around tatooine gather here to try and sell their cargo to \r\noff-world haulers. Pilots who are willing to haul (and take the risk) can \r\naccept job contracts here to haul goods to other starsystems. Not all jobs are \r\nlegit in this sector of space but it's a good way to make a living. Provided \r\nyou don't run into any imperial entanglements. "
       exits:
         southeast: 1000
     - id: 1002
@@ -48,19 +48,19 @@ rooms:
         southwest: 1005
     - id: 1007
       name: Outside Mos Eisley Spaceport Security
-      desc: Somewhere in the void of space.
+      desc: "You're standing on the Mos Eisley side of Mos Eisley Spaceport Security. \r\nSecurity guards search through travelers belongings looking for contraband. If \r\nyou have any, you should probably dispose of it here or hide it somehow. The \r\nfine for possession of contraband is severe. "
       exits:
         northeast: 1008
         south: 1006
     - id: 1008
       name: Mos Eisley Spaceport Arrivals
-      desc: Somewhere in the void of space.
+      desc: "You're at Mos Eisley Spaceport. Arrivals and Departures signs light up the \r\narea. You see citizens coming and going as people travel to and from Tatooine. \r\nThis spaceport has seen better days but is functional and is surrounded by \r\nshops and vendors trying to scrape a living off of travelers. "
       exits:
         north: 1009
         southwest: 1007
     - id: 1009
       name: Outside Mos Eisley Spaceport
-      desc: Somewhere in the void of space.
+      desc: "Outside of Mos Eisley Spaceport, one of the biggest buildings around. It's busy \r\nas people are flooding in and out of the spaceport. Very few imperial guards \r\nstand watch. Mostly it's patroled by the local syndicate or crimelord thugs \r\nlooking for a lucrative target to veer off course. Spaceport Lane runs \r\neast/west of the spaceport walls and is crowded with small-time vendors \r\npeddling goods. "
       exits:
         east: 1010
         north: 1012
@@ -68,7 +68,7 @@ rooms:
         west: 1011
     - id: 1010
       name: Spaceport Lane
-      desc: Somewhere in the void of space.
+      desc: "You walk through the crowded streets of Spaceport Lane. Various vendors harass \r\nyou as you pass, looking to sell you something you don't need. Awnings from the \r\nbuildings around you provide shade except for in the center of the avenue which \r\nmost people don't walk. East of here is the spaceport. West is further down \r\nSpaceport Lane. "
       exits:
         east: 1020
         northeast: 1021
@@ -109,6 +109,7 @@ rooms:
       name: Rando Road
       desc: Somewhere in the void of space.
       exits:
+        north: 1065
         south: 1015
     - id: 1017
       name: Bantha Way
@@ -130,7 +131,7 @@ rooms:
         west: 1030
     - id: 1020
       name: Spaceport Lane
-      desc: Somewhere in the void of space.
+      desc: "You walk deep in crowded streets of Spaceport Lane. Various vendors harass you \r\nas you pass, looking to sell you something you don't need. Awnings from the \r\nbuildings around you provide shade except for in the center of the avenue which \r\nmost people don't walk. East of here is the spaceport. West is further down \r\nSpaceport Lane. "
       exits:
         east: 1032
         west: 1010
@@ -202,7 +203,7 @@ rooms:
         south: 1029
     - id: 1032
       name: Spaceport Lane
-      desc: Somewhere in the void of space.
+      desc: "You're at the end of Spaceport Lane. The walls curve northeast to the Mos \r\nEisley Guild Center. There's a few homeless citizens that have taken up \r\nresidence in the southeast corner of this plaza. To the northeast is the Guild \r\nCenter. Guild registrars are there to manage guild affairs and handle guild \r\nbusiness. There's a few offices there as well. To the west is a crowded avenue \r\nof street vendors and patrons. "
       exits:
         northeast: 1033
         west: 1020
@@ -255,7 +256,7 @@ rooms:
       exits:
         northwest: 1034
     - id: 1041
-      name: City Alleyway
+      name: Mos Eisley Guild Center Courtyard
       desc: Somewhere in the void of space.
       exits:
         north: 1034
@@ -361,6 +362,7 @@ rooms:
       name: Bantha Way
       desc: Somewhere in the void of space.
       exits:
+        north: 1091
         southeast: 1030
         southwest: 1059
     - id: 1059
@@ -399,149 +401,229 @@ rooms:
       exits:
         south: 1062
     - id: 1065
-      name: A void
+      name: Rando Road
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        north: 1066
+        south: 1016
     - id: 1066
-      name: A void
+      name: Rando Road
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        north: 1067
+        south: 1065
     - id: 1067
-      name: A void
+      name: Mos Eisley City Limits
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        north: 1068
+        south: 1066
     - id: 1068
-      name: A void
+      name: Outside Mos Eisley
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        northwest: 1069
+        south: 1067
     - id: 1069
-      name: A void
+      name: Sand of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        north: 1071
+        northeast: 1070
+        northwest: 1072
+        southeast: 1068
     - id: 1070
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        east: 1082
+        north: 1080
+        northeast: 1081
+        northwest: 1079
+        southwest: 1069
+        west: 1071
     - id: 1071
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        east: 1070
+        north: 1075
+        northeast: 1073
+        northwest: 1074
+        south: 1069
+        west: 1072
     - id: 1072
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        east: 1071
+        north: 1080
+        northeast: 1076
+        northwest: 1078
+        southeast: 1069
     - id: 1073
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        southwest: 1071
     - id: 1074
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        north: 1086
+        southeast: 1071
     - id: 1075
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        east: 1080
+        south: 1071
     - id: 1076
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        southwest: 1072
     - id: 1077
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        south: 1072
     - id: 1078
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        southeast: 1072
     - id: 1079
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        southeast: 1070
     - id: 1080
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        north: 1084
+        northeast: 1083
+        northwest: 1085
+        south: 1070
+        west: 1075
     - id: 1081
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        southwest: 1070
     - id: 1082
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        west: 1070
     - id: 1083
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        southwest: 1080
+        west: 1084
     - id: 1084
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        east: 1083
+        south: 1080
     - id: 1085
-      name: A void
+      name: Sands of Tatooine
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        southeast: 1080
     - id: 1086
-      name: A void
+      name: A Cave
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        down: 1087
+        south: 1074
     - id: 1087
-      name: A void
+      name: A Cave
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        south: 1088
+        up: 1086
     - id: 1088
-      name: A void
+      name: A Cave
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        north: 1087
+        southeast: 1089
     - id: 1089
-      name: A void
+      name: Deeper into the Cave
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        east: 1090
+        northwest: 1088
     - id: 1090
-      name: A void
+      name: An old hideout
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        west: 1089
     - id: 1091
-      name: A void
+      name: Bantha Way
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        north: 1092
+        south: 1058
     - id: 1092
-      name: A void
+      name: Mos Eisley Industries
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        south: 1091
+        west: 1093
     - id: 1093
-      name: A void
+      name: MEI Reception
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        east: 1092
+        north: 1094
+        west: 1099
     - id: 1094
-      name: A void
+      name: MEI Stairwell
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        south: 1093
+        up: 1095
     - id: 1095
-      name: A void
+      name: MEI Stairwell
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        down: 1094
+        north: 1097
+        south: 1096
+        west: 1098
     - id: 1096
-      name: A void
+      name: Fabrication
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        north: 1095
+        west: 1100
     - id: 1097
-      name: A void
+      name: Materials Research
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        south: 1095
     - id: 1098
-      name: A void
+      name: Offices
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        east: 1095
     - id: 1099
-      name: A void
+      name: Fabrication
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        east: 1093
+        up: 1100
     - id: 1100
-      name: A void
+      name: Fabrication
       desc: Somewhere in the void of space.
-      exits: {}
+      exits:
+        down: 1099
+        east: 1096
     - id: 1101
       name: A void
       desc: Somewhere in the void of space.
@@ -4151,3 +4233,21 @@ mobs:
       room: 1015
     - mob: 6
       room: 1002
+    - mob: 6
+      room: 1019
+    - mob: 5
+      room: 1030
+    - mob: 6
+      room: 1031
+    - mob: 5
+      room: 1092
+    - mob: 6
+      room: 1092
+    - mob: 5
+      room: 1061
+    - mob: 6
+      room: 1061
+    - mob: 8
+      room: 1006
+    - mob: 7
+      room: 1045

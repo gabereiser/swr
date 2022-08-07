@@ -1,0 +1,49 @@
+id: 7
+mobId: 7
+room: 1045
+name: Gordon
+keywords: [gordon, human]
+title: a Human Gordon
+desc: "Gordon's a slightly heavier human with dirt and stains on his shirt. He wears \r\nan apron of leather tuskan make and origin. His face smiles as he notices you. "
+race: Human
+gender: m
+level: 100
+xp: 312500
+gold: 10000
+hp: [100, 100]
+mp: [0, 0]
+mv: [100, 100]
+stats: [20, 20, 20, 20, 20, 20]
+skills:
+    business: 100
+    electronics: 100
+    engineering: 100
+    martial-arts: 45
+    production: 100
+    vibro-blades: 25
+    xenosciences: 100
+languages:
+    basic: 100
+    hutt: 100
+    jawa: 100
+    twi'lek: 100
+speaking: basic
+equipment: {}
+inventory: []
+state: normal
+brain: generic
+progs:
+    greet: |
+        {
+            delay(2);
+            say("How are you, "+ $n + "?");
+            delay(1);
+            say("Care to &bbuy&d anything? I sell battery packs, toolkits, circuit boards, components, and various &yengineering&d supplies");
+        }
+    move: |
+        {
+            shout("See you around!");
+        }
+flags:
+    - npc
+    - sentinel

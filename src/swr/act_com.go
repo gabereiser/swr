@@ -104,7 +104,12 @@ func yell(entity Entity, words string, roomId uint, dist uint, visited []uint) {
 			}
 		}
 		visited = append(visited, roomId)
-		for _, e := range room.Exits {
+		for d, e := range room.Exits {
+			if exf, ok := room.ExitFlags[d]; ok {
+				if exf.Closed {
+					continue // prevents yells from going through doors...  may revisit this in the future.
+				}
+			}
 			yell(entity, words, e, dist+1, visited)
 		}
 	}

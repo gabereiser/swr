@@ -344,9 +344,7 @@ func telnet_disable_local_echo(con Client) {
 	resp := make([]byte, 3)
 	con.ReadRaw(resp)
 	if resp[0] != NET_IAC || resp[1] != NET_DO || resp[2] != NET_ECHO {
-		panic(fmt.Sprintf("%v", resp))
-	} else {
-		log.Printf("WILLECHO: %v", resp)
+		log.Print("Error: client didn't respond to disable local echo properly!")
 	}
 }
 
@@ -356,8 +354,6 @@ func telnet_enable_local_echo(con Client) {
 	resp := make([]byte, 3)
 	con.ReadRaw(resp)
 	if resp[0] != NET_IAC || resp[1] != NET_DONT || resp[2] != NET_ECHO {
-		panic(fmt.Sprintf("%v", resp))
-	} else {
-		log.Printf("WONTECHO: %v", resp)
+		log.Print("Error: client didn't respond to enable local echo properly!")
 	}
 }

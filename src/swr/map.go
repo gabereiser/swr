@@ -48,20 +48,20 @@ func build_map(room *RoomData) string {
 	for y := 0; y < MAPSIZE; y++ {
 		for x := 0; x < MAPSIZE; x++ {
 			if (x == 0 || x == MAPSIZE-1) && (y == MAPSIZE-1 || y == 0) {
-				m[x][y] = "+"
+				m[x][y] = "&g+&W"
 			} else if (x == 0 || x == MAPSIZE-1) && (y != 0 && y < MAPSIZE-1) {
-				m[x][y] = "|"
+				m[x][y] = "&g|&W"
 			} else if (y == MAPSIZE-1 || y == 0) && (x != 0 && x != MAPSIZE-1) {
-				m[x][y] = "-"
+				m[x][y] = "&g-&W"
 			}
 		}
 	}
-	buf := ""
+	buf := "&W"
 	for y := 0; y < MAPSIZE; y++ {
 		for x := 0; x < MAPSIZE; x++ {
-			buf += m[x][y]
+			buf += sprintf("&W%s&W", m[x][y])
 		}
-		buf += "\r\n"
+		buf += "&W\r\n&W"
 	}
 	return strings.TrimSpace(buf)
 }
@@ -87,56 +87,56 @@ func walk_rooms(m [MAPSIZE][MAPSIZE]string, room *RoomData, curX int, curY int, 
 			x := curX + 1
 			y := curY
 			if map_in_bounds(x, y) {
-				m[x][y] = MAP_EXIT_EW
+				m[x][y] = sprintf("&d%s&W", MAP_EXIT_EW)
 				m = walk_rooms(m, db.GetRoom(e, room.ship), x+1, y, depth)
 			}
 		case "west":
 			x := curX - 1
 			y := curY
 			if map_in_bounds(x, y) {
-				m[x][y] = MAP_EXIT_EW
+				m[x][y] = sprintf("&d%s&W", MAP_EXIT_EW)
 				m = walk_rooms(m, db.GetRoom(e, room.ship), x-1, curY, depth)
 			}
 		case "north":
 			x := curX
 			y := curY - 1
 			if map_in_bounds(x, y) {
-				m[x][y] = MAP_EXIT_NS
+				m[x][y] = sprintf("&d%s&W", MAP_EXIT_NS)
 				m = walk_rooms(m, db.GetRoom(e, room.ship), x, y-1, depth)
 			}
 		case "south":
 			x := curX
 			y := curY + 1
 			if map_in_bounds(x, y) {
-				m[x][y] = MAP_EXIT_NS
+				m[x][y] = sprintf("&d%s&W", MAP_EXIT_NS)
 				m = walk_rooms(m, db.GetRoom(e, room.ship), x, y+1, depth)
 			}
 		case "northwest":
 			x := curX - 1
 			y := curY - 1
 			if map_in_bounds(x, y) {
-				m[x][y] = MAP_EXIT_NWSE
+				m[x][y] = sprintf("&d%s&W", MAP_EXIT_NWSE)
 				m = walk_rooms(m, db.GetRoom(e, room.ship), x-1, y-1, depth)
 			}
 		case "southeast":
 			x := curX + 1
 			y := curY + 1
 			if map_in_bounds(x, y) {
-				m[x][y] = MAP_EXIT_NWSE
+				m[x][y] = sprintf("&d%s&W", MAP_EXIT_NWSE)
 				m = walk_rooms(m, db.GetRoom(e, room.ship), x+1, y+1, depth)
 			}
 		case "northeast":
 			x := curX + 1
 			y := curY - 1
 			if map_in_bounds(x, y) {
-				m[x][y] = MAP_EXIT_SWNE
+				m[x][y] = sprintf("&d%s&W", MAP_EXIT_SWNE)
 				m = walk_rooms(m, db.GetRoom(e, room.ship), x+1, y-1, depth)
 			}
 		case "southwest":
 			x := curX - 1
 			y := curY + 1
 			if map_in_bounds(x, y) {
-				m[x][y] = MAP_EXIT_SWNE
+				m[x][y] = sprintf("&d%s&W", MAP_EXIT_SWNE)
 				m = walk_rooms(m, db.GetRoom(e, room.ship), x-1, y+1, depth)
 			}
 		}
