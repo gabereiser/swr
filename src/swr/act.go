@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"log"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -277,6 +278,8 @@ func do_direction(entity Entity, direction string) {
 				}
 				go room_prog_exec(entity, "leave", direction)
 				entity.GetCharData().Room = to_room.Id
+				do_look(entity)
+				go room_prog_exec(entity, "enter", direction_reverse(direction))
 				for _, e := range to_room.GetEntities() {
 					if entity_unspeakable_state(e) {
 						continue
@@ -288,15 +291,11 @@ func do_direction(entity Entity, direction string) {
 						}
 					}
 				}
-				do_look(entity)
-				go room_prog_exec(entity, "enter", direction_reverse(direction))
-				return
 			} else {
 				entity.Send("\r\n&You are too exhausted.\r\n")
 				return
 			}
 		}
-
 	}
 }
 
@@ -478,6 +477,91 @@ func do_get(entity Entity, args ...string) {
 	}
 	if len(args) > 3 {
 		entity.Send("\r\n&CSyntax: &dget <item> | from <container>\r\n")
+	}
+
+}
+
+func do_give(entity Entity, args ...string) {
+	if len(args) == 0 {
+		entity.Send("\r\nSyntax: give <entity> <item>\r\n")
+		entity.Send("-----------------------------------------------------\r\n")
+		entity.Send("To give credits, use: give <entity> <quantity> credits\r\n")
+		return
+	}
+	if len(args) == 1 {
+		entity.Send("\r\n&RGive to who?&d\r\n")
+		return
+	}
+	entity_name := args[0]
+	item_name := "credits"
+	quantity := 1
+	if len(args) == 2 {
+		item_name = args[1]
+	}
+	if len(args) == 3 {
+		q, e := strconv.Atoi(args[1])
+		if e != nil {
+			entity.Send("\r\n&RUnable to determine quantity of credits!&d\r\n")
+			return
+		}
+		quantity = q
+	}
+	var target Entity
+	for _, e := range entity.GetRoom().GetEntities() {
+		if e != entity {
+			for _, k := range e.GetCharData().Keywords {
+				if strings.HasPrefix(k, entity_name) {
+					target = e
+					break
+				}
+			}
+			if target != nil {
+				break
+			}
+		}
+	}
+	if target == nil {
+		entity.Send("\r\n&RUnable to find &W%s&R!&d\r\n", entity_name)
+		return
+	}
+	if item_name == "credits" {
+		uq := uint(quantity)
+		if entity.GetCharData().Gold < uq {
+			entity.Send("\r\n&RNot enough credits!&d\r\n", entity_name)
+			return
+		}
+		target.GetCharData().Gold += uq
+		entity.GetCharData().Gold -= uq
+
+		target.Send("\r\n&P%s&Y has given you &w%d&Y credits.&d\r\n", entity.GetCharData().Name, uq)
+		if !target.IsPlayer() {
+			if target.GetCharData().AI != nil {
+				target.GetCharData().AI.OnGive(entity, quantity, nil)
+			}
+		}
+		entity.Send("\r\n&YYou give &P%s&Y &w%d&Y credits.&d\r\n", target.GetCharData().Name, uq)
+		return
+	}
+	item := entity.FindItem(item_name)
+	if item == nil {
+		entity.Send("\r\n&RUnable to find &W%s&R!&d\r\n", item_name)
+		return
+	}
+	if item.GetData().Type == ITEM_TYPE_KEY {
+		entity.Send("\r\n&RUnable to find &W%s&R!&d\r\n", item_name) // ;)
+		return
+	}
+	if !entity_pickup_item(target, item) {
+		entity.Send("\r\n&RThey are unable to carry &W%s&R!&d\r\n", item_name)
+		return
+	}
+	entity.GetCharData().RemoveItem(item)
+	target.Send("\r\n&P%s&Y has given you &W%s&Y.&d\r\n", entity.GetCharData().Name, item.GetData().Name)
+	entity.Send("\r\n&YYou give &P%s&Y &W%s&Y.&d\r\n", target.GetCharData().Name, item.GetData().Name)
+	if !target.IsPlayer() {
+		if target.GetCharData().AI != nil {
+			target.GetCharData().AI.OnGive(entity, 1, item)
+		}
 	}
 
 }

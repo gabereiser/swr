@@ -101,6 +101,11 @@ type Item interface {
 	IsWearable() bool      // is item wearable?
 	IsCorpse() bool        // is item a corpse? (corpses are containers but containers aren't always corpses)
 	GetWeight() int        // item weight in kg.
+	String() string
+}
+
+func (i *ItemData) String() string {
+	return i.Name
 }
 
 func (i *ItemData) GetData() *ItemData {

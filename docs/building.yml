@@ -1,6 +1,6 @@
 ---
 name: World Building
-keywords: ["building", "world-building", "builders", "asave", "acreate", "dig", "rset", "rexit", "rremove", "rstat"]
+keywords: ["building", "builders"]
 level: 100
 desc: |
   Building worlds and creating iconic locations is no easy task. Players
@@ -11,6 +11,7 @@ desc: |
 
   acreate - Creates a new area.
   asave   - Saves an area (and all it's rooms). Use this frequently.
+  areset  - Resets an area (or all areas).
 
   dig     - Creates a room or repurposes a prototype room. This allows one
             to build out areas really quickly.
@@ -18,3 +19,24 @@ desc: |
   rexit   - To create an exit between rooms.
   rremove - Removes a room from the game. Make sure you aren't inside.
   rstat   - Displays room information, flags, etc.
+
+  ocreate - Creates a new area object.
+  oset    - Sets a field on an object. Name, Description, etc.
+  ospawn  - Creates a spawn (an area reset) for an object.
+  ostat   - Displays the object stats.
+  oremove - Removes an object from the game (entirely, but the file still exists for next boot).
+  
+  mcreate - Creates a new area Mobile.
+  mset    - Sets a field on an object.
+  mspawn  - Creates a spawn (an area reset) for a mobile.
+  mstat   - Displays the object stats.
+  mremove - Removes a mobile from the game (entirely, AND DELETES THE MOBILE.YML!!!!)
+
+  screate - Creates a new ship prototype.
+  sset    - Sets a field on a ship prototype.
+  sspawn  - Spawns a ship from a prototype (can only be used in spaceports).
+  sstat   - Displays the ship stats.
+  sremove - Removes a ship prototype from the game (entirely, AND ANY SHIPS DERIVED FROM IT!!!)
+
+
+

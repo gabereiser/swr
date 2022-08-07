@@ -61,6 +61,7 @@ var CommandFuncs = map[string]func(Entity, ...string){
 	"do_open":           do_open,
 	"do_close":          do_close,
 	"do_get":            do_get,
+	"do_give":           do_give,
 	"do_put":            do_put,
 	"do_drop":           do_drop,
 	"do_inventory":      do_inventory,

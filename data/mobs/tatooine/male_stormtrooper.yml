@@ -28,6 +28,8 @@ progs:
             delay(2);
             say("Let's see some identification.");
             delay(1);
+            say("Do you have business here?");
+            delay(2);
             say("Move along, move along");
         }
     move: |-

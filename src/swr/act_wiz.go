@@ -247,7 +247,7 @@ func do_room_make_exit(entity Entity, args ...string) {
 		return
 	}
 	if len(args) < 2 {
-		entity.Send("\r\nSyntax: rexit <dir> <roomId>\r\n")
+		entity.Send("\r\nSyntax: rexit <dir> <roomId> [closed?]\r\n")
 		entity.Send("--------------------------------------\r\n")
 		entity.Send("*NOTE* Rooms must be on the same ship/planet.\r\n")
 		entity.Send("Rooms cannot be joined across the galaxy.\r\n")
@@ -265,13 +265,23 @@ func do_room_make_exit(entity Entity, args ...string) {
 		return
 	}
 	if vnum == 0 {
+		to_room := DB().GetRoom(room.Exits[dir], entity.ShipId())
 		delete(room.Exits, dir)
+		delete(to_room.Exits, direction_reverse(dir))
 		if room.ExitFlags != nil {
 			delete(room.ExitFlags, dir)
+		}
+		if to_room.ExitFlags != nil {
+			delete(to_room.ExitFlags, direction_reverse(dir))
 		}
 		for i, r := range room.Area.Rooms {
 			if r.Id == room.Id {
 				room.Area.Rooms[i] = *room
+			}
+		}
+		for i, r := range to_room.Area.Rooms {
+			if r.Id == to_room.Id {
+				to_room.Area.Rooms[i] = *to_room
 			}
 		}
 		entity.Send("\r\n&YExit. Ok&d\r\n")
@@ -288,14 +298,33 @@ func do_room_make_exit(entity Entity, args ...string) {
 		return
 	}
 	room.Exits[dir] = to_room.Id
+	to_room.Exits[direction_reverse(dir)] = room.Id
 	if len(args) == 3 {
 		if args[2] == "1" {
 			if room.ExitFlags == nil {
 				room.ExitFlags = make(map[string]*RoomExitFlag)
 			}
+			if to_room.ExitFlags == nil {
+				to_room.ExitFlags = make(map[string]*RoomExitFlag)
+			}
 			room.ExitFlags[dir] = &RoomExitFlag{
 				Closed: true,
 			}
+			to_room.ExitFlags[direction_reverse(dir)] = &RoomExitFlag{
+				Closed: true,
+			}
+		}
+	}
+	for i, r := range room.Area.Rooms {
+		if r.Id == room.Id {
+			// copy over the DB.[]rooms room back to the Area's []Rooms
+			room.Area.Rooms[i] = *room
+		}
+	}
+	for i, r := range to_room.Area.Rooms {
+		if r.Id == to_room.Id {
+			// copy over the DB.[]rooms room back to the Area's []Rooms
+			to_room.Area.Rooms[i] = *to_room
 		}
 	}
 	entity.Send("\r\n&YExit. Ok.&d\r\n")
@@ -562,7 +591,39 @@ func do_item_find(entity Entity, args ...string) {
 }
 
 func do_room_find(entity Entity, args ...string) {
-
+	if len(args) == 0 {
+		room := entity.GetRoom()
+		entity.Send("\r\n%s\r\n", MakeTitle("Rooms", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
+		rlist := make([]string, 0)
+		for _, r := range room.Area.Rooms {
+			if r.Name == "A void" {
+				continue
+			}
+			n := sprintf("&Y[&W%d&Y]&d%-26s", r.Id, tstring(r.Name, 23))
+			rlist = append(rlist, n)
+		}
+		p1 := (len(rlist) / 3) + 1
+		p2 := p1 + p1
+		rlist1 := rlist[:p1]
+		rlist2 := rlist[p1:p2]
+		rlist3 := rlist[p2:]
+		pad := strings.Repeat(" ", 26)
+		for i := 0; i <= p1; i++ {
+			r1 := pad
+			r2 := pad
+			r3 := pad
+			if i < len(rlist1) {
+				r1 = sprintf("%-26s", rlist1[i])
+			}
+			if i < len(rlist2) {
+				r2 = sprintf("%-26s", rlist2[i])
+			}
+			if i < len(rlist3) {
+				r3 = sprintf("%-26s", rlist3[i])
+			}
+			entity.Send("%-26s %-26s %-26s\r\n", r1, r2, r3)
+		}
+	}
 }
 
 func do_mob_create(entity Entity, args ...string) {
@@ -962,7 +1023,23 @@ func do_mob_stat(entity Entity, args ...string) {
 	}
 	tch := target.GetCharData()
 	entity.Send("\r\n%s\r\n", MakeTitle("Mob Stats", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
-	entity.Send("&GName: &W%-36s &GLevel: &W%d&d\r\n", tch.Name, tch.Level)
+	entity.Send("&GFilename: &W%s&d\r\n", tch.Filename)
+	entity.Send("&GName: &W%-26s &GLevel: &W%d&d\r\n", tch.Name, tch.Level)
+	entity.Send("&GTitle: &W%-26s &GXP: &W%d&d\r\n", tch.Title, tch.XP)
+	entity.Send("&GRace: &W%s &GGender: &W%s&d\r\n", tch.Race, capitalize(get_gender_for_code(tch.Gender)))
+	entity.Send("&GHp: &W%d&Y/&W%d &GMp: &W%d&Y/&W%d &GMv: &W%d&Y/&W%d&d\r\n", tch.Hp[0], tch.Hp[1], tch.Mp[0], tch.Mp[1], tch.Mv[0], tch.Mv[1])
+	entity.Send("&GSTR: &W%d &GINT: &W%d &GDEX: &W%d &GWIS: &W%d &GCON: &W%d &GCHA: &W%d ", tch.Stats[0], tch.Stats[1], tch.Stats[2], tch.Stats[3], tch.Stats[4], tch.Stats[5])
+	entity.Send("&GMoney: &W%d &GKeywords: &W%v&d\r\n", tch.Gold, tch.Keywords)
+	entity.Send("&GFlags: &W%v &GState: &W%s &GBrain: &W%s&d\r\n", tch.Flags, tch.State, tch.Brain)
+	entity.Send("&GSkills: &W%+v&d\r\n", tch.Skills)
+	entity.Send("&GEquipment: &W%+v&d\r\n", tch.Equipment)
+	entity.Send("&GInventory: &W%v&d\r\n", tch.Inventory)
+	entity.Send("&GLanguages: &W%+v&d\r\n", tch.Languages)
+	entity.Send("&GSpeaking: &W%s&d\r\n", tch.Speaking)
+	entity.Send("&GPrograms:&d\r\n")
+	for evt, prog := range tch.Progs {
+		entity.Send("&c%s&c: |\r\n&W%s&d\r\n", evt, prog)
+	}
 
 }
 

@@ -161,6 +161,11 @@
   level: 1
   func: do_get
 -
+  name: give
+  keywords: [ "give" ]
+  level: 1
+  func: do_give
+-
   name: drop
   keywords: [ "drop" ]
   level: 1

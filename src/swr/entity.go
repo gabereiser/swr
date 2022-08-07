@@ -139,7 +139,7 @@ func (c *CharData) ShipId() uint {
 
 // Triggers a mob prog to fire.
 func (c *CharData) Event(evt string) {
-	e := mud_prog_exec(c.Progs[evt], c, evt)
+	e := mud_prog_exec(c.AI.(*GenericBrain).vm, c.Progs[evt], c, evt) // TODO: fix this hack job
 	ErrorCheck(e)
 }
 

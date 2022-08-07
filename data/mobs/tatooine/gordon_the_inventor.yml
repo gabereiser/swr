@@ -42,7 +42,8 @@ progs:
         }
     move: |
         {
-            shout("See you around!");
+            delay(2);
+            shout("Thanks for stopping by, " + $n);
         }
 flags:
     - npc

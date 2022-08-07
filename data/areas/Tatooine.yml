@@ -279,11 +279,17 @@ rooms:
         east: 1046
         north: 1045
         west: 1017
+      exflags:
+        north:
+            closed: true
     - id: 1045
       name: Gordon's Inventions
       desc: Somewhere in the void of space.
       exits:
         south: 1044
+      exflags:
+        south:
+            closed: true
     - id: 1046
       name: Bantha Way
       desc: Somewhere in the void of space.

@@ -86,6 +86,9 @@ func umin(min uint, value uint) uint {
 func random_seed(seed int64) {
 	rand.Seed(seed)
 }
+func random_float() float64 {
+	return rand.Float64()
+}
 func gen_player_char_id() uint {
 	return uint(rand.Intn(9000000000)) + 9000000000
 }

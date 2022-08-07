@@ -525,7 +525,15 @@ func StitchParagraphs(paragraph1 string, paragraph2 string) string {
 		if row < p2_len {
 			b_side = p2_parts[row]
 		}
-		buf += sprintf("%-"+sprintf("%d", p1_width)+"s %-"+sprintf("%d", p2_width)+"s\r\n", a_side, b_side)
+		buf += sprintf("%-*s %-*s\r\n", p1_width, a_side, p2_width, b_side)
 	}
 	return buf
+}
+
+func tstring(str string, length int) string {
+	if len(str) < length {
+		return str
+	} else {
+		return str[:length]
+	}
 }
