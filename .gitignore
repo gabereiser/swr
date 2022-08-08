@@ -18,5 +18,6 @@
 *.lib
 backup/*
 bin/*
+release/*
 data/accounts/*
 data/game.db

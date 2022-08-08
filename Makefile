@@ -6,20 +6,24 @@ else
 endif
 build:
 	@echo 'Building server'
-	@cd src; \
-	go build -ldflags="-X 'github.com/gabereiser/swr.version=$(VERSION)'" -o ../bin/server${ext};
+	@go build -ldflags="-X 'github.com/gabereiser/swr.version=$(VERSION)'" -o ./bin/server${ext};
 	@echo 'Done'
 clean:
 	@echo 'Cleaning build'
-	@cd src; \
-	go clean; \
-	rm -rf ../bin/*
+	@go clean; \
+	rm -rf ./bin/*
 	@echo 'Done'
 dependencies:
 	@echo 'Downloading dependencies'
-	@cd src; \
-	go mod tidy; \
+	@go mod tidy; \
 	go mod download
 	@echo 'Done'
-
-all: clean dependencies build
+rel:
+	@echo 'Making release'
+	@cp -R data bin/data; \
+	cp -R docs bin/docs; \
+	mkdir -p release; \
+	rm -f release/swr-$(VERSION).tar.gz; \
+	tar -czf release/swr-$(VERSION).tar.gz -C bin .
+	@echo 'Done releasing version $(VERSION)'
+all: clean dependencies build rel
