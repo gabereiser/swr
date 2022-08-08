@@ -78,9 +78,11 @@ const (
 type ShipData struct {
 	Id               uint               `yaml:"id"`                      // instance id when loaded into memory
 	OId              uint               `yaml:"shipId"`                  // global unique type id
+	Filename         string             `yaml:"-"`                       // filename of the ship
 	Name             string             `yaml:"name"`                    // name of the ship (without the type at the end)
 	Desc             string             `yaml:"desc"`                    // description of the ship (comes from the ship prototype)
 	Type             string             `yaml:"type"`                    // class of the ship
+	Value            uint               `yaml:"value"`                   // the cost of the ship
 	LocationId       uint               `yaml:"locationId"`              // roomId where we are docked or where we took off from if in space.
 	InSpace          bool               `yaml:"-"`                       // returns true if the ship is currently in space
 	CurrentSystem    string             `yaml:"currentSystem,omitempty"` // name of the current system its in
@@ -94,8 +96,8 @@ type ShipData struct {
 	HighSlots        []*ItemData        `yaml:"highSlots,omitempty"`     // loaded ship slots (not all ships have slots)
 	LowSlots         []*ItemData        `yaml:"lowSlots,omitempty"`      // loaded ship slots (not all ships have slots)
 	Blueprint        uint               `yaml:"blueprintId"`             // the item that an engineer needs to make this ship
-	Ramp             uint               `yaml:"ramp"`                    // the room that is the ramp (entrance/exit) to the ship
-	Cockpit          uint               `yaml:"cockpit"`                 // the rooms that are considered cockpits
+	Ramp             uint               `yaml:"rampRoom"`                // the room that is the ramp (entrance/exit) to the ship
+	Cockpit          uint               `yaml:"cockpitRoom"`             // the rooms that are considered cockpits
 	EngineRoom       uint               `yaml:"engineRoom"`              // engine rooms (technicians will love these)
 	CargoRoom        uint               `yaml:"cargoRoom"`               // storages for kessel runs
 	Pilot            Entity             `yaml:"-"`                       // who is currently piloting

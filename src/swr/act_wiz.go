@@ -20,6 +20,7 @@ package swr
 import (
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -199,6 +200,12 @@ func do_room_stat(entity Entity, args ...string) {
 	entity.Send("&GRoomProgs: &d\r\n")
 	for name, value := range room.RoomProgs {
 		entity.Send("&y%s&w:%s&d\r\n", name, value)
+	}
+	entity.Send("   &GSpawns: &d\r\n")
+	for _, ms := range room.Area.Mobs {
+		mob := DB().GetMob(ms.Mob)
+		m := mob.GetCharData()
+		entity.Send(sprintf("&Y[&W%d&Y]&d%-26s", m.OId, tstring(m.Name, 23)))
 	}
 
 }
@@ -998,10 +1005,6 @@ func do_mob_remove(entity Entity, args ...string) {
 	entity.Send("\r\n&YMob Delete. Ok.&d\r\n")
 }
 
-func do_mob_reset(entity Entity, args ...string) {
-
-}
-
 func do_mob_stat(entity Entity, args ...string) {
 	if len(args) == 0 {
 		entity.Send("\r\nSyntax: mstat <mob>\r\n")
@@ -1063,7 +1066,38 @@ func do_mob_stat(entity Entity, args ...string) {
 }
 
 func do_mob_find(entity Entity, args ...string) {
-
+	if len(args) == 0 {
+		entity.Send("\r\n%s\r\n", MakeTitle("Mobs", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
+		rlist := make([]string, 0)
+		for _, mob := range DB().mobs {
+			r := mob.GetCharData()
+			n := sprintf("&Y[&W%d&Y]&d%-26s", r.OId, tstring(r.Name, 23))
+			if sort.SearchStrings(rlist, n) == len(rlist) {
+				rlist = append(rlist, n)
+			}
+		}
+		p1 := (len(rlist) / 3) + 1
+		p2 := p1 + p1
+		rlist1 := rlist[:p1]
+		rlist2 := rlist[p1:p2]
+		rlist3 := rlist[p2:]
+		pad := strings.Repeat(" ", 26)
+		for i := 0; i <= p1; i++ {
+			r1 := pad
+			r2 := pad
+			r3 := pad
+			if i < len(rlist1) {
+				r1 = sprintf("%-26s", rlist1[i])
+			}
+			if i < len(rlist2) {
+				r2 = sprintf("%-26s", rlist2[i])
+			}
+			if i < len(rlist3) {
+				r3 = sprintf("%-26s", rlist3[i])
+			}
+			entity.Send(sprintf("%-26s %-26s %-26s\r\n", r1, r2, r3))
+		}
+	}
 }
 
 func do_transfer(entity Entity, args ...string) {
@@ -1193,4 +1227,101 @@ func do_dig(entity Entity, args ...string) {
 		}
 		entity.Send("\r\n&GDug a room to the %s&d\r\n", dir)
 	}
+}
+
+func do_ship_create(entity Entity, args ...string) {
+	if len(args) < 1 {
+		entity.Send("\r\nSyntax: screate <ship_type> <name>\r\n")
+		return
+	}
+	room := entity.GetRoom()
+	if !room_is_landable(room) {
+		entity.Send("\r\n&RShips can only be created in spaceports, shipyards, and hangars.&d\r\n")
+		return
+	}
+	ship_type := args[1]
+	id := DB().GetNextShipVnum()
+	ship := &ShipData{
+		Id:            id,
+		OId:           id,
+		Name:          strings.Join(args[2:], " "),
+		Desc:          "A prototype ship",
+		Type:          ship_type,
+		LocationId:    entity.GetRoom().Id,
+		CurrentSystem: "Somewhere",
+		ShipyardId:    entity.GetRoom().Id,
+		Rooms:         make(map[uint]*RoomData),
+		Owner:         entity.GetCharData().Name,
+		Modules:       make(map[string]uint),
+		Position:      []float32{0.0, 0.0},
+		HighSlots:     make([]*ItemData, 0),
+		LowSlots:      make([]*ItemData, 0),
+		Cockpit:       1,
+		Ramp:          1,
+		EngineRoom:    1,
+		CargoRoom:     1,
+		Blueprint:     0,
+		MaxSpeed:      1,
+		Hp:            []uint{100, 100},
+		Sp:            []uint{0, 0},
+	}
+	ship.Rooms[1] = &RoomData{
+		Id:   1,
+		Name: "A prototype cockpit",
+		Desc: "A stripped down prototype cockpit, barely able to maintain flight.",
+		ship: ship.Id,
+	}
+	DB().SaveShip(ship)
+	DB().LoadShip(sprintf("data/ships/%s.yml", ship.Name))
+	DB().SpawnShip(ship)
+
+	entity.Send("\r\n&YShip Create. Ok.&d\r\n")
+
+}
+
+func do_ship_remove(entity Entity, args ...string) {
+	if len(args) < 1 {
+		entity.Send("\r\nSyntax: sremove <shipname> [prototype?]\r\n")
+		entity.Send("-----------------------------------------------------------------\r\n")
+		entity.Send("prototype is a bool, 1 or 0 and is optional. If supplied, and is\r\n")
+		entity.Send("1, then the ship's prototype data will be removed as well.\r\n")
+		return
+	}
+	room := entity.GetRoom()
+	l := len(args)
+	prototype := false
+	if args[l-1] == "1" {
+		prototype = true
+	}
+	ship_name := strings.Join(args[:l], " ")
+	if prototype {
+		ship_name = strings.Join(args[:l-2], " ")
+	}
+	var ship Ship
+	for _, s := range room.GetShips() {
+		if s.GetData().Name == ship_name {
+			ship = s
+		}
+	}
+	if ship == nil {
+		entity.Send("\r\n&RUnable to locate ship!&d\r\n")
+		return
+	}
+	DB().RemoveShip(ship)
+	e := os.Remove(sprintf("data/ships/%s.yml", strings.ToLower(strings.ReplaceAll(ship.GetData().Name, " ", "_"))))
+	ErrorCheck(e)
+	if prototype {
+		DB().RemoveShipPrototype(ship)
+		e = os.Remove(sprintf("data/ships/prototypes/%s.yml", strings.ToLower(strings.ReplaceAll(ship.GetData().Name, " ", "_"))))
+		ErrorCheck(e)
+	}
+	entity.Send("\r\n&YRemove Ship. Ok.&d\r\n")
+}
+
+func do_ship_set(entity Entity, args ...string) {
+
+}
+
+func do_ship_stat(entity Entity, args ...string) {
+
 }

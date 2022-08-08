@@ -232,6 +232,7 @@ func processServerPump() {
 		processIdleClients()
 		processCombat()
 		processEntities()
+		updateMinerDifficulty()
 		time.Sleep(1 * time.Second)
 	}
 	log.Printf("Server Pump has exited!\n")

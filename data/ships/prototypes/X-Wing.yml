@@ -1,0 +1,49 @@
+id: 2
+shipId: 2
+name: X-Wing Class Starfighter
+desc: |
+    X-wing starfighters were a type of starfighter marked by their distinctive
+    S-foils that resembled the High Galactic script's character "X" in attack
+    formation. They were heavily armed with four laser cannons on the S-foils
+    and proton torpedo launchers in the fuselage. X-wings were designed for
+    dogfighting and long missions. During the Galactic Civil War, the Rebel
+    Alliance used X-wing models like the T-65B X-wing starfighter and T-65C-A2
+    X-wing in many battles, deploying X-wings in engagements such as the
+    Attack on Lothal, the Battle of Yavin, the Battle of Endor, and the Battle
+    of Jakku.
+type: X-Wing
+value: 0
+locationId: 0
+shipyardId: 0
+permission: 0
+simulator: false
+rooms:
+    1:
+        id: 1
+        name: X-Wing Starfighter Cockpit
+        desc: |
+            You are in the one of the most advanced starfighters ever built.
+            The X-Wing model T-65 has a very tight but very sophisticated
+            cockpit with a force sensitive flight stick, dual gravitron
+            radars and gymbals, an advanced Incom Corp targeting computer,
+            an R2 interface for hyperspace calculations, and an auxillary
+            power bank.
+        exits: {}
+        flags: [cockpit, ramp, engineroom]
+modules:
+    ai: 100
+    cockpit: 100
+    engine: 100
+    hyperdrive: 100
+    radar: 100
+    shield: 100
+    weapon: 100
+blueprintId: 0
+rampRoom: 1
+cockpitRoom: 1
+engineRoom: 1
+cargoRoom: 0
+position: []
+speed: 80
+hp: [250, 250]
+sp: [400, 400]

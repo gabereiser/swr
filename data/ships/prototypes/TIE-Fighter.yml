@@ -1,0 +1,46 @@
+id: 3
+shipId: 3
+name: TIE-Fighter
+desc: |
+    The TIE/ln space superiority starfighter, also known as the TIE/LN
+    starfighter and commonly called the TIE fighter, was the signature
+    starfighter of the Galactic Empire and de facto symbol of Imperial space
+    superiority. Its official production name was the Twin Ion Engine "line
+    edition" space superiority starfighter. Instantly recognizable from
+    the roar of its engines as well as its unique design, the TIE/ln exuded
+    Imperial power and prestige across the galaxy, seeing use throughout the
+    Empire's political existence.
+type: TIE-Fighter
+value: 0
+locationId: 0
+shipyardId: 0
+permission: 0
+simulator: false
+rooms:
+    1:
+        id: 1
+        name: TIE-Fighter Cockpit
+        desc: |
+            You are in the Sienar Fleet Systems designed starfighter.
+            The cockpit features a circular glass enclosure for maximum
+            visibility. The controls are a fly-by-wire flight yoke with
+            two handles and two gun switches. The ship was designed to
+            fire the guns either linked, or unlinked.
+        exits: {}
+        flags: [cockpit, ramp, engineroom]
+modules:
+    ai: 100
+    cockpit: 100
+    engine: 100
+    radar: 100
+    shield: 100
+    weapon: 100
+blueprintId: 0
+rampRoom: 1
+cockpitRoom: 1
+engineRoom: 1
+cargoRoom: 0
+position: []
+speed: 65
+hp: [500, 500]
+sp: [0, 0]

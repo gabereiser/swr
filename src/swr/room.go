@@ -382,6 +382,9 @@ func (r *RoomData) SendToOthers(entity Entity, message string) {
 func (r *RoomData) GetEntities() []Entity {
 	return DB().GetEntitiesInRoom(r.Id, r.ship)
 }
+func (r *RoomData) GetShips() []Ship {
+	return DB().GetShipsInRoom(r.Id)
+}
 func room_get_blocked_exit_flags(exitFlags *RoomExitFlag) (locked bool, closed bool) {
 	locked = false
 	closed = false
@@ -525,4 +528,11 @@ func room_prog_exec(entity Entity, evt string, any ...interface{}) {
 		_, err := vm.Run(pg)
 		ErrorCheck(err)
 	}
+}
+
+func room_is_landable(room *RoomData) bool {
+	if !room.HasFlag("spaceport") && !room.HasFlag("shipyard") && !room.HasFlag("hangar") {
+		return false
+	}
+	return true
 }

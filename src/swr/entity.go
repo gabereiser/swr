@@ -659,7 +659,11 @@ func processEntities() {
 		if ch.AI != nil {
 			ch.AI.Update()
 		}
+
+		mineBlockForEntity(e)
+
 	}
+
 }
 
 // Heals an entity naturally. Called by processEntities and should never be called by a skill/spell/script.

@@ -353,11 +353,6 @@
   level: 100
   func: do_mob_find
 -
-  name: mreset
-  keywords: [ "mreset" ]
-  level: 100
-  func: do_mob_reset
--
   name: mremove
   keywords: [ "mremove" ]
   level: 100
@@ -367,6 +362,26 @@
   keywords: [ "mstat" ]
   level: 100
   func: do_mob_stat
+-
+  name: screate
+  keywords: [ "screate" ]
+  level: 100
+  func: do_ship_create
+-
+  name: sstat
+  keywords: [ "sstat" ]
+  level: 100
+  func: do_ship_stat
+-
+  name: sset
+  keywords: [ "sset" ]
+  level: 100
+  func: do_ship_set
+-
+  name: sremove
+  keywords: [ "sremove" ]
+  level: 100
+  func: do_ship_remove
 -
   name: transfer
   keywords: [ "transfer" ]

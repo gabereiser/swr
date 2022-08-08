@@ -175,6 +175,12 @@ func (d *GameDatabase) RemoveShip(ship Ship) {
 		ErrorCheck(Err(fmt.Sprintf("Can't find ship %s", ship.GetData().Name)))
 	}
 }
+func (d *GameDatabase) RemoveShipPrototype(ship Ship) {
+	if ship == nil {
+		return
+	}
+	delete(d.ship_prototypes, ship.GetData().OId)
+}
 
 func (d *GameDatabase) RemoveArea(area *AreaData) {
 	if a, ok := d.areas[area.Name]; ok {
@@ -203,6 +209,9 @@ func (d *GameDatabase) Load() {
 
 	// Load Mobs
 	d.LoadMobs()
+
+	// Load Ships
+	d.LoadShips()
 
 }
 
@@ -276,7 +285,9 @@ func (d *GameDatabase) LoadItems() {
 				return err
 			}
 			if !info.IsDir() {
-				d.LoadItem(path)
+				if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
+					d.LoadItem(path)
+				}
 			}
 			return nil
 		})
@@ -302,7 +313,9 @@ func (d *GameDatabase) LoadMobs() {
 				return err
 			}
 			if !info.IsDir() {
-				d.LoadMob(path)
+				if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
+					d.LoadMob(path)
+				}
 			}
 			return nil
 		})
@@ -318,18 +331,58 @@ func (d *GameDatabase) LoadMob(path string) {
 	ch.Filename = path
 	d.mobs[ch.Id] = ch
 }
+func (d *GameDatabase) LoadShips() {
+	log.Print("Loading ship files.")
+	err := filepath.Walk("data/ships",
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() {
+				if strings.Contains(path, "prototype") {
+					if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
+						d.LoadShipPrototype(path)
+					}
+				} else {
+					if strings.HasSuffix(path, ".yaml") || strings.HasSuffix(path, ".yml") {
+						d.LoadShip(path)
+					}
+				}
+			}
+			return nil
+		})
+	ErrorCheck(err)
+	log.Printf("%d ships loaded. %d prototypes.", len(d.ships), len(d.ship_prototypes))
+}
+func (d *GameDatabase) LoadShip(path string) {
+	fp, err := os.ReadFile(path)
+	ErrorCheck(err)
+	ship := new(ShipData)
+	err = yaml.Unmarshal(fp, ship)
+	ErrorCheck(err)
+	d.ships = append(d.ships, ship)
+}
+func (d *GameDatabase) LoadShipPrototype(path string) {
+	fp, err := os.ReadFile(path)
+	ErrorCheck(err)
+	ship := new(ShipData)
+	err = yaml.Unmarshal(fp, ship)
+	ErrorCheck(err)
+	d.ship_prototypes[ship.Id] = ship
+}
 
 // The Mother of all save functions
 func (d *GameDatabase) Save() {
 	d.Lock()
 	defer d.Unlock()
-	echo_all("\r\n}xSaving Game World&d\r\n")
+	echo_all("\r\n&xSaving Game World&d\r\n")
+	t := time.Now()
 	d.SaveAreas()
 	d.SaveMobs()
 	d.SaveItems()
 	d.SaveShips()
 	d.SavePlayers()
-	echo_all("\r\n}xWorld Save Complete.&d\r\n")
+	echo_all(sprintf("\r\n&xSave took %s&d\r\n", time.Since(t).String()))
 }
 
 func (d *GameDatabase) SaveAreas() {
@@ -352,7 +405,7 @@ func (d *GameDatabase) SaveShips() {
 	for _, ship := range d.ship_prototypes {
 		buf, err := yaml.Marshal(ship)
 		ErrorCheck(err)
-		err = os.WriteFile(fmt.Sprintf("data/ships/prototypes/%s.yml", strings.ToLower(strings.ReplaceAll(ship.Name, " ", ""))), buf, 0755)
+		err = os.WriteFile(sprintf("data/ships/prototypes/%s.yml", strings.ToLower(strings.ReplaceAll(ship.Type, " ", "_"))), buf, 0755)
 		ErrorCheck(err)
 	}
 	for _, ship := range d.ships {
@@ -372,14 +425,14 @@ func (d *GameDatabase) SavePlayers() {
 func (d *GameDatabase) SaveShip(ship Ship) {
 	buf, err := yaml.Marshal(ship)
 	ErrorCheck(err)
-	err = os.WriteFile(fmt.Sprintf("data/ships/%s.yml", strings.ToLower(strings.ReplaceAll(ship.GetData().Name, " ", ""))), buf, 0755)
+	err = os.WriteFile(sprintf("data/ships/%s.yml", strings.ToLower(strings.ReplaceAll(ship.GetData().Name, " ", "_"))), buf, 0755)
 	ErrorCheck(err)
 }
 
 func (d *GameDatabase) SaveArea(area *AreaData) {
 	buf, err := yaml.Marshal(area)
 	ErrorCheck(err)
-	err = os.WriteFile(fmt.Sprintf("data/areas/%s.yml", area.Name), buf, 0755)
+	err = os.WriteFile(sprintf("data/areas/%s.yml", area.Name), buf, 0755)
 	for _, m := range area.Mobs {
 		mob := d.mobs[m.Mob]
 		d.SaveMob(mob)
@@ -522,6 +575,14 @@ func (d *GameDatabase) GetShip(shipId uint) Ship {
 	}
 	return nil
 }
+func (d *GameDatabase) ShipNameAvailable(name string) bool {
+	for _, ship := range d.ships {
+		if strings.EqualFold(ship.GetData().Name, name) {
+			return false
+		}
+	}
+	return true
+}
 func (d *GameDatabase) GetShipsInSystem(system string) []Ship {
 	ret := make([]Ship, 0)
 	for _, ship := range d.ships {
@@ -635,6 +696,14 @@ func (d *GameDatabase) GetNextItemVnum() uint {
 func (d *GameDatabase) GetNextMobVnum() uint {
 	for i := uint(1); i < (^uint(0)); i++ {
 		if _, ok := d.mobs[i]; !ok {
+			return i
+		}
+	}
+	return 0
+}
+func (d *GameDatabase) GetNextShipVnum() uint {
+	for i := uint(1); i < (^uint(0)); i++ {
+		if _, ok := d.ship_prototypes[i]; !ok {
 			return i
 		}
 	}

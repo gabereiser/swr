@@ -1,0 +1,70 @@
+id: 1
+shipId: 1
+name: Lambda T-4a Shuttle
+desc: |
+    The Lambda-class T-4a shuttle, also known as the Lambda-class shuttle,
+    Imperial Lambda, Imperial Transport or the Imperial Shuttle, was a
+    multi-purpose transport with a trihedral foil design used by the
+    Galactic Empire during the Galactic Civil War, and was considered an
+    elegant departure from the standards of brutish Imperial engineering.
+
+    The shuttles were often used by high-ranking Imperial officers and such
+    dignitaries as Darth Vader and Emperor Sheev Palpatine, but were more
+    commonly found ferrying stormtroopers or cargo.
+type: T-4a
+value: 0
+locationId: 0
+shipyardId: 0
+permission: 0
+simulator: false
+rooms:
+    1:
+        id: 1
+        name: Lambda T-4a Shuttle Cockpit
+        desc: |
+            You are in the cockpit room of the T-4a. There are two pilot seats
+            and two jump seats. Most of the flight controls are on the main
+            console in front of you. However a few switches for control of
+            auxillary systems are on the side panel. Overall, it's a clean
+            looking cockpit of Imperial engineering.
+        exits:
+            south: 2
+        exflags:
+            south:
+                closed: true
+        flags: [cockpit]
+    2:
+        id: 2
+        name: Lambda T-4a Shuttle Ramp
+        desc: |
+            You are on the ramp of the T-4a. It's a small crowded space when
+            the rear ramp is closed. When it's open it's an easy stroll down
+            to the surface. Various suits for toxic environments line the
+            west wall. On the east is a rack of equipment used for the
+            engines which are accessible from a hatch on either side of the
+            room.
+        exits:
+            south: 2
+        exflags:
+            south:
+                closed: true
+        flags: [ramp, engineroom]
+modules:
+    ai: 100
+    cockpit: 100
+    dock: 100
+    engine: 100
+    engine2: 100
+    hyperdrive: 100
+    radar: 100
+    shield: 100
+    weapon: 100
+blueprintId: 0
+rampRoom: 2
+cockpitRoom: 1
+engineRoom: 2
+cargoRoom: 0
+position: []
+speed: 35
+hp: [450, 450]
+sp: [200, 200]
