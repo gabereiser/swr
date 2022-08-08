@@ -20,7 +20,6 @@ package swr
 import (
 	"log"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -1046,7 +1045,7 @@ func do_mob_stat(entity Entity, args ...string) {
 	entity.Send("&GTitle: &W%-26s &GXP: &W%d&d\r\n", tch.Title, tch.XP)
 	entity.Send("&GRace: &W%s &GGender: &W%s&d\r\n", tch.Race, capitalize(get_gender_for_code(tch.Gender)))
 	entity.Send("&GHp: &W%d&Y/&W%d &GMp: &W%d&Y/&W%d &GMv: &W%d&Y/&W%d&d\r\n", tch.Hp[0], tch.Hp[1], tch.Mp[0], tch.Mp[1], tch.Mv[0], tch.Mv[1])
-	entity.Send("&GSTR: &W%d &GINT: &W%d &GDEX: &W%d &GWIS: &W%d &GCON: &W%d &GCHA: &W%d ", tch.Stats[0], tch.Stats[1], tch.Stats[2], tch.Stats[3], tch.Stats[4], tch.Stats[5])
+	entity.Send("&GSTR: &W%d &GINT: &W%d &GDEX: &W%d &GWIS: &W%d &GCON: &W%d &GCHA: &W%d\r\n", tch.Stats[0], tch.Stats[1], tch.Stats[2], tch.Stats[3], tch.Stats[4], tch.Stats[5])
 	entity.Send("&GMoney: &W%d &GKeywords: &W%v&d\r\n", tch.Gold, tch.Keywords)
 	entity.Send("&GFlags: &W%v &GState: &W%s &GBrain: &W%s&d\r\n", tch.Flags, tch.State, tch.Brain)
 	entity.Send("&GSkills: &W%+v&d\r\n", tch.Skills)
@@ -1068,36 +1067,18 @@ func do_mob_stat(entity Entity, args ...string) {
 func do_mob_find(entity Entity, args ...string) {
 	if len(args) == 0 {
 		entity.Send("\r\n%s\r\n", MakeTitle("Mobs", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
-		rlist := make([]string, 0)
+		c := 0
 		for _, mob := range DB().mobs {
 			r := mob.GetCharData()
-			n := sprintf("&Y[&W%d&Y]&d%-26s", r.OId, tstring(r.Name, 23))
-			if sort.SearchStrings(rlist, n) == len(rlist) {
-				rlist = append(rlist, n)
+			n := sprintf("&Y[&W%d&Y]&d%-26s", r.Id, tstring(r.Name, 23))
+			entity.Send("%-30s", n)
+			c++
+			if c > 0 && c%6 == 0 {
+				entity.Send("\r\n")
 			}
-		}
-		p1 := (len(rlist) / 3) + 1
-		p2 := p1 + p1
-		rlist1 := rlist[:p1]
-		rlist2 := rlist[p1:p2]
-		rlist3 := rlist[p2:]
-		pad := strings.Repeat(" ", 26)
-		for i := 0; i <= p1; i++ {
-			r1 := pad
-			r2 := pad
-			r3 := pad
-			if i < len(rlist1) {
-				r1 = sprintf("%-26s", rlist1[i])
-			}
-			if i < len(rlist2) {
-				r2 = sprintf("%-26s", rlist2[i])
-			}
-			if i < len(rlist3) {
-				r3 = sprintf("%-26s", rlist3[i])
-			}
-			entity.Send(sprintf("%-26s %-26s %-26s\r\n", r1, r2, r3))
 		}
 	}
+	entity.Send("\r\n")
 }
 
 func do_transfer(entity Entity, args ...string) {

@@ -77,8 +77,15 @@ func rand_min_max(min int, max int) int {
 	return min + rand.Intn((max-min)+1)
 }
 
+//lint:ignore U1000 int version of umin
+func min(min int, value int) int {
+	if value > min {
+		return min
+	}
+	return value
+}
 func umin(min uint, value uint) uint {
-	if value < min {
+	if value > min {
 		return min
 	}
 	return value
@@ -152,6 +159,16 @@ func consolify(str string) string {
 		cursor += wlen + 1 // +1 for the space
 	}
 	return buf
+}
+
+//lint:ignore U1000 useful code
+func slice_contains_string(slice []string, value string) bool {
+	for _, s := range slice {
+		if strings.EqualFold(s, value) {
+			return true
+		}
+	}
+	return false
 }
 
 // direction_reverse takes a direction string and returns its spacial opposite direction.
