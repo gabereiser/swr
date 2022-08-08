@@ -18,7 +18,6 @@
 package swr
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -28,17 +27,9 @@ import (
 	"time"
 
 	"gopkg.in/yaml.v3"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
-
-func FileExists(filename string) bool {
-	file, err := os.OpenFile(filename, os.O_RDONLY, 0755)
-	if errors.Is(err, os.ErrNotExist) {
-		log.Printf("%s does not exist!", filename)
-		return false
-	}
-	defer file.Close()
-	return true
-}
 
 var _db *GameDatabase
 
@@ -51,6 +42,7 @@ type HelpData struct {
 
 type GameDatabase struct {
 	m               *sync.Mutex
+	db              *gorm.DB
 	clients         []Client
 	entities        []Entity
 	areas           map[string]*AreaData // pointers to the [AreaData] of the game.
@@ -74,8 +66,11 @@ type Database interface {
 func DB() *GameDatabase {
 	if _db == nil {
 		log.Printf("Starting Database.")
+		db, e := gorm.Open(sqlite.Open("data/game.db"), &gorm.Config{})
+		ErrorCheck(e)
 		_db = new(GameDatabase)
 		_db.m = &sync.Mutex{}
+		_db.db = db
 		_db.clients = make([]Client, 0, 64)
 		_db.entities = make([]Entity, 0)
 		_db.areas = make(map[string]*AreaData)

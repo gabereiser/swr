@@ -25,7 +25,19 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"gorm.io/gorm"
 )
+
+type Account struct {
+	gorm.Model
+	ID         uint   `gorm:"primarykey"`
+	Username   string `gorm:"index:idx_username,unique"`
+	Password   string
+	Email      string
+	Priv       uint
+	Characters []PlayerProfile
+}
 
 func auth_do_welcome(client Client) {
 	client.Send(Color().ClearScreen())
@@ -47,7 +59,7 @@ Login:
 	sanitized := strings.TrimSpace(strings.ToLower(username))
 	path := fmt.Sprintf("data/accounts/%s/%s.yml", sanitized[0:1], sanitized)
 	log.Printf("Loading player %s", sanitized)
-	if FileExists(path) {
+	if file_exists(path) {
 		player := DB().ReadPlayerData(path)
 		client.Send("\r\n&GPassword:&d ")
 		telnet_disable_local_echo(client)

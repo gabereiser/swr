@@ -18,9 +18,12 @@
 package swr
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"math"
 	"math/rand"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -35,6 +38,16 @@ func assert(expr bool) {
 }
 func bytes_to_mb(b uint64) float64 {
 	return float64(b) / (1024 * 1024)
+}
+
+func file_exists(filename string) bool {
+	file, err := os.OpenFile(filename, os.O_RDONLY, 0755)
+	if errors.Is(err, os.ErrNotExist) {
+		log.Printf("%s does not exist!", filename)
+		return false
+	}
+	defer file.Close()
+	return true
 }
 
 // Replaces line endings to enforce CR+LF instead of just LF

@@ -366,17 +366,17 @@ func (c *CharData) GetCharData() *CharData {
 // [Entity.IsPlayer] will return whether or not an [Entity] is a [*PlayerProfile] or just [*CharData]
 type PlayerProfile struct {
 	Char        CharData  `yaml:"char,inline"`
-	Email       string    `yaml:"email,omitempty"`
-	Password    string    `yaml:"password,omitempty"`
+	Email       string    `yaml:"email,omitempty" json:"email,omitempty"`
+	Password    string    `yaml:"password,omitempty" json:"-"`
 	Priv        int       `yaml:"priv,omitempty"`
 	LastSeen    time.Time `yaml:"last_seen,omitempty"`
 	Banned      bool      `yaml:"banned,omitempty"`
 	Frequency   string    `yaml:"freq"`
 	Kills       uint      `yaml:"kills"`
 	PKills      uint      `yaml:"pkills"`
-	Client      Client    `yaml:"-"`
-	NeedPrompt  bool      `yaml:"-"`
-	LastCommand string    `yaml:"-"`
+	Client      Client    `yaml:"-" gorm:"-"`
+	NeedPrompt  bool      `yaml:"-" gorm:"-"`
+	LastCommand string    `yaml:"-" gorm:"-"`
 }
 
 // Is Entity a player?
