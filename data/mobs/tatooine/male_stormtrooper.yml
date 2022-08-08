@@ -1,8 +1,8 @@
 id: 8
 mobId: 8
 room: 1006
-name: '&Ba stormtrooper&d'
-keywords: ["", stormtrooper, trooper, storm, human]
+name: 'a male stormtrooper'
+keywords: [stormtrooper, trooper, storm, male, human]
 title: a Human a stormtrooper
 desc: "A general purpose, all imperial, all in white, stormtrooper. His voice sounds \r\nas robotic as his thoughts. "
 race: Human

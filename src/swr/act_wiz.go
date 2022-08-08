@@ -172,13 +172,28 @@ func do_room_stat(entity Entity, args ...string) {
 	vnum := room.Id
 	shipId := room.ship
 	if len(args) == 2 {
-		value, _ := strconv.Atoi(args[0])
+		value, e := strconv.Atoi(args[0])
+		ErrorCheck(e)
+		if e != nil {
+			entity.Send("\r\n&RUnable to parse room vnum.&d\r\n")
+			return
+		}
 		vnum = uint(value)
-		value, _ = strconv.Atoi(args[1])
+		value, e = strconv.Atoi(args[1])
+		ErrorCheck(e)
+		if e != nil {
+			entity.Send("\r\n&RUnable to parse ship vnum.&d\r\n")
+			return
+		}
 		shipId = uint(value)
 	}
 	if len(args) == 1 {
-		value, _ := strconv.Atoi(args[0])
+		value, e := strconv.Atoi(args[0])
+		ErrorCheck(e)
+		if e != nil {
+			entity.Send("\r\n&RUnable to parse room vnum.&d\r\n")
+			return
+		}
 		vnum = uint(value)
 	}
 	room = DB().GetRoom(vnum, shipId)
@@ -202,10 +217,14 @@ func do_room_stat(entity Entity, args ...string) {
 	}
 	entity.Send("   &GSpawns: &d\r\n")
 	for _, ms := range room.Area.Mobs {
+		if ms.Room != room.Id {
+			continue
+		}
 		mob := DB().GetMob(ms.Mob)
 		m := mob.GetCharData()
 		entity.Send(sprintf("&Y[&W%d&Y]&d%-26s", m.OId, tstring(m.Name, 23)))
 	}
+	entity.Send("\r\n")
 
 }
 func do_room_set(entity Entity, args ...string) {
@@ -1040,7 +1059,7 @@ func do_mob_stat(entity Entity, args ...string) {
 	tch := target.GetCharData()
 	entity.Send("\r\n%s\r\n", MakeTitle("Mob Stats", ANSI_TITLE_STYLE_SYSTEM, ANSI_TITLE_ALIGNMENT_LEFT))
 	entity.Send("&GFilename: &W%s&d\r\n", tch.Filename)
-	entity.Send("&GID: &W%d &GOID: &W%s&d\r\n", tch.Id, tch.OId)
+	entity.Send("&GID: &W%d &GOID: &W%d&d\r\n", tch.Id, tch.OId)
 	entity.Send("&GName: &W%-26s &GLevel: &W%d&d\r\n", tch.Name, tch.Level)
 	entity.Send("&GTitle: &W%-26s &GXP: &W%d&d\r\n", tch.Title, tch.XP)
 	entity.Send("&GRace: &W%s &GGender: &W%s&d\r\n", tch.Race, capitalize(get_gender_for_code(tch.Gender)))
@@ -1062,6 +1081,7 @@ func do_mob_stat(entity Entity, args ...string) {
 		entity.Send("&d\r\n")
 	}
 
+	entity.Send("\r\n")
 }
 
 func do_mob_find(entity Entity, args ...string) {

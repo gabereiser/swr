@@ -211,8 +211,7 @@ func (c *Colorize) IsRightArrow(input string) bool {
 func (c *Colorize) Colorize(input string) string {
 	// &=FG code
 	// ^=BG code
-	// }=Blink code
-	// ]=Underline code
+	// }=Blink codes
 
 	color_func := func(str string) string {
 		switch str {
@@ -318,7 +317,7 @@ func (c *Colorize) Colorize(input string) string {
 			return "^"
 		case "}}":
 			return "}"
-		case "&d":
+		case "&d", "&D":
 			return ANSI_RESET
 		default:
 			return str
@@ -336,6 +335,49 @@ func (c *Colorize) Colorize(input string) string {
 	input = r.ReplaceAllStringFunc(input, color_func)
 
 	r, err = regexp.Compile(`}[a-zA-z}]`) // foreground
+	ErrorCheck(err)
+
+	input = r.ReplaceAllStringFunc(input, color_func)
+	return input
+}
+func (c *Colorize) Deolorize(input string) string {
+	// &=FG code
+	// ^=BG code
+	// }=Blink code
+	// ]=Underline code
+
+	color_func := func(str string) string {
+		switch str {
+		case "&x", "&r", "&g", "&y", "&b", "&p", "&c", "&w", "&X", "&R", "&G", "&Y", "&B", "&P", "&C", "&W", "^x", "^r":
+			return ""
+		case "^g", "^y", "^b", "^p", "^c", "^w", "^X", "^R", "^G", "^Y", "^B", "^P", "^C", "^W", "}x", "}r", "}g", "}y":
+			return ""
+		case "}b", "}p", "}c", "}w", "}X", "}R", "}G", "}Y", "}B", "}P", "}C", "}W":
+			return ""
+		case "&&":
+			return "&"
+		case "^^":
+			return "^"
+		case "}}":
+			return "}"
+		case "&d", "&D":
+			return ""
+		default:
+			return str
+		}
+	}
+
+	r, err := regexp.Compile(`&[a-zA-z&]`) // foreground
+	ErrorCheck(err)
+
+	input = r.ReplaceAllStringFunc(input, color_func)
+
+	r, err = regexp.Compile(`\^[a-zA-z^]`) // background
+	ErrorCheck(err)
+
+	input = r.ReplaceAllStringFunc(input, color_func)
+
+	r, err = regexp.Compile(`}[a-zA-z}]`) // blinky
 	ErrorCheck(err)
 
 	input = r.ReplaceAllStringFunc(input, color_func)

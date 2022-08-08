@@ -92,16 +92,24 @@ func rand_min_max(min int, max int) int {
 
 //lint:ignore U1000 int version of umin
 func min(min int, value int) int {
-	if value > min {
-		return min
+	if value < min {
+		return value
 	}
-	return value
+	return min
 }
+
+//lint:ignore U1000 int version of umin
 func umin(min uint, value uint) uint {
-	if value > min {
-		return min
+	if value < min {
+		return value
 	}
-	return value
+	return min
+}
+func umax(min uint, value uint) uint {
+	if value > min {
+		return value
+	}
+	return min
 }
 func random_seed(seed int64) {
 	rand.Seed(seed)

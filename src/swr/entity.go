@@ -262,7 +262,7 @@ func (c *CharData) DamageRoll(skillName string) uint {
 	} else {
 		skill += get_weapon_skill_stat("martial-arts", str, dex)
 	}
-	skill = umin(1, skill/10)
+	skill = umax(1, skill/10)
 	dmg := uint(roll_dice(d)) + uint(roll_dice(fmt.Sprintf("%dd4", skill)))
 	return dmg
 }

@@ -100,9 +100,8 @@ func do_fight(entity Entity, args ...string) {
 
 func processCombat() {
 	db := DB()
-	db.Lock()
-	defer db.Unlock()
-	for _, e := range db.entities {
+	el := db.entities
+	for _, e := range el {
 		if e != nil {
 			if e.IsFighting() {
 				target := e.GetCharData().Attacker
@@ -110,7 +109,7 @@ func processCombat() {
 			}
 		}
 	}
-	for _, e := range db.entities {
+	for _, e := range el {
 		if e != nil {
 			e.Prompt()
 		}
@@ -128,11 +127,11 @@ func do_combat(attacker Entity, defender Entity) {
 	if ach.Room != dch.Room || ach.Ship != dch.Ship {
 		attacker.StopFighting()
 		if attacker.IsPlayer() {
-			attacker.Send("\r\nYou stop fighting %s as they are no longer here.\r\n", dch.Name)
+			attacker.Send("\r\nYou stop fighting &d%s&d as they are no longer here.\r\n", dch.Name)
 		}
 		defender.StopFighting()
 		if defender.IsPlayer() {
-			defender.Send("\r\nYou stop fighting %s as they are no longer here.\r\n", ach.Name)
+			defender.Send("\r\nYou stop fighting &d%s&d as they are no longer here.\r\n", ach.Name)
 		}
 	}
 	for _, flag := range ach.Flags {
@@ -237,17 +236,17 @@ func do_combat(attacker Entity, defender Entity) {
 
 func get_damage_string(damage uint, attacker string, defender string, weapon string) string {
 	if damage > 50 {
-		return fmt.Sprintf("&R%s **ANNIHILATED** %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
+		return fmt.Sprintf("&R%s&R **ANNIHILATED** &R%s&R with &R%s&R for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
 	} else if damage > 25 {
-		return fmt.Sprintf("&R%s *EVICERATED* %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
+		return fmt.Sprintf("&R%s&R *EVICERATED* &R%s&R with &R%s&R for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
 	} else if damage > 10 {
-		return fmt.Sprintf("&R%s *BLASTED* %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
+		return fmt.Sprintf("&R%s&R *BLASTED* &R%s&R with &R%s&R for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
 	} else if damage > 2 {
-		return fmt.Sprintf("&R%s *HIT* %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
+		return fmt.Sprintf("&R%s&R *HIT* &R%s&R with &R%s&R for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
 	} else if damage > 1 {
-		return fmt.Sprintf("&R%s SCRATCHED %s with %s for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
+		return fmt.Sprintf("&R%s&R SCRATCHED &R%s&R with &R%s&R for &w%d&R damage.&d\r\n", attacker, defender, weapon, damage)
 	} else {
-		return fmt.Sprintf("&d%s MISSED %s.&d\r\n", attacker, defender)
+		return fmt.Sprintf("&d%s&d MISSED &d%s&d.\r\n", attacker, defender)
 	}
 }
 

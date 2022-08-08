@@ -36,7 +36,13 @@ type Account struct {
 	Password   string
 	Email      string
 	Priv       uint
-	Characters []PlayerProfile
+	Characters []PlayerRef
+}
+
+type PlayerRef struct {
+	gorm.Model
+	AccountID uint
+	Name      string
 }
 
 func auth_do_welcome(client Client) {

@@ -146,7 +146,7 @@ func do_description(entity Entity, args ...string) {
 		return
 	}
 	ch := entity.GetCharData()
-	ch.Desc = consolify(args[0])
+	ch.Desc = consolify(strings.Join(args, " "))
 	entity.Send("\r\n&YDescription set.&d\r\n")
 }
 

@@ -68,6 +68,7 @@ func DB() *GameDatabase {
 		log.Printf("Starting Database.")
 		db, e := gorm.Open(sqlite.Open("data/game.db"), &gorm.Config{})
 		ErrorCheck(e)
+		db.AutoMigrate(&Account{})
 		_db = new(GameDatabase)
 		_db.m = &sync.Mutex{}
 		_db.db = db
@@ -95,10 +96,14 @@ func (d *GameDatabase) Unlock() {
 }
 
 func (d *GameDatabase) AddClient(client Client) {
+	d.Lock()
+	defer d.Unlock()
 	d.clients = append(d.clients, client)
 }
 
 func (d *GameDatabase) RemoveClient(client Client) {
+	d.Lock()
+	defer d.Unlock()
 	for _, e := range d.entities {
 		if e == nil {
 			continue
@@ -130,6 +135,8 @@ func (d *GameDatabase) RemoveClient(client Client) {
 }
 
 func (d *GameDatabase) RemoveEntity(entity Entity) {
+	d.Lock()
+	defer d.Unlock()
 	if entity == nil {
 		return
 	}
@@ -152,6 +159,8 @@ func (d *GameDatabase) RemoveEntity(entity Entity) {
 	}
 }
 func (d *GameDatabase) RemoveShip(ship Ship) {
+	d.Lock()
+	defer d.Unlock()
 	index := -1
 	for i, s := range d.ships {
 		if s == nil {
@@ -171,6 +180,8 @@ func (d *GameDatabase) RemoveShip(ship Ship) {
 	}
 }
 func (d *GameDatabase) RemoveShipPrototype(ship Ship) {
+	d.Lock()
+	defer d.Unlock()
 	if ship == nil {
 		return
 	}
@@ -178,6 +189,8 @@ func (d *GameDatabase) RemoveShipPrototype(ship Ship) {
 }
 
 func (d *GameDatabase) RemoveArea(area *AreaData) {
+	d.Lock()
+	defer d.Unlock()
 	if a, ok := d.areas[area.Name]; ok {
 		for _, r := range a.Rooms {
 			delete(d.rooms, r.Id)
@@ -187,8 +200,7 @@ func (d *GameDatabase) RemoveArea(area *AreaData) {
 
 // The Mother of all load functions
 func (d *GameDatabase) Load() {
-	d.Lock()
-	defer d.Unlock()
+
 	log.Printf("Loading Database...")
 	// Load Help files
 	d.LoadHelps()
@@ -214,6 +226,8 @@ func (d *GameDatabase) LoadHelps() {
 	log.Print("Loading help files.")
 	flist, err := os.ReadDir("docs")
 	ErrorCheck(err)
+	d.Lock()
+	defer d.Unlock()
 	for _, help_file := range flist {
 		fpath := fmt.Sprintf("docs/%s", help_file.Name())
 		fp, err := os.ReadFile(fpath)
@@ -247,6 +261,8 @@ func (d *GameDatabase) LoadArea(name string) {
 	area := new(AreaData)
 	err = yaml.Unmarshal(fp, area)
 	ErrorCheck(err)
+	d.Lock()
+	defer d.Unlock()
 	for i := range area.Rooms {
 		room := area.Rooms[i]
 		room.Area = area
@@ -260,6 +276,8 @@ func (d *GameDatabase) LoadPlanets() {
 	log.Printf("Loading planet files.")
 	flist, err := os.ReadDir("data/planets")
 	ErrorCheck(err)
+	d.Lock()
+	defer d.Unlock()
 	for _, f := range flist {
 		fpath := fmt.Sprintf("data/planets/%s", f.Name())
 		fp, err := os.ReadFile(fpath)
@@ -297,6 +315,8 @@ func (d *GameDatabase) LoadItem(path string) {
 	err = yaml.Unmarshal(fp, item)
 	ErrorCheck(err)
 	item.Filename = path
+	d.Lock()
+	defer d.Unlock()
 	d.items[item.Id] = item
 }
 
@@ -324,6 +344,8 @@ func (d *GameDatabase) LoadMob(path string) {
 	err = yaml.Unmarshal(fp, ch)
 	ErrorCheck(err)
 	ch.Filename = path
+	d.Lock()
+	defer d.Unlock()
 	d.mobs[ch.Id] = ch
 }
 func (d *GameDatabase) LoadShips() {
@@ -355,6 +377,8 @@ func (d *GameDatabase) LoadShip(path string) {
 	ship := new(ShipData)
 	err = yaml.Unmarshal(fp, ship)
 	ErrorCheck(err)
+	d.Lock()
+	defer d.Unlock()
 	d.ships = append(d.ships, ship)
 }
 func (d *GameDatabase) LoadShipPrototype(path string) {
@@ -363,6 +387,8 @@ func (d *GameDatabase) LoadShipPrototype(path string) {
 	ship := new(ShipData)
 	err = yaml.Unmarshal(fp, ship)
 	ErrorCheck(err)
+	d.Lock()
+	defer d.Unlock()
 	d.ship_prototypes[ship.Id] = ship
 }
 
@@ -469,6 +495,7 @@ func (d *GameDatabase) GetPlayer(name string) *PlayerProfile {
 			}
 		}
 	}
+	d.Unlock() // unlock early
 	// Player isn't online
 	if player == nil {
 		path := fmt.Sprintf("data/accounts/%s/%s.yml", strings.ToLower(name[0:1]), strings.ToLower(name))
@@ -505,6 +532,8 @@ func (d *GameDatabase) SavePlayerData(player *PlayerProfile) {
 }
 
 func (d *GameDatabase) GetPlayerEntityByName(name string) Entity {
+	d.Lock()
+	defer d.Unlock()
 	for _, e := range d.entities {
 		if e == nil {
 			continue
@@ -563,6 +592,8 @@ func (d *GameDatabase) SpawnShip(ship Ship) Ship {
 }
 
 func (d *GameDatabase) GetShip(shipId uint) Ship {
+	d.Lock()
+	defer d.Unlock()
 	for _, ship := range d.ships {
 		if ship.GetData().Id == shipId {
 			return ship
@@ -571,6 +602,8 @@ func (d *GameDatabase) GetShip(shipId uint) Ship {
 	return nil
 }
 func (d *GameDatabase) ShipNameAvailable(name string) bool {
+	d.Lock()
+	defer d.Unlock()
 	for _, ship := range d.ships {
 		if strings.EqualFold(ship.GetData().Name, name) {
 			return false
@@ -580,6 +613,8 @@ func (d *GameDatabase) ShipNameAvailable(name string) bool {
 }
 func (d *GameDatabase) GetShipsInSystem(system string) []Ship {
 	ret := make([]Ship, 0)
+	d.Lock()
+	defer d.Unlock()
 	for _, ship := range d.ships {
 		s := ship.GetData()
 		if s.CurrentSystem == system {
@@ -591,6 +626,8 @@ func (d *GameDatabase) GetShipsInSystem(system string) []Ship {
 	return ret
 }
 func (d *GameDatabase) GetShipsInRoom(roomId uint) []Ship {
+	d.Lock()
+	defer d.Unlock()
 	ret := make([]Ship, 0)
 	for _, s := range d.ships {
 		if s.GetData().LocationId == roomId && !s.GetData().InSpace {
@@ -610,6 +647,8 @@ func (d *GameDatabase) GetEntity(entity Entity) Entity {
 	return nil
 }
 func (d *GameDatabase) GetEntitiesInRoom(roomId uint, shipId uint) []Entity {
+	d.Lock()
+	defer d.Unlock()
 	ret := make([]Entity, 0)
 	for _, entity := range d.entities {
 		if entity == nil {
@@ -649,6 +688,8 @@ func (d *GameDatabase) GetRoom(roomId uint, shipId uint) *RoomData {
 }
 
 func (d *GameDatabase) GetNextRoomVnum(roomId uint, shipId uint) uint {
+	d.Lock()
+	defer d.Unlock()
 	if shipId > 0 {
 		for _, s := range d.ships {
 			if s.GetData().Id == shipId {
@@ -667,7 +708,13 @@ func (d *GameDatabase) GetNextRoomVnum(roomId uint, shipId uint) uint {
 	} else {
 		lastVnum := uint(0)
 		// let's get the room's area
-		room := d.GetRoom(roomId, shipId)
+		var room *RoomData
+		if r, ok := d.rooms[roomId]; ok {
+			room = r
+		}
+		if room == nil {
+			return 0
+		}
 		for _, r := range room.Area.Rooms {
 			if r.Name == "A void" { // return the first void prototype room
 				return r.Id
@@ -681,6 +728,8 @@ func (d *GameDatabase) GetNextRoomVnum(roomId uint, shipId uint) uint {
 	return 0
 }
 func (d *GameDatabase) GetNextItemVnum() uint {
+	d.Lock()
+	defer d.Unlock()
 	for i := uint(1); i < (^uint(0)); i++ {
 		if _, ok := d.items[i]; !ok {
 			return i
@@ -689,6 +738,8 @@ func (d *GameDatabase) GetNextItemVnum() uint {
 	return 0
 }
 func (d *GameDatabase) GetNextMobVnum() uint {
+	d.Lock()
+	defer d.Unlock()
 	for i := uint(1); i < (^uint(0)); i++ {
 		if _, ok := d.mobs[i]; !ok {
 			return i
@@ -697,6 +748,8 @@ func (d *GameDatabase) GetNextMobVnum() uint {
 	return 0
 }
 func (d *GameDatabase) GetNextShipVnum() uint {
+	d.Lock()
+	defer d.Unlock()
 	for i := uint(1); i < (^uint(0)); i++ {
 		if _, ok := d.ship_prototypes[i]; !ok {
 			return i
@@ -706,6 +759,8 @@ func (d *GameDatabase) GetNextShipVnum() uint {
 }
 
 func (d *GameDatabase) GetItem(itemId uint) Item {
+	d.Lock()
+	defer d.Unlock()
 	for _, i := range d.items {
 		if i == nil {
 			continue
@@ -718,6 +773,8 @@ func (d *GameDatabase) GetItem(itemId uint) Item {
 }
 
 func (d *GameDatabase) GetMob(mobId uint) Entity {
+	d.Lock()
+	defer d.Unlock()
 	if m, ok := d.mobs[mobId]; ok {
 		return m
 	}
@@ -725,6 +782,8 @@ func (d *GameDatabase) GetMob(mobId uint) Entity {
 }
 
 func (d *GameDatabase) GetEntityForClient(client Client) Entity {
+	d.Lock()
+	defer d.Unlock()
 	for _, e := range d.entities {
 		if e == nil {
 			continue
@@ -740,6 +799,8 @@ func (d *GameDatabase) GetEntityForClient(client Client) Entity {
 }
 
 func (d *GameDatabase) GetHelp(help string) []*HelpData {
+	d.Lock()
+	defer d.Unlock()
 	ret := []*HelpData{}
 	for _, h := range d.helps {
 		for _, keyword := range h.Keywords {

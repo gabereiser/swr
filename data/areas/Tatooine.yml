@@ -4399,6 +4399,10 @@ mobs:
       room: 1006
     - mob: 7
       room: 1045
+    - mob: 5
+      room: 1022
+    - mob: 6
+      room: 1022
 items:
     - item: 4
       room: 1001
