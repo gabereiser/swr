@@ -11,7 +11,8 @@ build:
 clean:
 	@echo 'Cleaning build'
 	@go clean; \
-	rm -rf ./bin/*
+	rm -rf ./bin; \
+	rm -rf ./release;
 	@echo 'Done'
 dependencies:
 	@echo 'Downloading dependencies'

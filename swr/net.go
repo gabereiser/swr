@@ -93,11 +93,6 @@ func (c *TCPClient) Read() string {
 			break
 		}
 		i, err := c.Con.Read(b)
-		if err == io.EOF {
-			c.Close()
-			c.Con.Close()
-			return buf
-		}
 		if err != nil {
 			c.Close()
 			c.Con.Close()
@@ -239,7 +234,6 @@ func processServerPump() {
 }
 func acceptClient(con *net.TCPConn) {
 	fd, _ := con.File()
-	//telnet_suppress_ga(con)
 	db := DB()
 	client := new(TCPClient)
 	client.Id = hex.EncodeToString([]byte(con.RemoteAddr().String()))

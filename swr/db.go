@@ -435,12 +435,20 @@ func (d *GameDatabase) SaveShips() {
 }
 
 func (d *GameDatabase) SavePlayers() {
+	// lets compact memory while we are at it...
+	el := make([]Entity, 0)
 	for _, e := range d.entities {
+		if e == nil {
+			continue // ignore nil Entities (dead, removed, empty memory)
+		}
 		if e.IsPlayer() {
 			player := e.(*PlayerProfile)
 			d.SavePlayerData(player)
 		}
+		el = append(el, e)
 	}
+	// remove old slice with new slice... like a garbage collector.
+	d.entities = el
 }
 
 func (d *GameDatabase) SaveShip(ship Ship) {
