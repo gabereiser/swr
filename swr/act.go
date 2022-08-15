@@ -15,6 +15,8 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
+
+// Package swr
 package swr
 
 import (

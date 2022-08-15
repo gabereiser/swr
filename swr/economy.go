@@ -26,14 +26,14 @@ var MINER_DIFFICULTY int = 4
 
 func mineBlockForEntity(entity Entity) {
 	if entity.IsPlayer() {
-		// because crypto is hilarious...
+		// because crypto is hilarious... #hodl
 		result := sprintf("%x", sha256.Sum256([]byte(sprintf("%x", random_float()))))
 		if strings.EqualFold(result[:MINER_DIFFICULTY], strings.Repeat("0", MINER_DIFFICULTY)) {
-			entity.GetCharData().Bank += 100000
+			entity.GetCharData().Bank += 10000
 			DB().SavePlayerData(entity.(*PlayerProfile))
-			entity.Send("\r\n}YYou have won the lottery. You have been awarded %W%d&Y credits!&d\r\n")
+			entity.Send("\r\n}YYou have won the lottery. You have been awarded &W%d&Y credits!&d\r\n", 10000)
 			entity.Send("%s", result)
-			MINER_DIFFICULTY += 1
+			MINER_DIFFICULTY += 2
 		}
 	}
 }

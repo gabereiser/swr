@@ -34,8 +34,8 @@ const (
 	ANSI_CURSOR_LEFT  = ANSI_ESC + "1C"
 	ANSI_CURSOR_RIGHT = ANSI_ESC + "1D"
 	ANSI_BOLD         = ANSI_ESC + "1;"
-	ANSI_ITALIC       = ANSI_ESC + "3;"
-	ANSI_UNDERLINE    = ANSI_ESC + "4;"
+	ANSI_ITALIC       = ANSI_ESC + "3m"
+	ANSI_UNDERLINE    = ANSI_ESC + "4m"
 	ANSI_BLINK        = ANSI_ESC + "5m"
 )
 
@@ -120,21 +120,21 @@ const (
 )
 
 /*
-	The following are the tags used for adding color in your text.
+Colorize
+The following are the tags used for adding color in your text.
 
 Foreground text tag: &
 Tokens for foreground text are:
 
 &x - Black				&r - Dark Red			&g - Dark Green
-&O - Orange (brown)		&b - Dark Blue			&p - Purple
-&c - Cyan				&w - Grey				&z - Dark Grey
+&y - Dark Yellow     	&b - Dark Blue			&p - Purple
+&c - Cyan				&w - Grey
 &R - Red				&G - Green				&Y - Yellow
-&B - Blue				&P - Pink				&C - Light Blue
+&B - Blue				&P - Pink				&C - Light Cyan
 &W - White
 
 &u or &U - Underline the text.
 &i or &I - Italicize the text.
-&s or &S - Strikeover text.
 &D - Resets to custom color for whatever is being displayed.
 &d - Resets to terminal default color.
 
@@ -142,8 +142,8 @@ Blinking foreground text tag: }
 Tokens for blinking text are:
 
 }x - Black           	}r - Dark Red  		}g - Dark Green
-}O - Orange (brown)  	}b - Dark Blue 		}p - Purple
-}c - Cyan            	}w - Grey      		}z - Dark Grey
+}y - Dark Yellow		}b - Dark Blue 		}p - Purple
+}c - Cyan            	}w - Grey
 }R - Red             	}G - Green     		}Y - Yellow
 }B - Blue            	}P - Pink      		}C - Light Blue
 }W - White
@@ -159,7 +159,7 @@ Background color tag: ^
 Tokens for background color are:
 
 ^x - Black         ^r - Red           ^g - Green
-^O - Orange        ^b - Blue          ^p - Purple
+^y - Yellow        ^b - Blue          ^p - Purple
 ^c - Cyan          ^w - Grey
 
 If setting both foreground and background colors. The foreground must
@@ -311,6 +311,10 @@ func (c *Colorize) Colorize(input string) string {
 			return ANSI_BLINK + ANSI_BOLD + ANSI_FG_CYAN + "m"
 		case "}W":
 			return ANSI_BLINK + ANSI_BOLD + ANSI_FG_WHITE + "m"
+		case "&U", "&u":
+			return ANSI_UNDERLINE
+		case "&I", "&i":
+			return ANSI_ITALIC
 		case "&&":
 			return "&"
 		case "^^":
@@ -340,7 +344,7 @@ func (c *Colorize) Colorize(input string) string {
 	input = r.ReplaceAllStringFunc(input, color_func)
 	return input
 }
-func (c *Colorize) Deolorize(input string) string {
+func (c *Colorize) Decolorize(input string) string {
 	// &=FG code
 	// ^=BG code
 	// }=Blink code
@@ -348,11 +352,7 @@ func (c *Colorize) Deolorize(input string) string {
 
 	color_func := func(str string) string {
 		switch str {
-		case "&x", "&r", "&g", "&y", "&b", "&p", "&c", "&w", "&X", "&R", "&G", "&Y", "&B", "&P", "&C", "&W", "^x", "^r":
-			return ""
-		case "^g", "^y", "^b", "^p", "^c", "^w", "^X", "^R", "^G", "^Y", "^B", "^P", "^C", "^W", "}x", "}r", "}g", "}y":
-			return ""
-		case "}b", "}p", "}c", "}w", "}X", "}R", "}G", "}Y", "}B", "}P", "}C", "}W":
+		case "&d", "&D", "&x", "&r", "&g", "&y", "&b", "&p", "&c", "&w", "&X", "&R", "&G", "&Y", "&B", "&P", "&C", "&W", "&U", "&u", "&I", "&i", "^x", "^r", "^g", "^y", "^b", "^p", "^c", "^w", "^X", "^R", "^G", "^Y", "^B", "^P", "^C", "^W", "}x", "}r", "}g", "}y", "}b", "}p", "}c", "}w", "}X", "}R", "}G", "}Y", "}B", "}P", "}C", "}W":
 			return ""
 		case "&&":
 			return "&"
@@ -360,8 +360,6 @@ func (c *Colorize) Deolorize(input string) string {
 			return "^"
 		case "}}":
 			return "}"
-		case "&d", "&D":
-			return ""
 		default:
 			return str
 		}
@@ -485,9 +483,9 @@ func MakeProgressBar(value int, max int, size int) string {
 			ret += "█"
 		} else if i == cap {
 			if remainder%2 == 1 {
-				ret += "▒"
-			} else {
 				ret += "░"
+			} else {
+				ret += "▒"
 			}
 		} else {
 			ret += "▪"
@@ -533,22 +531,8 @@ func MakeTunerBar(freq string, size int) string {
 
 func StitchParagraphs(paragraph1 string, paragraph2 string) string {
 	p1_parts := strings.Split(paragraph1, "\r\n")
-	p1_width := 0
-	for _, p := range p1_parts {
-		if p1_width < len(p) {
-			p1_width = len(p)
-		}
-	}
-	if p1_width < 70 { // 80 - 10char-wide ascii map.
-		p1_width = 70
-	}
+
 	p2_parts := strings.Split(paragraph2, "\r\n")
-	p2_width := 0
-	for _, p := range p2_parts {
-		if p2_width < len(p) {
-			p2_width = len(p)
-		}
-	}
 	p1_len := len(p1_parts)
 	p2_len := len(p2_parts)
 
@@ -567,7 +551,7 @@ func StitchParagraphs(paragraph1 string, paragraph2 string) string {
 		if row < p2_len {
 			b_side = p2_parts[row]
 		}
-		buf += sprintf("%-*s %-*s\r\n", p1_width, a_side, p2_width, b_side)
+		buf += sprintf("%-*s %-*s\r\n", 70, a_side, 10, b_side)
 	}
 	return buf
 }

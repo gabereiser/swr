@@ -42,7 +42,7 @@ type Account struct {
 type PlayerRef struct {
 	gorm.Model
 	AccountID uint
-	Name      string
+	Data      string
 }
 
 func auth_do_welcome(client Client) {
