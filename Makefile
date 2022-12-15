@@ -9,7 +9,7 @@ GO_MIDDLE_VERSION = $(shell go version|cut -d. -f2)
 GO_MINIMUM_MAJOR_VERSION = $(shell grep ^go go.mod|cut -d" " -f2|cut -d. -f1)
 GO_MINIMUM_MIDDLE_VERSION = $(shell grep ^go go.mod|cut -d" " -f2|cut -d. -f2)
 define check_go_version
-    @if [ $(($GO_MAJOR_VERSION * 1000 + $GO_MIDDLE_VERSION)) -lt $(($GO_MINIMUM_MAJOR_VERSION * 1000 + $GO_MINIMUM_MIDDLE_VERSION)) ]; then \
+    @if [ $$(($(GO_MAJOR_VERSION) * 1000 + $(GO_MIDDLE_VERSION))) -lt $$(($(GO_MINIMUM_MAJOR_VERSION) * 1000 + $(GO_MINIMUM_MIDDLE_VERSION))) ]; then \
 	echo 'You need an updated version of go: you are currently using $(GO_MAJOR_VERSION).$(GO_MIDDLE_VERSION) but you need $(GO_MINIMUM_MAJOR_VERSION).$(GO_MINIMUM_MIDDLE_VERSION) or later.'; \
 	exit 1; \
     fi
