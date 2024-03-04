@@ -1005,7 +1005,7 @@ func do_mob_remove(entity Entity, args ...string) {
 		return
 	}
 	tch := target.GetCharData()
-	DB().RemoveEntity(target)
+	DB().RemoveEntity(target, false)
 	delete(DB().mobs, tch.OId)
 	err := os.Remove(tch.Filename)
 	ErrorCheck(err)

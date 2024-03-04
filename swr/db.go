@@ -112,7 +112,7 @@ func (d *GameDatabase) RemoveClient(client Client) {
 			p := e.(*PlayerProfile)
 			if p.Client != nil {
 				if p.Client == client {
-					d.RemoveEntity(e)
+					d.RemoveEntity(e, true)
 				}
 			}
 		}
@@ -134,9 +134,11 @@ func (d *GameDatabase) RemoveClient(client Client) {
 	}
 }
 
-func (d *GameDatabase) RemoveEntity(entity Entity) {
-	d.Lock()
-	defer d.Unlock()
+func (d *GameDatabase) RemoveEntity(entity Entity, isLocked bool) {
+	if !isLocked {
+		d.Lock()
+		defer d.Unlock()
+	}
 	if entity == nil {
 		return
 	}
