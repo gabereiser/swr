@@ -39,5 +39,4 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macos')
       run: |
         make all VERSION=${{ github.ref_name }}
-        tar -cJf ${{ matrix.asset_name }} data docs bin LICENSE
     
