@@ -95,7 +95,6 @@ func (c *TCPClient) Read() string {
 		i, err := c.Con.Read(b)
 		if err != nil {
 			c.Close()
-			c.Con.Close()
 			return buf
 		}
 		if i > 0 {
@@ -205,7 +204,6 @@ func ServerStart(addr string) {
 			go acceptClient(c)
 			log.Printf("Accepted client connection from %s", c.RemoteAddr())
 		}
-
 	}
 	ServerRunning = false
 }

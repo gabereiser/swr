@@ -14,9 +14,8 @@ Growing up I used to play muds. I loved them. There was a mud called SWR based o
 that recreated the Star Wars universe in text based form. It was pretty good and other muds formed by forking the source and adding
 their contributions.
 
-SWR is a reimagining of that codebase without the merc/diku/smaug legacy. Instead it's a pure go mud with some javascript for scripting
+SWR is a reimagining of that codebase without the merc/diku/smaug legacy. Instead, it's a pure go mud with some javascript for scripting
 that is more flexible and robust than the C mud engines of old.
-
 
 ## Features
 - TELNET echo/no-echo

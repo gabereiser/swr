@@ -293,7 +293,7 @@ func make_corpse(entity Entity) {
 			DB().SavePlayerData(entity.(*PlayerProfile))
 			return
 		} else {
-			DB().RemoveEntity(entity)
+			DB().RemoveEntity(entity, false)
 		}
 	}
 }

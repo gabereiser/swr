@@ -84,7 +84,7 @@ type ItemData struct {
 	Type       string   `yaml:"type"`                    // item type, a value of ITEM_TYPE_* const.
 	Value      int      `yaml:"value"`                   // how much is this item generally worth?
 	Weight     int      `yaml:"weight"`                  // how much does this item weigh?
-	AC         int      `yaml:"ac,omitempty"`            // If armor, what's the AC (common AC values are 1-8 for torso, 2-3 for hands/head/feet, 0-1 for waist)
+	AC         int      `yaml:"ac,omitempty"`            // If armored, what's the AC (common AC values are 1-8 for torso, 2-3 for hands/head/feet, 0-1 for waist)
 	WearLoc    *string  `yaml:"wearLoc,omitempty"`       // where is this item worn? nil means it's not wearable.
 	WeaponType *string  `yaml:"weaponType,omitempty"`    // weapon type from ITEM_WEAPON_TYPE_* const, nil means it's not a weapon.
 	Dmg        *string  `yaml:"dmgRoll,omitempty"`       // Damage roll represented by a D20 compatible string. Weapons do damage.
