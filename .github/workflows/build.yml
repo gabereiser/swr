@@ -31,12 +31,10 @@ jobs:
     - name: Install dependencies
       run: make dependencies
       
-    - name: Build Windows
+    - name: Build
       if: startsWith(matrix.os, 'windows')
       run: |
-        make all VERSION=${{ github.ref_name }}
-    - name: Build BSD
-      if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macos')
-      run: |
-        make all VERSION=${{ github.ref_name }}
+        make clean
+        make dependencies
+        make build VERSION=${{ github.ref_name }}
     

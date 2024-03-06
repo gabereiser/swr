@@ -128,8 +128,8 @@ func language_decay() {
 			lost := false
 			for language, level := range player.Char.Languages {
 				if language != player.Char.Speaking && language != strings.ToLower(player.Char.Race) && language != "basic" {
-					if level != 100 {
-						if rand.Intn(5) == 0 && strings.ToLower(player.Char.Race) != "droid" {
+					if level <= 100 { // wizs don't forget languages
+						if rand.Intn(5) == 0 && strings.ToLower(player.Char.Race) != "droid" { // droids don't forget things
 							player.Char.Languages[language] = level - 1
 							lost = true
 						}

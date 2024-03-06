@@ -54,7 +54,7 @@ type Brain interface {
 	// OnSay event handler. Executes the brains "say" program.
 	OnSay(entity Entity, words string)
 
-	// Update is the main logic tree for AI and [GenericBrain]. It will figure out which action to take on the controlling entity.
+	// Update is the main logic tree for AI and GenericBrain. It will figure out which action to take on the controlling entity.
 	Update()
 }
 
@@ -63,7 +63,7 @@ type GenericBrain struct {
 	vm     *otto.Otto
 }
 
-// MakeGenericBrain creates a [*GenericBrain] instance and wraps the entity in it. Effectively passing control to the brain.
+// MakeGenericBrain creates a GenericBrain instance and wraps the entity in it. Effectively passing control to the brain.
 func MakeGenericBrain(entity Entity) *GenericBrain {
 	brain := new(GenericBrain)
 	brain.Entity = entity
