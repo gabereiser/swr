@@ -132,6 +132,9 @@ func auth_do_new_player(client Client, player *PlayerProfile) {
 	// complete initialization, associate, and load into the game as that
 	// character.
 Name:
+	if client.IsClosed() {
+		return
+	}
 	client.Send("\r\n&GCharacter Name:&d ")
 	name := client.Read()
 	if strings.ContainsAny(name, "`~,./?<>;:'\"[]}{\\|+_-=!@#$%^&*()") {
@@ -145,6 +148,9 @@ Name:
 	}
 	client.Sendf("\r\n&GWelcome &W%s&G.\r\n", name)
 Password:
+	if client.IsClosed() {
+		return
+	}
 	client.Sendf("&GPlease enter a &Wpassword&G:&d ")
 	telnet_disable_local_echo(client)
 	password := client.Read()
@@ -160,6 +166,9 @@ Password:
 		goto Password
 	}
 Email:
+	if client.IsClosed() {
+		return
+	}
 	client.Send("\r\n&GPlease enter your email &x(we won't spam you)&G:&d ")
 	email := client.Read()
 	if !strings.Contains(email, "@") {
@@ -168,6 +177,9 @@ Email:
 	}
 
 Race:
+	if client.IsClosed() {
+		return
+	}
 	client.Sendf("\r\n%s\r\n\r\n", MakeTitle("Choose Your Race", ANSI_TITLE_STYLE_BLOCK, ANSI_TITLE_ALIGNMENT_CENTER))
 
 	buf := ""
@@ -195,6 +207,9 @@ Race:
 	}
 	race = race_list[r_index-1]
 Gender:
+	if client.IsClosed() {
+		return
+	}
 	client.Sendf("\r\n\r\n%s", MakeTitle("Choose Your Gender", ANSI_TITLE_STYLE_BLOCK, ANSI_TITLE_ALIGNMENT_CENTER))
 	client.Send("\r\n&GYour character needs a gender. You can be &Wmale&G, &Wfemale&G, or &Wnon-binary&G/&Wneutral&G.\r\n")
 	client.Send("&W[&GM&W/&GF&W/&GN&W]:&d ")
@@ -208,6 +223,9 @@ Gender:
 	client.Sendf("\r\n\r\n%s", MakeTitle("Stats", ANSI_TITLE_STYLE_BLOCK, ANSI_TITLE_ALIGNMENT_CENTER))
 	stats := make([]int, 6)
 Stats:
+	if client.IsClosed() {
+		return
+	}
 	stats[0] = rand_min_max(1, 6) + rand_min_max(1, 6) + rand_min_max(1, 6)
 	stats[1] = rand_min_max(3, 6) + rand_min_max(3, 6) + rand_min_max(3, 6)
 	stats[2] = rand_min_max(3, 6) + rand_min_max(3, 6) + rand_min_max(3, 6)
