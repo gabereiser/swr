@@ -72,11 +72,9 @@ Login:
 		password := client.Read()
 		telnet_enable_local_echo(client)
 		if encrypt_string(password) != player.Password {
-			fmt.Printf("%s\n", password)
 			client.Send("\r\n}RInvalid password!&d\r\n")
 			goto Login
-		}
-		if encrypt_string(password) == player.Password {
+		} else {
 			client.Send(fmt.Sprintf("\r\n&GAccess granted! Welcome %s.&d\r\n", player.Char.Name))
 			time.Sleep(1 * time.Second)
 			client.Send(Color().ClearScreen())
