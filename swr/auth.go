@@ -59,7 +59,7 @@ func auth_do_login(client Client) {
 Login:
 	client.Send("\r\n&GHolonet Login:&d ")
 	username := client.Read()
-	if username == "" {
+	if strings.TrimSpace(username) == "" {
 		goto Login
 	}
 	sanitized := strings.TrimSpace(strings.ToLower(username))
@@ -71,7 +71,7 @@ Login:
 		telnet_disable_local_echo(client)
 		password := client.Read()
 		telnet_enable_local_echo(client)
-		if encrypt_string(password) != player.Password {
+		if encrypt_string(password) != player.Password || strings.TrimSpace(password) == "" {
 			client.Send("\r\n}RInvalid password!&d\r\n")
 			goto Login
 		} else {
