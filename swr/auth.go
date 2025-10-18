@@ -139,6 +139,10 @@ Name:
 		client.Send("}RSpecial characters are not allowed.&d\r\n\r\n")
 		goto Name
 	}
+	if strings.TrimSpace(name) == "" {
+		client.Send("}RYou must have a name.&d\r\n\r\n")
+		goto Name
+	}
 	client.Sendf("\r\n&GYou will be known as &W%s&G. Is that ok? [&Wy&G/&Wn&G] &d", name)
 	name_confirm := client.Read()
 	if !strings.HasPrefix(strings.ToLower(name_confirm), "y") {
@@ -152,8 +156,12 @@ Password:
 	client.Sendf("&GPlease enter a &Wpassword&G:&d ")
 	telnet_disable_local_echo(client)
 	password := client.Read()
-	if strings.ContainsAny(password, " \x00\t") {
-		client.Sendf("\r\n&RInvalid password, passwords cannot contain spaces or control chars.&d\r\n")
+	if strings.ContainsAny(password, "\t") {
+		client.Sendf("\r\n&RInvalid password, passwords cannot contain control chars.&d\r\n")
+		goto Password
+	}
+	if strings.TrimSpace(password) == "" {
+		client.Sendf("\r\n&RYou must supply a password.&d\r\n")
 		goto Password
 	}
 	client.Send("\r\n&GRepeat your &Wpassword&G:&d ")
